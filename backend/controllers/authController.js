@@ -9,10 +9,10 @@ exports.register = async (req, res) => {
     if (!req.body.name || !req.body.employeeId || !req.body.password || !req.body.role || !req.body.zone) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    // Check if the user already exists
-  
+
     const { name, employeeId, password, role, zone } = req.body;
-    //Check if user already exists
+
+    //Checking if user already exists
     const existingUser = await User.findOne({ employeeId });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
@@ -44,6 +44,7 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
+    // Update last login time
     user.lastLogin = new Date();
     await user.save();
 
