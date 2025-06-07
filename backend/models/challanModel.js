@@ -30,15 +30,8 @@ const challanSchema = new mongoose.Schema({
     required: true,
   },
   location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point'
-    },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true,
-    }
+    type: String,
+    required: true,
   },
   paid: {
     type: Boolean,
@@ -50,6 +43,5 @@ const challanSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-challanSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Challan', challanSchema);
