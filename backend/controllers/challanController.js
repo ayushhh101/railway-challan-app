@@ -48,6 +48,7 @@ exports.issueChallan = async (req, res) => {
   }
 };
 
+// for admin to view all challans
 exports.getAllChallans = async (req, res) => {
   try {
     const challans = await Challan.find()
@@ -58,5 +59,15 @@ exports.getAllChallans = async (req, res) => {
   } catch (error) {
     console.error('Error fetching challans:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// for TTE to view their own challans
+exports.getMyChallans = async (req, res) => {
+  try {
+    const challans = await Challan.find({ issuedBy: req.user.id }).sort({ createdAt: -1 });
+    res.status(200).json(challans);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching challans', error: err.message });
   }
 };
