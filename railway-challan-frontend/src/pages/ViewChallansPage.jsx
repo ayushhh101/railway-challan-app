@@ -1,42 +1,51 @@
 // src/pages/ViewChallansPage.jsx
 import React, { useEffect, useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import ChallanCard from '../components/ChallanCard';
 
 const ViewChallansPage = () => {
-  const { token, user } = useContext(AuthContext);
+  const { token, user } = useAuth();
   const [challans, setChallans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+    const [totalChallans, setTotalChallans] = useState(0);
 
   useEffect(() => {
-  const fetchChallans = async () => {
-    try {
-      const res = await axios.get(
-        user.role === 'admin'
-          ? '/api/challan/admin/all'
-          : '/api/challan/my',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const fetchChallans = async () => {
+      try {
+        const res = await axios.get(
+          user.role === 'admin'
+            ? `${import.meta.env.VITE_API_URL}/api/challan/admin/all`
+            : `${import.meta.env.VITE_API_URL}/api/challan/my`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log('API Response:', res.data); // Debug log
+
+        // Handle different response structures
+        if (user.role === 'admin') {
+          setChallans(res.data.challans || []);
+          setTotalChallans(res.data.total || 0);
+        } else {
+          setChallans(Array.isArray(res.data) ? res.data : []);
+          setTotalChallans(res.data.length || 0);
         }
-      );
 
-      const challanData = user.role === 'admin' ? res.data.challans : res.data;
-      setChallans(challanData);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to fetch challans');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch challans');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchChallans();
-}, [token, user.role]);
+    fetchChallans();
+  }, [token, user.role]);
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center p-4 text-red-500">{error}</div>;

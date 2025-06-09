@@ -4,6 +4,7 @@ import Navbar from './pages/Navbar';
 import PrivateRoute from './routes/PrivateRoute';
 import IssueChallanPage from './pages/IssueChallanPage';
 import ViewChallansPage from './pages/ViewChallansPage';
+
 function App() {
   return (
     <Router>
@@ -18,11 +19,11 @@ function App() {
           </PrivateRoute>
         } />
 
-        {/* <Route path="/view-challans" element={
+        <Route path="/view-challans" element={
           <PrivateRoute allowedRoles={['admin','tte']}>
             <ViewChallansPage />
           </PrivateRoute>
-        } /> */}
+        } />
 
       </Routes>
     </Router>
