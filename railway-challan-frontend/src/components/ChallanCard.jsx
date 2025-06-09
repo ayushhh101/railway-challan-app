@@ -1,6 +1,37 @@
-import React from "react";
+import jsPDF from "jspdf";
+import domtoimage from 'dom-to-image';
+import { useRef } from "react";
 
 const ChallanCard = ({ challan }) => {
+
+  const handleDownload = async () => {
+  try {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challan._id}/pdf`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,  // ✅ Send the token properly
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch PDF");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `challan-${challan._id}.pdf`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Download error:", err);
+    alert("Could not download PDF. Make sure you're logged in.");
+  }
+};
+
   return (
     <div className="bg-white shadow-md rounded-xl p-4 mb-4 sm:flex sm:justify-between sm:items-center transition-transform hover:scale-[1.02] duration-200">
       <div className="space-y-1">
@@ -31,6 +62,9 @@ const ChallanCard = ({ challan }) => {
         <p className="text-xs text-gray-500">Employee ID: {challan.issuedBy?.employeeId}</p>
         <p className="text-xs text-gray-500">Zone: {challan.issuedBy?.zone}</p>
       </div>
+       <button onClick={handleDownload} className="mt-2 bg-green-600 text-white px-3 py-1 rounded">
+        Download PDF
+      </button>
     </div>
   );
 };
