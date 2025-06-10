@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
 
     const { name, employeeId, password, role, zone } = req.body;
 
-    //Checking if user already exists
+    // checks if user already exists
     const existingUser = await User.findOne({ employeeId });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
@@ -44,10 +44,12 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // Update last login time
+    // updates last login time
     user.lastLogin = new Date();
     await user.save();
 
+    // generates JWT token with user ID and role
+    // this data gets "decoded" in the middleware
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
       expiresIn: '7d'
     });
@@ -62,6 +64,7 @@ exports.login = async (req, res) => {
         zone: user.zone
       }
     });
+    
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

@@ -5,22 +5,21 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// middleware
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
+// establishes connection to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error(err));
 
-// Routes
+// routes
 app.use('/api/auth', require('./routes/authRoutes.js'));
 app.use('/api/challan', require('./routes/challanRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/pdf', require('./routes/pdfRoutes'));
 
-
-
+// starts the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

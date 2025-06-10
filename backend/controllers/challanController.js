@@ -20,7 +20,7 @@ exports.issueChallan = async (req, res) => {
       return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
     }
 
-    //create challan
+    //creates challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
       trainNumber,

@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const QRCode = require('qrcode');
 
 const generateChallanPDF = async (challan) => {
-  // Fallback helpers
+  // fallback helpers
   const safe = (value) => (value !== undefined && value !== null ? value : 'N/A');
 
   const qrData = `Challan ID: ${safe(challan._id)}\nAmount: ₹${safe(challan.fineAmount)}\nStatus: ${safe(challan.paymentStatus)}`;
