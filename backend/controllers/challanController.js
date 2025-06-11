@@ -1,5 +1,6 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
+const Station = require('../models/stationModel');
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -20,6 +21,13 @@ exports.issueChallan = async (req, res) => {
       return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
     }
 
+    // lookup station lat/lng
+    const station = await Station.findOne({ name: location });
+
+    if (!station) {
+      return res.status(404).json({ message: "Station not found in records" });
+    }
+
     //creates challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
@@ -28,7 +36,9 @@ exports.issueChallan = async (req, res) => {
       passengerAadharLast4,
       reason,
       fineAmount,
-      location // { type: "Point", coordinates: [lng, lat] }
+      location,
+      latitude: station.latitude,
+      longitude: station.longitude,
     });
 
     console.log("User issuing challan:", req.user); 
@@ -70,4 +80,47 @@ exports.getMyChallans = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Error fetching challans', error: err.message });
   }
+};
+
+// get challan locations
+exports.getChallanLocations = async (req, res) => {
+   try {
+    const result = await Challan.aggregate([
+      {
+        $group: {
+          _id: { lat: "$latitude", lng: "$longitude" },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          latitude: "$_id.lat",
+          longitude: "$_id.lng",
+          count: 1
+        }
+      }
+    ]);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching challan location heatmap data:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+exports.searchChallans = async (req, res) => {
+  const { passenger, train, reason, date } = req.query;
+
+  const filter = {};
+  if (passenger) filter.passengerName = { $regex: passenger, $options: 'i' };
+  if (train) filter.trainNumber = train;
+  if (reason) filter.reason = { $regex: reason, $options: 'i' };
+  if (date) filter.createdAt = {
+    $gte: new Date(date),
+    $lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
+  };
+
+  const challans = await Challan.find(filter).populate('issuedBy', 'name');
+  res.json(challans);
 };

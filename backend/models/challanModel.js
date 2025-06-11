@@ -33,6 +33,8 @@ const challanSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  latitude: Number,
+  longitude: Number,
   paid: {
     type: Boolean,
     default: false

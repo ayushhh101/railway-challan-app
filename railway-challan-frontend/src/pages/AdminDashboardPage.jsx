@@ -1,21 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import 'leaflet.heat';
 
 const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
 
+
+const Heatmap = ({ points }) => {
+  const map = useMap();
+  useEffect(() => {
+    const heatLayer = L.heatLayer(
+      points.map(p => [p.latitude, p.longitude, p.count || 1]),
+      { radius: 25, blur: 15, maxZoom: 17 }
+    ).addTo(map);
+
+    return () => {
+      map.removeLayer(heatLayer);
+    };
+  }, [map, points]);
+
+  return null;
+};
+
+
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
+  const [challansByLocation, setChallansByLocation] = useState([]);
+  const [filters, setFilters] = useState({ name: '', train: '', reason: '', date: '' });
+  const [filteredChallans, setFilteredChallans] = useState([]);
+  const [viewType, setViewType] = useState('card');
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        // fetch admin stats
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         setStats(res.data);
+
+        // fetch for challan locations
+        const locationRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/locations`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setChallansByLocation(locationRes.data);
+
       } catch (err) {
         console.error('Error fetching admin stats:', err);
       }
@@ -23,12 +59,90 @@ const AdminDashboardPage = () => {
     fetchStats();
   }, []);
 
+   const handleFilter = async () => {
+    try {
+      const params = new URLSearchParams(filters);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/search?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setFilteredChallans(res.data);
+    } catch (error) {
+      console.error('Filter error:', error);
+    }
+  };
+
+  const clearFilters = () => {
+    setFilters({ name: '', train: '', reason: '', date: '' });
+    setFilteredChallans([]);
+  };
+
+
   if (!stats) return <div className="text-center mt-10">Loading dashboard...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-10">
       <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
 
+      {/* Filter UI */}
+      <div className="bg-white p-4 shadow rounded-xl space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <input type="text" placeholder="Passenger Name" value={filters.name} onChange={e => setFilters({ ...filters, name: e.target.value })} className="border p-2 rounded" />
+          <input type="text" placeholder="Train Number" value={filters.train} onChange={e => setFilters({ ...filters, train: e.target.value })} className="border p-2 rounded" />
+          <input type="text" placeholder="Reason" value={filters.reason} onChange={e => setFilters({ ...filters, reason: e.target.value })} className="border p-2 rounded" />
+          <input type="date" value={filters.date} onChange={e => setFilters({ ...filters, date: e.target.value })} className="border p-2 rounded" />
+        </div>
+        <div className="flex items-center gap-4">
+          <button onClick={handleFilter} className="bg-blue-500 text-white px-4 py-2 rounded">Search</button>
+          <button onClick={clearFilters} className="bg-gray-300 px-4 py-2 rounded">Clear Filters</button>
+          <button onClick={() => setViewType(viewType === 'card' ? 'table' : 'card')} className="bg-indigo-500 text-white px-4 py-2 rounded">
+            Switch to {viewType === 'card' ? 'Table' : 'Card'} View
+          </button>
+        </div>
+      </div>
+
+      {/* Filtered Results */}
+      {filteredChallans.length > 0 && (
+        <div className="bg-white p-4 shadow rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Filtered Results</h2>
+          {viewType === 'card' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredChallans.map((challan, idx) => (
+                <div key={idx} className="border rounded-xl p-4 shadow">
+                  <p><span className="font-semibold">Passenger:</span> {challan.passengerName}</p>
+                  <p><span className="font-semibold">Train:</span> {challan.trainNumber}</p>
+                  <p><span className="font-semibold">Reason:</span> {challan.reason}</p>
+                  <p><span className="font-semibold">Amount:</span> ₹{challan.fineAmount}</p>
+                  <p><span className="font-semibold">Date:</span> {new Date(challan.createdAt).toLocaleDateString()}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Passenger</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredChallans.map((challan, idx) => (
+                  <tr key={idx}>
+                    <td className="px-6 py-4 whitespace-nowrap">{challan.passengerName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{challan.trainNumber}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{challan.reason}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">₹{challan.fineAmount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{new Date(challan.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+      
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 shadow rounded-xl">
@@ -100,6 +214,27 @@ const AdminDashboardPage = () => {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Heatmap for Challans by Location */}
+      <div className="bg-white p-4 shadow rounded-xl">
+        <h2 className="text-xl font-semibold mb-4">Challan Heatmap (by Location)</h2>
+        <MapContainer
+          center={[19.076, 72.8777]}
+          zoom={11}
+          style={{ height: 400, width: '100%' }}
+          minZoom={6}
+          maxBounds={[[8, 68], [37, 98]]} // Rough bounds covering India
+          maxBoundsViscosity={1.0} // Prevent panning outside
+        >
+          <TileLayer
+            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Heatmap points={challansByLocation} />
+
+        </MapContainer>
+      </div>
+
     </div>
   );
 };
