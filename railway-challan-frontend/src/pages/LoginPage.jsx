@@ -33,7 +33,7 @@ export default function LoginPage() {
       login(data.token, data.user);
 
       // redirect based on role
-      if (data.user.role === 'admin') navigate('/dashboard');
+      if (data.user.role === 'admin') navigate('/admin-dashboard');
       else if (data.user.role === 'tte') navigate('/issue-challan');
       else navigate('/');
     } catch (err) {
