@@ -29,7 +29,7 @@ const Heatmap = ({ points }) => {
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [challansByLocation, setChallansByLocation] = useState([]);
-  const [filters, setFilters] = useState({ name: '', train: '', reason: '', date: '' });
+  const [filters, setFilters] = useState({ name: '', train: '', reason: '', date: '', status: '' });
   const [filteredChallans, setFilteredChallans] = useState([]);
   const [viewType, setViewType] = useState('card');
 
@@ -83,7 +83,7 @@ const AdminDashboardPage = () => {
   };
 
   const clearFilters = () => {
-    setFilters({ name: '', train: '', reason: '', date: '' });
+    setFilters({ name: '', train: '', reason: '', date: '', status: '' });
     setFilteredChallans([]);
     setCurrentPage(1); // ✅ Reset page
   };
@@ -130,6 +130,19 @@ const AdminDashboardPage = () => {
           <input type="text" placeholder="Train Number" value={filters.train} onChange={e => setFilters({ ...filters, train: e.target.value })} className="border p-2 rounded" />
           <input type="text" placeholder="Reason" value={filters.reason} onChange={e => setFilters({ ...filters, reason: e.target.value })} className="border p-2 rounded" />
           <input type="date" value={filters.date} onChange={e => setFilters({ ...filters, date: e.target.value })} className="border p-2 rounded" />
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-700">Status:</label>
+            <select
+              value={filters.status}
+              onChange={e => setFilters({ ...filters, status: e.target.value })}
+              className="border p-2 rounded"
+            >
+              <option value="">All</option>
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+            </select>
+          </div>
+
         </div>
         <div className="flex items-center gap-4">
           <button onClick={handleFilter} className="bg-blue-500 text-white px-4 py-2 rounded">Search</button>

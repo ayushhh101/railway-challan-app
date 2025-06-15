@@ -110,7 +110,7 @@ exports.getChallanLocations = async (req, res) => {
 }
 
 exports.searchChallans = async (req, res) => {
-  const { passenger, train, reason, date } = req.query;
+  const { passenger, train, reason, date , status } = req.query;
 
   const filter = {};
   if (passenger) filter.passengerName = { $regex: passenger, $options: 'i' };
@@ -120,6 +120,8 @@ exports.searchChallans = async (req, res) => {
     $gte: new Date(date),
     $lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
   };
+  if (status === 'paid') filter.paid = true;
+  if (status === 'unpaid') filter.paid = false;
 
   const challans = await Challan.find(filter).populate('issuedBy', 'name');
   res.json(challans);
