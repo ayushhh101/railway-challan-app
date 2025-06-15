@@ -124,3 +124,30 @@ exports.searchChallans = async (req, res) => {
   const challans = await Challan.find(filter).populate('issuedBy', 'name');
   res.json(challans);
 };
+
+exports.getChallanDetails = async (req, res) => {
+  try {
+    const challan = await Challan.findById(req.params.id).populate('issuedBy'); // assuming 'issuedBy' references TTE
+
+    if (!challan) {
+      return res.status(404).json({ message: 'Challan not found' });
+    }
+
+    res.status(200).json({
+      passengerName: challan.passengerName,
+      trainNumber: challan.trainNumber,
+      reason: challan.reason,
+      fineAmount: challan.fineAmount,
+      createdAt: challan.createdAt,
+      isPaid: challan.isPaid,
+      receiptUrl: challan.receiptUrl || `localhost:5173/api/pdf/challan/${challan._id}/pdf`,
+      tte: {
+        name: challan.issuedBy.name,
+        employeeId: challan.issuedBy.employeeId,
+      },
+    });
+  } catch (err) {
+    console.error('Challan detail fetch error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

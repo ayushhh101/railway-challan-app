@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans } = require('../controllers/challanController');
+const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails } = require('../controllers/challanController');
 const { verifyToken, isTTE } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 
@@ -17,6 +17,10 @@ router.post('/issue', verifyToken, isTTE, issueChallan);
 router.get('/locations', verifyToken, isAdmin ,getChallanLocations);
 
 // Search challans (Admin only)
-router.get('/search', verifyToken,isAdmin , searchChallans)
+router.get('/search', verifyToken,isAdmin , searchChallans);
+
+// Get challan details by ID (Admin only)
+router.get('/details/:id', verifyToken, isAdmin , getChallanDetails);
+
 
 module.exports = router;

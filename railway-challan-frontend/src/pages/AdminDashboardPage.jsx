@@ -33,7 +33,7 @@ const AdminDashboardPage = () => {
   const [filteredChallans, setFilteredChallans] = useState([]);
   const [viewType, setViewType] = useState('card');
 
-   // ✅ NEW: Pagination state
+  // ✅ NEW: Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -69,14 +69,14 @@ const AdminDashboardPage = () => {
     fetchStats();
   }, []);
 
-   const handleFilter = async () => {
+  const handleFilter = async () => {
     try {
       const params = new URLSearchParams(filters);
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/search?${params.toString()}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setFilteredChallans(res.data);
-       setCurrentPage(1); // ✅ Reset to first page on new filter
+      setCurrentPage(1); // ✅ Reset to first page on new filter
     } catch (error) {
       console.error('Filter error:', error);
     }
@@ -86,6 +86,34 @@ const AdminDashboardPage = () => {
     setFilters({ name: '', train: '', reason: '', date: '' });
     setFilteredChallans([]);
     setCurrentPage(1); // ✅ Reset page
+  };
+
+  //admin download challan pdf
+  const handleAdminDownload = async (challanId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challanId}/pdf`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `challan-${challanId}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Admin Download error:', err);
+      alert('Download failed');
+    }
   };
 
 
@@ -124,7 +152,21 @@ const AdminDashboardPage = () => {
                   <p><span className="font-semibold">Train:</span> {challan.trainNumber}</p>
                   <p><span className="font-semibold">Reason:</span> {challan.reason}</p>
                   <p><span className="font-semibold">Amount:</span> ₹{challan.fineAmount}</p>
+                  <p>
+                    <span className="font-semibold">Status:</span>{" "}
+                    <span className={challan.paid ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                      {challan.paid ? 'Paid' : 'Unpaid'}
+                    </span>
+                  </p>
+
                   <p><span className="font-semibold">Date:</span> {new Date(challan.createdAt).toLocaleDateString()}</p>
+                  <button
+                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                    onClick={() => handleAdminDownload(challan._id)}
+                  >
+                    Download Receipt PDF
+                  </button>
+
                 </div>
               ))}
             </div>
@@ -136,7 +178,9 @@ const AdminDashboardPage = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -146,37 +190,50 @@ const AdminDashboardPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">{challan.trainNumber}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{challan.reason}</td>
                     <td className="px-6 py-4 whitespace-nowrap">₹{challan.fineAmount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={challan.paid ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                        {challan.paid ? 'Paid' : 'Unpaid'}
+                      </span>
+                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">{new Date(challan.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap"><button
+                      className="bg-blue-600 text-white px-3 py-1 rounded"
+                      onClick={() => handleAdminDownload(challan._id)}
+                    >
+                      Download Receipt PDF
+                    </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
-           {/* ✅ NEW: Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <button
-            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
+          {/* ✅ NEW: Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-4">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
-        </div>
-      )}
-      
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 shadow rounded-xl">
