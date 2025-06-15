@@ -33,6 +33,16 @@ const AdminDashboardPage = () => {
   const [filteredChallans, setFilteredChallans] = useState([]);
   const [viewType, setViewType] = useState('card');
 
+   // ✅ NEW: Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  // ✅ NEW: Derived paginated challans
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const paginatedChallans = filteredChallans.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredChallans.length / itemsPerPage);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -66,6 +76,7 @@ const AdminDashboardPage = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setFilteredChallans(res.data);
+       setCurrentPage(1); // ✅ Reset to first page on new filter
     } catch (error) {
       console.error('Filter error:', error);
     }
@@ -74,6 +85,7 @@ const AdminDashboardPage = () => {
   const clearFilters = () => {
     setFilters({ name: '', train: '', reason: '', date: '' });
     setFilteredChallans([]);
+    setCurrentPage(1); // ✅ Reset page
   };
 
 
@@ -106,7 +118,7 @@ const AdminDashboardPage = () => {
           <h2 className="text-xl font-semibold mb-4">Filtered Results</h2>
           {viewType === 'card' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredChallans.map((challan, idx) => (
+              {paginatedChallans.map((challan, idx) => (
                 <div key={idx} className="border rounded-xl p-4 shadow">
                   <p><span className="font-semibold">Passenger:</span> {challan.passengerName}</p>
                   <p><span className="font-semibold">Train:</span> {challan.trainNumber}</p>
@@ -128,7 +140,7 @@ const AdminDashboardPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredChallans.map((challan, idx) => (
+                {paginatedChallans.map((challan, idx) => (
                   <tr key={idx}>
                     <td className="px-6 py-4 whitespace-nowrap">{challan.passengerName}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{challan.trainNumber}</td>
@@ -140,6 +152,28 @@ const AdminDashboardPage = () => {
               </tbody>
             </table>
           )}
+           {/* ✅ NEW: Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
         </div>
       )}
       
