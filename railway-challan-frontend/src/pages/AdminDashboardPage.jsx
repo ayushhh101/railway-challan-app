@@ -6,6 +6,11 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import 'leaflet.heat';
 
+//for bulk download
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
+
 const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
 
 
@@ -42,6 +47,34 @@ const AdminDashboardPage = () => {
   const indexOfFirst = indexOfLast - itemsPerPage;
   const paginatedChallans = filteredChallans.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredChallans.length / itemsPerPage);
+
+  // ✅ NEW: State for selected challans (for bulk actions)
+  const [selectedChallans, setSelectedChallans] = useState([]);
+
+  // Function to toggle selection of a challan
+  const toggleChallanSelection = (id) => {
+    setSelectedChallans(prev =>
+      prev.includes(id)
+        ? prev.filter(cid => cid !== id)
+        : [...prev, id]
+    );
+  };
+
+  const isSelected = (id) => selectedChallans.includes(id);
+
+  // Optional: Select All for current page
+  const toggleSelectAll = () => {
+    const allSelected = filteredChallans.every(challan => selectedChallans.includes(challan._id));
+
+    if (allSelected) {
+      // Deselect all
+      setSelectedChallans([]);
+    } else {
+      // Select all from all filtered results
+      setSelectedChallans(filteredChallans.map(challan => challan._id));
+    }
+  };
+
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -88,7 +121,7 @@ const AdminDashboardPage = () => {
     setCurrentPage(1); // ✅ Reset page
   };
 
-  //admin download challan pdf
+  // admin download challan pdf
   const handleAdminDownload = async (challanId) => {
     try {
       const token = localStorage.getItem('token');
@@ -115,6 +148,105 @@ const AdminDashboardPage = () => {
       alert('Download failed');
     }
   };
+
+  // function to download data as CSV
+  const downloadCSV = (data, fileName) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Challans');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, `${fileName}.xlsx`);
+  };
+
+  const handleFullExport = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/admin/all`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      console.log('Full export data:', res.data);
+      const challanData = res.data.data;
+
+      if (!Array.isArray(challanData)) {
+        throw new Error('Invalid data format for CSV export');
+      }
+      downloadCSV(challanData, 'all-challans');
+    } catch (err) {
+      console.error('Export error:', err);
+    }
+  };
+
+  const handleFilteredExport = () => {
+    if (filteredChallans.length === 0) {
+      alert('No filtered data to export');
+      return;
+    }
+    downloadCSV(filteredChallans, 'filtered-challans');
+  };
+
+  const handleSelectedExport = () => {
+    const allSelectedAcrossPages =
+      filteredChallans.length > 0 &&
+      selectedChallans.length === filteredChallans.length;
+
+    const selectedData = allSelectedAcrossPages
+      ? filteredChallans // download all filtered challans
+      : filteredChallans.filter(challan => selectedChallans.includes(challan._id));
+
+    if (selectedData.length === 0) {
+      alert('No selected challans to export');
+      return;
+    }
+
+    downloadCSV(selectedData, 'selected-challans');
+  };
+
+
+  //   const handleSelectedPDFDownload = async () => {
+  //   if (selectedChallans.length === 0) return;
+  //   try {
+  //     const res = await axios.post(
+  //       `${import.meta.env.VITE_API_URL}/api/challan/bulk-pdf`,
+  //       { challanIds: selectedChallans },
+  //       {
+  //         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  //         responseType: 'blob',
+  //       }
+  //     );
+  //     const blob = new Blob([res.data], { type: 'application/zip' });
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.download = 'selected-challans.zip';
+  //     link.click();
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (err) {
+  //     console.error('Selected PDF download error:', err);
+  //   }
+  // };
+
+
+  //   const handleBulkPDFDownload = async () => {
+  //     try {
+  //       const res = await axios.post(
+  //         `${import.meta.env.VITE_API_URL}/api/challan/bulk-pdf`,
+  //         { challanIds: selectedChallans },
+  //         {
+  //           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  //           responseType: 'blob',
+  //         }
+  //       );
+  //       const blob = new Blob([res.data], { type: 'application/zip' });
+  //       const url = window.URL.createObjectURL(blob);
+  //       const link = document.createElement('a');
+  //       link.href = url;
+  //       link.download = 'challans.zip';
+  //       link.click();
+  //       window.URL.revokeObjectURL(url);
+  //     } catch (err) {
+  //       console.error('Bulk PDF download error:', err);
+  //     }
+  //   };
 
 
   if (!stats) return <div className="text-center mt-10">Loading dashboard...</div>;
@@ -154,97 +286,162 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Filtered Results */}
+      {filteredChallans.length === 0 && (
+  <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500 text-lg font-medium">
+    ❌ No challans found matching the filter criteria. ❌
+  </div>
+)}
       {filteredChallans.length > 0 && (
-        <div className="bg-white p-4 shadow rounded-xl">
-          <h2 className="text-xl font-semibold mb-4">Filtered Results</h2>
-          {viewType === 'card' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginatedChallans.map((challan, idx) => (
-                <div key={idx} className="border rounded-xl p-4 shadow">
-                  <p><span className="font-semibold">Passenger:</span> {challan.passengerName}</p>
-                  <p><span className="font-semibold">Train:</span> {challan.trainNumber}</p>
-                  <p><span className="font-semibold">Reason:</span> {challan.reason}</p>
-                  <p><span className="font-semibold">Amount:</span> ₹{challan.fineAmount}</p>
-                  <p>
-                    <span className="font-semibold">Status:</span>{" "}
-                    <span className={challan.paid ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                      {challan.paid ? 'Paid' : 'Unpaid'}
-                    </span>
-                  </p>
+        <>
+          <div className="bg-white p-4 shadow rounded-xl">
+            <h2 className="text-xl font-semibold mb-4">Filtered Results</h2>
+            {selectedChallans.length > 0 && (
+              <div className="flex gap-4">
+                <button
+                  onClick={handleSelectedExport}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
+                >
+                  Download Selected CSV
+                </button>
+              </div>
+            )}
 
-                  <p><span className="font-semibold">Date:</span> {new Date(challan.createdAt).toLocaleDateString()}</p>
-                  <button
-                    className="bg-blue-600 text-white px-3 py-1 rounded"
-                    onClick={() => handleAdminDownload(challan._id)}
-                  >
-                    Download Receipt PDF
-                  </button>
-
-                </div>
-              ))}
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Passenger</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+            {viewType === 'card' ? (
+              <>
+              <div className="px-2 pb-3 flex items-center pt-3.5 gap-1 pl-0">
+                      <span className="text-left text-xs font-medium text-gray-500 uppercase">Select All</span>
+                      <input
+                        type="checkbox"
+                        onChange={toggleSelectAll}
+                        checked={
+                          filteredChallans.length > 0 &&
+                          filteredChallans.every(c => selectedChallans.includes(c._id))
+                        }
+                        className="w-5 h-5  text-blue-600 border-gray-300 rounded focus:ring-blue-500 "
+                      />
+                    </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paginatedChallans.map((challan, idx) => (
-                  <tr key={idx}>
-                    <td className="px-6 py-4 whitespace-nowrap">{challan.passengerName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{challan.trainNumber}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{challan.reason}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">₹{challan.fineAmount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <div key={idx} className="relative border rounded-xl p-4 shadow pt-6">
+                    <input
+                      type="checkbox"
+                      checked={selectedChallans.includes(challan._id)}
+                      onChange={() => toggleChallanSelection(challan._id)}
+                      className="absolute top-2 right-2 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <p><span className="font-semibold">Passenger:</span> {challan.passengerName}</p>
+                    <p><span className="font-semibold">Train:</span> {challan.trainNumber}</p>
+                    <p><span className="font-semibold">Reason:</span> {challan.reason}</p>
+                    <p><span className="font-semibold">Amount:</span> ₹{challan.fineAmount}</p>
+                    <p>
+                      <span className="font-semibold">Status:</span>{" "}
                       <span className={challan.paid ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
                         {challan.paid ? 'Paid' : 'Unpaid'}
                       </span>
-                    </td>
+                    </p>
 
-                    <td className="px-6 py-4 whitespace-nowrap">{new Date(challan.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap"><button
+                    <p><span className="font-semibold">Date:</span> {new Date(challan.createdAt).toLocaleDateString()}</p>
+                    <button
                       className="bg-blue-600 text-white px-3 py-1 rounded"
                       onClick={() => handleAdminDownload(challan._id)}
                     >
                       Download Receipt PDF
                     </button>
-                    </td>
-                  </tr>
+
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          )}
-          {/* ✅ NEW: Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-4">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
+              </div>
+              </>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+
+                    <th className="px-2 pb-3 flex items-center pt-3.5 gap-1 pl-0">
+                      <span className="text-left text-xs font-medium text-gray-500 uppercase">Select All</span>
+                      <input
+                        type="checkbox"
+                        onChange={toggleSelectAll}
+                        checked={
+                          filteredChallans.length > 0 &&
+                          filteredChallans.every(c => selectedChallans.includes(c._id))
+                        }
+                        className="w-5 h-5  text-blue-600 border-gray-300 rounded focus:ring-blue-500 "
+                      />
+                    </th>
+
+                    {/* <th className="px-4 py-3">
+                      <span className="sr-only">Select</span>
+                    </th> */}
+
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Passenger</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedChallans.map((challan, idx) => (
+                    <tr key={idx}>
+
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedChallans.includes(challan._id)}
+                          onChange={() => toggleChallanSelection(challan._id)}
+                          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">{challan.passengerName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{challan.trainNumber}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{challan.reason}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">₹{challan.fineAmount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={challan.paid ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                          {challan.paid ? 'Paid' : 'Unpaid'}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap">{new Date(challan.createdAt).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap"><button
+                        className="bg-blue-600 text-white px-3 py-1 rounded hover:cursor-pointer"
+                        onClick={() => handleAdminDownload(challan._id)}
+                      >
+                        Download Receipt PDF
+                      </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {/* ✅ NEW: Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-4">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Summary Cards */}

@@ -1,6 +1,10 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const Station = require('../models/stationModel');
+const fs = require('fs');
+const archiver = require('archiver');
+const puppeteer = require('puppeteer');
+const path = require('path');
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -109,6 +113,7 @@ exports.getChallanLocations = async (req, res) => {
   }
 }
 
+// Search challans by various criteria
 exports.searchChallans = async (req, res) => {
   const { passenger, train, reason, date , status } = req.query;
 
@@ -127,6 +132,7 @@ exports.searchChallans = async (req, res) => {
   res.json(challans);
 };
 
+// Get details of a specific challan by ID
 exports.getChallanDetails = async (req, res) => {
   try {
     const challan = await Challan.findById(req.params.id).populate('issuedBy'); // assuming 'issuedBy' references TTE
@@ -152,4 +158,31 @@ exports.getChallanDetails = async (req, res) => {
     console.error('Challan detail fetch error:', err);
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+// Download bulk challan PDFs as a zip file
+exports.downloadBulkChallanPDF = async (req, res) => {
+  const { challanIds } = req.body;
+
+  if (!challanIds || !Array.isArray(challanIds)) {
+    return res.status(400).json({ message: "challanIds required" });
+  }
+
+  const zip = archiver('zip', { zlib: { level: 9 } });
+  res.attachment('challans.zip');
+  zip.pipe(res);
+
+  const browser = await puppeteer.launch({ headless: 'new' });
+  const page = await browser.newPage();
+
+  for (const id of challanIds) {
+    const challanUrl = `${process.env.CLIENT_URL}/challan-pdf/${id}`;
+    await page.goto(challanUrl, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({ format: 'A4' });
+    zip.append(pdfBuffer, { name: `challan-${id}.pdf` });
+  }
+
+  await browser.close();
+  zip.finalize();
 };
