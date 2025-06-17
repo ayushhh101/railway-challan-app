@@ -1,5 +1,5 @@
 // src/pages/ViewChallansPage.jsx
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import ChallanCard from '../components/ChallanCard';
@@ -9,7 +9,7 @@ const ViewChallansPage = () => {
   const [challans, setChallans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-    const [totalChallans, setTotalChallans] = useState(0);
+  const [totalChallans, setTotalChallans] = useState(0);
 
   useEffect(() => {
     const fetchChallans = async () => {
@@ -47,16 +47,21 @@ const ViewChallansPage = () => {
     fetchChallans();
   }, [token, user.role]);
 
-  if (loading) return <div className="text-center p-4">Loading...</div>;
-  if (error) return <div className="text-center p-4 text-red-500">{error}</div>;
+  // if (loading) return <div className="text-center p-4">Loading...</div>;
+  // if (error) return <div className="text-center p-4 text-red-500">{error}</div>;
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Challans History</h1>
-      {challans.length === 0 ? (
-        <p>No challans found.</p>
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto bg-[#F8FAFC] min-h-screen">
+      <h1 className="text-3xl font-bold text-[#1E40AF] mb-4 text-center">Challan History</h1>
+
+      {loading ? (
+        <div className="text-center text-sm text-slate-600 py-8">Loading challans...</div>
+      ) : error ? (
+        <div className="text-center text-[#DC2626] bg-red-50 border border-red-200 rounded p-4 text-sm">{error}</div>
+      ) : challans.length === 0 ? (
+        <p className="text-center text-slate-500 text-sm">No challans found.</p>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
           {challans.map((challan) => (
             <ChallanCard key={challan._id} challan={challan} />
           ))}

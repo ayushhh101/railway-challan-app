@@ -44,42 +44,53 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 bg-gray-100">
-      <div className="bg-white w-full max-w-sm rounded-xl p-6 shadow-md">
-        <h2 className="text-2xl font-bold text-center text-blue-800 mb-6">Railway Portal Login</h2>
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-8">
+      <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-8 border border-gray-400">
+        <h2 className="text-3xl font-bold text-center text-[#1E40AF] mb-6">Railway Portal Login</h2>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
-            name="employeeId"
-            type="text"
-            value={formData.employeeId}
-            onChange={handleChange}
-            placeholder="Employee ID"
-            className="p-3 border rounded-md text-sm"
-            required
-          />
+        <form onSubmit={handleSubmit} >
+          <div className='p-4'>
+            <label className="block text-sm font-medium text-black mb-1">Employee ID</label>
+            <input
+              name="employeeId"
+              type="text"
+              value={formData.employeeId}
+              onChange={handleChange}
+              placeholder="Enter your ID"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#1E40AF] focus:outline-none"
+              required
+            />
+          </div>
 
-          <input
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="p-3 border rounded-md text-sm"
-            required
-          />
+          <div className='p-4'>
+            <label className="block text-sm font-medium text-black mb-1">Password</label>
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter your password"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#1E40AF] focus:outline-none"
+              required
+            />
+          </div>
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {error && (
+            <p className="text-[#DC2626] text-sm text-center bg-red-50 border border-[#FCA5A5] p-2 rounded-md">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-700 text-white py-3 rounded-md font-semibold hover:bg-blue-800 transition"
+            className="w-1/2 block mx-auto bg-[#1E40AF] hover:bg-blue-950 text-white py-3 mt-3 rounded-lg font-semibold transition-colors duration-200"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
       </div>
     </div>
+
   );
 }

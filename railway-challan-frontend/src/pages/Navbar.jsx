@@ -1,9 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -11,39 +14,74 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
-      <h1 className="text-lg font-bold">Railway Challan App</h1>
+     <nav className="bg-[#F8FAFC] border-b border-gray-200 shadow-sm px-4 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Logo */}
+        <h1 className="text-xl font-bold text-[#1E40AF]">Railway Challan Portal</h1>
 
-      {user && (
-        <div className="flex gap-4 items-center text-sm">
-          {/* Role-based Links */}
-          {user.role === 'tte' && (
+        {/* Hamburger */}
+        <button
+          className="sm:hidden focus:outline-none"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          {menuOpen ? (
+            <XMarkIcon className="h-6 w-6 text-[#1E40AF]" />
+          ) : (
+            <Bars3Icon className="h-6 w-6 text-[#1E40AF]" />
+          )}
+        </button>
+
+        {/* Desktop Links */}
+        <div className="hidden sm:flex gap-4 items-center text-sm text-[#0F172A]">
+          {user?.role === 'tte' && (
             <>
-              <Link to="/issue-challan" className="hover:underline">
-                Issue Challan
-              </Link>
-              <Link to="/view-challans" className="hover:underline">
-                My Challans
-              </Link>
+              <Link to="/issue-challan" className="hover:text-[#F97316] font-medium">Issue Challan</Link>
+              <Link to="/view-challans" className="hover:text-[#F97316] font-medium">My Challans</Link>
             </>
           )}
 
-          {user.role === 'admin' && (
+          {user?.role === 'admin' && (
             <>
-              <Link to="/dashboard" className="hover:underline">
-                Dashboard
-              </Link>
-              <Link to="/manage-users" className="hover:underline">
-                Manage Users
-              </Link>
-              <Link to="/view-challans" className="hover:underline">
-                All Challans
-              </Link>
+              <Link to="/admin-dashboard" className="hover:text-[#F97316] font-medium">Dashboard</Link>
+              <Link to="/manage-users" className="hover:text-[#F97316] font-medium">Manage Users</Link>
+              <Link to="/view-challans" className="hover:text-[#F97316] font-medium">All Challans</Link>
             </>
           )}
 
-          {/* Logout */}
-          <button onClick={handleLogout} className="bg-red-600 px-3 py-1 rounded-md ml-2">
+          <button
+            onClick={handleLogout}
+            className="bg-[#DC2626] text-white px-4 py-1.5 rounded-md hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="sm:hidden mt-3 flex flex-col gap-3 text-sm text-[#0F172A]">
+          {user?.role === 'tte' && (
+            <>
+              <Link to="/issue-challan" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Issue Challan</Link>
+              <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>My Challans</Link>
+            </>
+          )}
+
+          {user?.role === 'admin' && (
+            <>
+              <Link to="/admin-dashboard" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <Link to="/manage-users" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Manage Users</Link>
+              <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>All Challans</Link>
+            </>
+          )}
+
+          <button
+            onClick={() => {
+              handleLogout();
+              setMenuOpen(false);
+            }}
+            className="bg-[#DC2626] text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
+          >
             Logout
           </button>
         </div>

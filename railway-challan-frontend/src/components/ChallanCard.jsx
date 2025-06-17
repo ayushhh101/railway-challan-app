@@ -33,39 +33,48 @@ const ChallanCard = ({ challan }) => {
 };
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 mb-4 sm:flex sm:justify-between sm:items-center transition-transform hover:scale-[1.02] duration-200">
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-gray-800">
-          Passenger: {challan.passengerName}
-        </h2>
-        <p className="text-sm text-gray-600">
-          Aadhar (Last 4): {challan.passengerAadharLast4 || "N/A"}
-        </p>
-        <p className="text-sm text-gray-600">
-          Reason: <span className="font-medium text-red-600">{challan.reason}</span>
-        </p>
-        <p className="text-sm text-gray-600">
-          Fine: ₹{challan.fineAmount}
-        </p>
-        <p className="text-sm text-gray-600">
-          Train Number: {challan.trainNumber}
-        </p>
-        <p className="text-sm text-gray-600">
-          Issued At: {new Date(challan.issuedAt).toLocaleString()}
-        </p>
-      </div>
+   <div className="bg-white shadow-md rounded-xl p-4 sm:p-5 mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-start hover:shadow-lg transition-transform hover:scale-[1.01] duration-200 border border-gray-100">
+  {/* Left Block - Passenger Details */}
+  <div className="space-y-1 sm:w-2/3">
+    <h2 className="text-xl font-semibold text-[#0F172A]">
+      Passenger: <span className="text-[#1E40AF]">{challan.passengerName}</span>
+    </h2>
 
-      <div className="mt-3 sm:mt-0 sm:text-right">
-        <p className="text-sm text-gray-700">
-          Issued By: <span className="font-semibold">{challan.issuedBy?.name}</span>
-        </p>
-        <p className="text-xs text-gray-500">Employee ID: {challan.issuedBy?.employeeId}</p>
-        <p className="text-xs text-gray-500">Zone: {challan.issuedBy?.zone}</p>
-      </div>
-       <button onClick={handleDownload} className="mt-2 bg-green-600 text-white px-3 py-1 rounded">
-        Download PDF
-      </button>
+    <p className="text-sm text-[#64748B]">
+      Aadhar (Last 4): <span className="font-medium">{challan.passengerAadharLast4 || "N/A"}</span>
+    </p>
+
+    <p className="text-sm">
+      Reason: <span className="text-[#DC2626] font-semibold">{challan.reason}</span>
+    </p>
+
+    <p className="text-sm text-[#0F172A] font-medium">
+      Fine: <span className="text-[#16A34A] font-bold">₹{challan.fineAmount}</span>
+    </p>
+
+    <p className="text-sm text-[#64748B]">Train Number: {challan.trainNumber}</p>
+    <p className="text-sm text-[#64748B]">Issued At: {new Date(challan.issuedAt).toLocaleString()}</p>
+  </div>
+
+  {/* Right Block - Issuer + Download */}
+  <div className="mt-4 sm:mt-0 sm:text-right sm:w-1/3 flex flex-col items-start sm:items-end gap-2">
+    <div className="text-sm text-[#0F172A]">
+      <p>
+        Issued By: <span className="font-semibold">{challan.issuedBy?.name}</span>
+      </p>
+      <p className="text-xs text-[#64748B]">ID: {challan.issuedBy?.employeeId}</p>
+      <p className="text-xs text-[#64748B]">Zone: {challan.issuedBy?.zone}</p>
     </div>
+
+    <button
+      onClick={handleDownload}
+      className="mt-2 bg-[#16A34A] text-white text-sm font-medium px-4 py-1.5 rounded-md hover:bg-green-700 transition duration-200 shadow-sm"
+    >
+      Download PDF
+    </button>
+  </div>
+</div>
+
   );
 };
 

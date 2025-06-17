@@ -286,11 +286,11 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Filtered Results */}
-      {filteredChallans.length === 0 && (
+      {/* {filteredChallans.length === 0 && (
   <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500 text-lg font-medium">
     ❌ No challans found matching the filter criteria. ❌
   </div>
-)}
+)} */}
       {filteredChallans.length > 0 && (
         <>
           <div className="bg-white p-4 shadow rounded-xl">
