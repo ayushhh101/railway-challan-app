@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    // If offline and credentials exist, allow instant access
+    if (!navigator.onLine) {
+      const savedCreds = JSON.parse(localStorage.getItem('offlineCredentials'));
+      const savedUser = JSON.parse(localStorage.getItem('offlineUser'));
+      const savedToken = localStorage.getItem('offlineToken');
+
+      if (savedCreds && savedUser && savedToken) {
+        setFormData({
+          employeeId: savedCreds.employeeId,
+          password: savedCreds.password,
+        });
+      }
+    }
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -18,6 +34,26 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    if (!navigator.onLine) {
+      // Offline login logic
+      const savedCreds = JSON.parse(localStorage.getItem('offlineCredentials'));
+      const savedUser = JSON.parse(localStorage.getItem('offlineUser'));
+      const savedToken = localStorage.getItem('offlineToken');
+
+      if (
+        savedCreds &&
+        formData.employeeId === savedCreds.employeeId &&
+        formData.password === savedCreds.password
+      ) {
+        login(savedToken, savedUser);
+        return navigate('/issue-challan');
+      } else {
+        setError('Offline login failed. Try logging in online once.');
+        return setLoading(false);
+      }
+    }
+
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
@@ -31,6 +67,9 @@ export default function LoginPage() {
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
       login(data.token, data.user);
+
+      // Store token and user in sessionStorage for PWA support
+      sessionStorage.setItem('auth', JSON.stringify({token: data.token, user: data.user}))
 
       // redirect based on role
       if (data.user.role === 'admin') navigate('/admin-dashboard');

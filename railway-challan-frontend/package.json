@@ -17,6 +17,7 @@
     "dotenv": "^16.5.0",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
+    "idb": "^8.0.3",
     "jspdf": "^3.0.1",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
@@ -26,6 +27,7 @@
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.2",
     "recharts": "^2.15.3",
+    "workbox-window": "^7.3.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -40,6 +42,7 @@
     "globals": "^16.0.0",
     "postcss": "^8.5.5",
     "tailwindcss": "^4.1.10",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.0.0"
   }
 }
