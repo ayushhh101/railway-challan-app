@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { saveOfflineChallan, getAllOfflineChallans, clearOfflineChallans } from '../utils/db';
+import TextInput from '../components/TextInput';
 
 export default function IssueChallanPage() {
   const { user, token } = useAuth();
@@ -145,66 +146,12 @@ export default function IssueChallanPage() {
       )}
 
       <form onSubmit={handleSubmit} className="grid gap-5">
-        <input
-          type="text"
-          name="trainNumber"
-          placeholder="Train Number"
-          value={form.trainNumber}
-          onChange={handleChange}
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1E40AF] focus:outline-none text-sm"
-        />
-
-        <input
-          type="text"
-          name="passengerName"
-          placeholder="Passenger Name"
-          value={form.passengerName}
-          onChange={handleChange}
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1E40AF] focus:outline-none text-sm"
-        />
-
-        <input
-          type="text"
-          name="passengerAadhar"
-          placeholder="Passenger Aadhar Number"
-          value={form.passengerAadhar}
-          maxLength="12"
-          onChange={handleChange}
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1E40AF] focus:outline-none text-sm"
-        />
-
-        <input
-          type="text"
-          name="reason"
-          placeholder="Reason for Challan"
-          value={form.reason}
-          onChange={handleChange}
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#F59E0B] focus:outline-none text-sm"
-        />
-
-        <input
-          type="number"
-          name="fineAmount"
-          placeholder="Fine Amount"
-          value={form.fineAmount}
-          onChange={handleChange}
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#F97316] focus:outline-none text-sm"
-        />
-
-        <input
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={form.location}
-          onChange={handleChange}
-          required
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1E40AF] focus:outline-none text-sm"
-        />
+        <TextInput name="trainNumber" placeholder="Train Number" value={form.trainNumber} onChange={handleChange} />
+        <TextInput name="passengerName" placeholder="Passenger Name" value={form.passengerName} onChange={handleChange} />
+        <TextInput name="passengerAadhar" placeholder="Passenger Aadhar Number" value={form.passengerAadhar} onChange={handleChange} maxLength={12} />
+        <TextInput name="reason" placeholder="Reason for Challan" value={form.reason} onChange={handleChange} />
+        <TextInput name="fineAmount" placeholder="Fine Amount" type="number" value={form.fineAmount} onChange={handleChange} />
+        <TextInput name="location" placeholder="Location" value={form.location} onChange={handleChange} />
 
         <button
           type="submit"

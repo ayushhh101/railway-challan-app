@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 const MonthlyTrendChart = ({ trend }) => {
 
   const formattedData = trend.map(d => ({

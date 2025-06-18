@@ -5,6 +5,7 @@ const fs = require('fs');
 const archiver = require('archiver');
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { default: mongoose } = require('mongoose');
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -185,4 +186,39 @@ exports.downloadBulkChallanPDF = async (req, res) => {
 
   await browser.close();
   zip.finalize();
+};
+
+exports.updateChallan = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid challan ID' });
+  }
+
+  const challan = await Challan.findById(id);
+  if (!challan) {
+    return res.status(404).json({ message: 'Challan not found' });
+  }
+
+  // Check if TTE owns this challan
+  if (challan.issuedBy.toString() !== req.user.id) {
+    return res.status(403).json({ message: 'Not authorized to update this challan' });
+  }
+
+  // Update only allowed fields
+  const allowedFields = ['trainNumber', 'passengerName', 'passengerAadhar', 'reason', 'fineAmount', 'location'];
+  allowedFields.forEach(field => {
+    if (req.body[field] !== undefined) {
+      challan[field] = req.body[field];
+    }
+  });
+
+  await challan.save();
+
+  res.json({ message: 'Challan updated successfully', challan });
+  } catch (err) {
+    console.error('Update Challan Error:', err);
+    res.status(500).json({ message: 'Server error while updating challan' });
+  }
 };

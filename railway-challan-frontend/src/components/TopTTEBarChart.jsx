@@ -2,7 +2,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const TopTTEBarChart = () => {
+const TopTTEBarChart = ({stats}) => {
   return (
     <>
       <div className="bg-white p-4 shadow rounded-xl">

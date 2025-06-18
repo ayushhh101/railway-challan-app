@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails, downloadBulkChallanPDF } = require('../controllers/challanController');
+const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails, downloadBulkChallanPDF, updateChallan } = require('../controllers/challanController');
 const { verifyToken, isTTE } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 
@@ -25,6 +25,6 @@ router.get('/details/:id', verifyToken, isAdmin , getChallanDetails);
 // Download bulk challan PDF (Admin only)
 router.post('/bulk-pdf', verifyToken, isAdmin, downloadBulkChallanPDF);
 
-
+router.put('/:id', verifyToken, isTTE , updateChallan)
 
 module.exports = router;

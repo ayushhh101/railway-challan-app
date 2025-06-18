@@ -1,11 +1,9 @@
 import React from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import {  Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
 
-import React from 'react'
-
-const ChallansByReasonChart = ({data}) => {
+const ChallansByReasonChart = ({data , stats}) => {
   return (
     <>
     <div className="bg-white p-4 shadow rounded-xl">
