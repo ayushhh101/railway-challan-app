@@ -19,6 +19,7 @@ app.use('/api/auth', require('./routes/authRoutes.js'));
 app.use('/api/challan', require('./routes/challanRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/pdf', require('./routes/pdfRoutes'));
+app.use('/api/proofs', require('./routes/proofRoutes'));
 
 // starts the server
 const PORT = process.env.PORT || 5000;
