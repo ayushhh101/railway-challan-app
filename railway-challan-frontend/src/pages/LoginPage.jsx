@@ -66,7 +66,7 @@ export default function LoginPage() {
 
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
-      login(data.token, data.user);
+      login(data.token, data.refreshToken ,data.user);
 
       // Store token and user in sessionStorage for PWA support
       sessionStorage.setItem('auth', JSON.stringify({token: data.token, user: data.user}))

@@ -4,6 +4,15 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET 
 
+const generateAccessToken = (user) => {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
+};
+
+const generateRefreshToken = (user) => {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
+};
+
+
 exports.register = async (req, res) => {
   try {
     if (!req.body.name || !req.body.employeeId || !req.body.password || !req.body.role || !req.body.zone) {
@@ -51,12 +60,15 @@ exports.login = async (req, res) => {
     // generates JWT token with user ID and role
     // this data gets "decoded" in the middleware
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: '7d'
+      expiresIn: '15m'
     });
+
+    const refreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
 
     res.status(200).json({
       message: 'Login successful',
       token,
+      refreshToken,
       user: {
         name: user.name,
         employeeId: user.employeeId,
@@ -67,5 +79,19 @@ exports.login = async (req, res) => {
     
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(401).json({ message: 'Refresh token required' });
+
+  try {
+    const payload = jwt.verify(token, process.env.REFRESH_SECRET);
+    const newAccessToken = jwt.sign({ id: payload.id, role: payload.role }, JWT_SECRET, { expiresIn: '15m' });
+
+    res.status(200).json({ token: newAccessToken });
+  } catch (err) {
+    res.status(403).json({ message: 'Invalid or expired refresh token' });
   }
 };
