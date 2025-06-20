@@ -23,48 +23,58 @@ export default function IssueChallanPage() {
   const [success, setSuccess] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
-  // Sync offline challans when back online
   useEffect(() => {
     const syncOfflineChallans = async () => {
-      if (navigator.onLine) {
-        const pending = await getAllOfflineChallans();
-        const failedLogs = [];
+      if (!navigator.onLine || !token) return;
 
-        for (const challan of pending) {
-          try {
-            await axios.post(
-              `${import.meta.env.VITE_API_URL}/api/challan/issue`,
-              challan,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-          } catch (err) {
-            console.error('Sync failed for challan:', challan, err);
-            failedLogs.push({ challan, error: err.message });
-          }
-        }
+      const pending = await getAllOfflineChallans();
+      console.log("Offline challans found:", pending);
+      if (pending.length === 0) return;
 
-        await clearOfflineChallans();
+      const failedLogs = [];
 
-        // ✅ Store sync failures in localStorage for debugging
-        if (failedLogs.length > 0) {
-          localStorage.setItem('syncErrors', JSON.stringify(failedLogs));
-        } else {
-          localStorage.removeItem('syncErrors');
+      for (const challan of pending) {
+        try {
+          await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/challan/issue`,
+            challan,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          console.log(" Synced challan:", challan);
+        } catch (err) {
+          console.error('Sync failed for challan:', challan, err);
+          failedLogs.push({ challan, error: err.message });
         }
       }
-    };
 
-    // ✅ Listen for online/offline events
+      await clearOfflineChallans();
+
+      // store sync failures in localStorage for debugging
+      if (failedLogs.length > 0) {
+        localStorage.setItem('syncErrors', JSON.stringify(failedLogs));
+      } else {
+        localStorage.removeItem('syncErrors');
+      }
+
+    };
+    
     const handleOnline = () => {
       setIsOffline(false);
-      syncOfflineChallans();
+      setTimeout(() => syncOfflineChallans(), 500); 
     };
+
     const handleOffline = () => setIsOffline(true);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    setTimeout(() => {
+      if (navigator.onLine && token) {
+        syncOfflineChallans();
+      }
+    }, 1000);
 
     return () => {
       window.removeEventListener('online', handleOnline);
@@ -127,7 +137,7 @@ export default function IssueChallanPage() {
     <div className="max-w-xl mx-auto p-6 mt-8 bg-white shadow-lg rounded-xl border border-slate-200">
       <h2 className="text-2xl font-bold mb-6 text-[#1E40AF] text-center">Issue Challan</h2>
 
-       {/* ✅ Show Offline Badge */}
+      {/* ✅ Show Offline Badge */}
       {isOffline && (
         <p className="text-center w-full text-xs font-medium text-yellow-700 bg-yellow-50 border border-yellow-300 rounded p-2 mb-4">
           ⚠️ You are currently offline. Submitted challans will be saved locally.
