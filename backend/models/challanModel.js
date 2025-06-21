@@ -35,6 +35,11 @@ const challanSchema = new mongoose.Schema({
   },
   latitude: Number,
   longitude: Number,
+  paymentMode: {
+    type: String,
+    enum: ['online', 'offline'],
+    required: true
+  },
   paid: {
     type: Boolean,
     default: false

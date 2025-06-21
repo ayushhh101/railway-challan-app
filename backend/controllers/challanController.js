@@ -15,7 +15,9 @@ exports.issueChallan = async (req, res) => {
       passengerAadharLast4, // last 4 digits only
       reason,
       fineAmount,
-      location
+      location,
+      paymentMode,
+      paid = false, // default to false if not provided
     } = req.body;
 
     if (!trainNumber || !passengerName || !reason || !fineAmount) {
@@ -44,6 +46,8 @@ exports.issueChallan = async (req, res) => {
       location,
       latitude: station.latitude,
       longitude: station.longitude,
+      paymentMode,
+      paid,
     });
 
     console.log("User issuing challan:", req.user); 

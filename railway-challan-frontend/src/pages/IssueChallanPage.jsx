@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { saveOfflineChallan, getAllOfflineChallans, clearOfflineChallans } from '../utils/db';
 import TextInput from '../components/TextInput';
+import SignatureCanvas from 'react-signature-canvas';
+import { useRef } from 'react';
 
 export default function IssueChallanPage() {
   const { user, token } = useAuth();
@@ -15,7 +17,9 @@ export default function IssueChallanPage() {
     passengerAadhar: '',
     reason: '',
     fineAmount: '',
-    location: ''
+    location: '',
+    paymentMode: '',
+    paid: false
   });
 
   const [loading, setLoading] = useState(false);
@@ -59,10 +63,10 @@ export default function IssueChallanPage() {
       }
 
     };
-    
+
     const handleOnline = () => {
       setIsOffline(false);
-      setTimeout(() => syncOfflineChallans(), 500); 
+      setTimeout(() => syncOfflineChallans(), 500);
     };
 
     const handleOffline = () => setIsOffline(true);
@@ -122,7 +126,9 @@ export default function IssueChallanPage() {
         passengerAadhar: '',
         reason: '',
         fineAmount: '',
-        location: ''
+        location: '',
+        paymentMode: '',
+        paid: false
       });
 
       setTimeout(() => navigate('/view-challans'), 2000);
@@ -162,7 +168,34 @@ export default function IssueChallanPage() {
         <TextInput name="reason" placeholder="Reason for Challan" value={form.reason} onChange={handleChange} />
         <TextInput name="fineAmount" placeholder="Fine Amount" type="number" value={form.fineAmount} onChange={handleChange} />
         <TextInput name="location" placeholder="Location" value={form.location} onChange={handleChange} />
+        <select
+          name="paymentMode"
+          value={form.paymentMode}
+          onChange={handleChange}
+          required
+          className="border p-3 rounded-md text-sm"
+        >
+          <option value="">Select Payment Mode</option>
+          <option value="online">Online</option>
+          <option value="offline">Offline</option>
+        </select>
 
+        {form.paymentMode === 'offline' && (
+          <label className="text-sm flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="paid"
+              checked={form.paid}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  paid: e.target.checked,
+                }))
+              }
+            />
+            Mark as Paid
+          </label>
+        )}
         <button
           type="submit"
           disabled={loading}
