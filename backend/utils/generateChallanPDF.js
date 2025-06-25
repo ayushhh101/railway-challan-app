@@ -27,6 +27,10 @@ const generateChallanPDF = async (challan) => {
         <div class="field">Issued By: ${safe(challan.issuedBy?.name)}</div>
         <div class="field">Issued At: ${safe(new Date(challan.issuedAt).toLocaleString())}</div>
         <div class="qr"><img src="${qrCodeImage}" alt="QR Code" /></div>
+        <div>
+          <h4>TTE Signature:</h4>
+            <img src="${challan.signature}" alt="Signature" style="width:150px; height:auto; border:1px solid #ccc;" />
+        </div>
       </body>
     </html>
   `;

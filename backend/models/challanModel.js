@@ -44,6 +44,9 @@ const challanSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  signature: {
+    type: String,
+  },
   issuedAt: {
     type: Date,
     default: Date.now

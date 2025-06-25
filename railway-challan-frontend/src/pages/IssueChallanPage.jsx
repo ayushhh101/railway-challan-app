@@ -10,6 +10,8 @@ import { useRef } from 'react';
 export default function IssueChallanPage() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const sigCanvas = useRef();
+  const [signatureData, setSignatureData] = useState('');
 
   const [form, setForm] = useState({
     trainNumber: '',
@@ -19,7 +21,8 @@ export default function IssueChallanPage() {
     fineAmount: '',
     location: '',
     paymentMode: '',
-    paid: false
+    paid: false,
+    signature : ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -97,10 +100,15 @@ export default function IssueChallanPage() {
     setSuccess('');
     setLoading(true);
 
+     const signatureImage = sigCanvas.current.isEmpty()
+    ? ''
+    : sigCanvas.current.getCanvas().toDataURL('image/png');
+
     const challanData = {
       ...form,
       issuedBy: user?._id,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      signature: signatureImage,
     };
 
 
@@ -196,6 +204,24 @@ export default function IssueChallanPage() {
             Mark as Paid
           </label>
         )}
+        <div>
+          <label className="text-sm font-medium">Digital Signature</label>
+          <div className="border rounded-md p-2 bg-gray-50">
+            <SignatureCanvas
+              penColor="black"
+              ref={sigCanvas}
+              canvasProps={{ width: 300, height: 150, className: 'bg-white rounded border' }}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => sigCanvas.current.clear()}
+            className="text-sm text-red-600 mt-2 underline"
+          >
+            Clear Signature
+          </button>
+        </div>
+
         <button
           type="submit"
           disabled={loading}

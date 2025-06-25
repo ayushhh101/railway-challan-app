@@ -18,6 +18,7 @@ exports.issueChallan = async (req, res) => {
       location,
       paymentMode,
       paid = false, // default to false if not provided
+      signature, // base64 encoded image
     } = req.body;
 
     if (!trainNumber || !passengerName || !reason || !fineAmount) {
@@ -48,6 +49,7 @@ exports.issueChallan = async (req, res) => {
       longitude: station.longitude,
       paymentMode,
       paid,
+      signature, // base64 encoded image
     });
 
     console.log("User issuing challan:", req.user); 
