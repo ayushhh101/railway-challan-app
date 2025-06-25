@@ -1,6 +1,7 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const Station = require('../models/stationModel');
+const Anomaly = require('../models/anomalyModel');
 const fs = require('fs');
 const archiver = require('archiver');
 const puppeteer = require('puppeteer');
@@ -35,7 +36,7 @@ exports.issueChallan = async (req, res) => {
     if (!station) {
       return res.status(404).json({ message: "Station not found in records" });
     }
-
+    
     //creates challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
@@ -59,6 +60,29 @@ exports.issueChallan = async (req, res) => {
       message: 'Challan issued successfully',
       challan: newChallan
     });
+
+    const issuedAtLastHour = await Challan.find({
+      issuedBy: req.user.id,
+      issuedAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }
+      });
+    
+      if ( issuedAtLastHour.length > 20){
+        await Anomaly.create({
+          message: `TTE ${req.user.name} issued more than 20 challans in the last hour.`,
+          user: req.user.id,
+          challan: newChallan._id,
+          status: 'pending'
+        })
+      }
+
+    if (fineAmount > 1000) {
+      await Anomaly.create({
+        message: `High fine amount of ${fineAmount} issued by TTE ${req.user.name}`,
+        user: req.user.id,
+        challan: newChallan._id,
+        status: 'pending'
+      });
+    }
 
   } catch (error) {
     console.error("Error issuing challan:", error);
