@@ -17,7 +17,7 @@ const ChallanCard = ({ challan }) => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challan._id}/pdf`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`,  // ✅ Send the token properly
+          Authorization: `Bearer ${token}`, 
         },
       });
 

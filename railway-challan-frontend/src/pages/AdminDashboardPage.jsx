@@ -127,7 +127,7 @@ const AdminDashboardPage = () => {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Admin Download error:', err);
+      console.error('Admin Download error:', err);  
       alert('Download failed');
     }
   };
