@@ -16,6 +16,7 @@ import TopTTEBarChart from '../components/TopTTEBarChart';
 import MonthlyTrendChart from '../components/MonthlyTrendChart';
 import ChallanHeatmap from '../components/ChallanHeatmap';
 import ChallanList from '../components/ChallanList';
+import { Link } from 'react-router-dom';
 
 
 const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
@@ -69,8 +70,7 @@ const AdminDashboardPage = () => {
           },
         });
         setStats(res.data);
-
-        // fetch for challan locations
+        
         const locationRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/locations`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -162,7 +162,10 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-10">
+      <div className="flex items-center justify-between">
       <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+      <Link to="/anomalies"><h1 className="text-1xl font-bold text-red-800 border border-red-800 bg-red-200 rounded-2xl p-3">Anomalies</h1></Link>
+      </div>
 
       <ChallanFilters
         filters={filters}

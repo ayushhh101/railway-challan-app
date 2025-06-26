@@ -4,7 +4,6 @@ import axios from 'axios';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-
   // state to hold auth token and user info
   // initialize with values from localStorage if available
   const [auth, setAuth] = useState({

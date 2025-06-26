@@ -61,6 +61,10 @@ exports.issueChallan = async (req, res) => {
       challan: newChallan
     });
 
+    const issuedByUser = await User.findById(req.user.id);
+    const userName = issuedByUser.name;
+    console.log("Challan issued by:", userName);
+
     const issuedAtLastHour = await Challan.find({
       issuedBy: req.user.id,
       issuedAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }
@@ -68,7 +72,7 @@ exports.issueChallan = async (req, res) => {
     
       if ( issuedAtLastHour.length > 20){
         await Anomaly.create({
-          message: `TTE ${req.user.name} issued more than 20 challans in the last hour.`,
+          message: `TTE ${userName} issued more than 20 challans in the last hour.`,
           user: req.user.id,
           challan: newChallan._id,
           status: 'pending'
@@ -77,7 +81,7 @@ exports.issueChallan = async (req, res) => {
 
     if (fineAmount > 1000) {
       await Anomaly.create({
-        message: `High fine amount of ${fineAmount} issued by TTE ${req.user.name}`,
+        message: `High fine amount of ${fineAmount} issued by TTE ${userName}`,
         user: req.user.id,
         challan: newChallan._id,
         status: 'pending'
@@ -250,5 +254,25 @@ exports.updateChallan = async (req, res) => {
   } catch (err) {
     console.error('Update Challan Error:', err);
     res.status(500).json({ message: 'Server error while updating challan' });
+  }
+};
+
+exports.updateAnomaly = async(req,res) => {
+  try {
+    const { status , anomalyId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(anomalyId)) {
+      return res.status(400).json({ message: 'Invalid anomaly ID' });
+    }
+    const isValidStatus = [ 'resolved', 'dismissed'].includes(status);
+    if( !isValidStatus) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    } 
+    
+    const updatedAnomlay = await Anomaly.findByIdAndUpdate(req.params.anomalyId , { status }, { new: true });
+    res.status(200).json({ message: 'Anomaly updated successfully' , anomaly : updatedAnomlay});
+
+  } catch (error) {
+    console.error("Error updating anomaly:", error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
