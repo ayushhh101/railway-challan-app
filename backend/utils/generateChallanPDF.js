@@ -21,11 +21,17 @@ const generateChallanPDF = async (challan) => {
       <body>
         <div class="header">Railway Fine Challan</div>
         <div class="field">Passenger Name: ${safe(challan.passengerName)}</div>
+        <div class="field">Challan Id: ${safe(challan._id)}</div>
         <div class="field">Train Number: ${safe(challan.trainNumber)}</div>
         <div class="field">Reason: ${safe(challan.reason)}</div>
         <div class="field">Fine Amount: ₹${safe(challan.fineAmount)}</div>
         <div class="field">Issued By: ${safe(challan.issuedBy?.name)}</div>
         <div class="field">Issued At: ${safe(new Date(challan.issuedAt).toLocaleString())}</div>
+        <div class="field">
+          Payment Status: <strong style="color:${challan.paid ? 'green' : 'red'}">
+          ${challan.paid ? 'Paid' : 'Unpaid'}
+          </strong>
+        </div>
         <div class="qr"><img src="${qrCodeImage}" alt="QR Code" /></div>
         <div>
           <h4>TTE Signature:</h4>
