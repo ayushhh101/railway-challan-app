@@ -16,19 +16,25 @@ export default function IssueChallanPage() {
   const [form, setForm] = useState({
     trainNumber: '',
     passengerName: '',
-    passengerAadhar: '',
+    passengerAadharLast4: '',
+    mobileNumber: '',
     reason: '',
     fineAmount: '',
     location: '',
     paymentMode: '',
     paid: false,
-    signature : ''
+    signature: ''
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  const sendNotification = (mobileNumber, message) => {
+    console.log(`SMS To: +91${mobileNumber}`);
+    console.log(`Message: ${message}`);
+  }
 
   useEffect(() => {
     const syncOfflineChallans = async () => {
@@ -100,9 +106,9 @@ export default function IssueChallanPage() {
     setSuccess('');
     setLoading(true);
 
-     const signatureImage = sigCanvas.current.isEmpty()
-    ? ''
-    : sigCanvas.current.getCanvas().toDataURL('image/png');
+    const signatureImage = sigCanvas.current.isEmpty()
+      ? ''
+      : sigCanvas.current.getCanvas().toDataURL('image/png');
 
     const challanData = {
       ...form,
@@ -127,11 +133,16 @@ export default function IssueChallanPage() {
           }
         );
         setSuccess('Challan issued successfully!');
+        sendNotification(
+          challanData.mobileNumber,
+          `Dear ${challanData.passengerName}, a challan of ₹${challanData.fineAmount} has been issued at ${challanData.location} for ${challanData.reason}. Challan Status : ${challanData.paid ? "Paid": "Not Paid "}`
+        );
       }
       setForm({
         trainNumber: '',
         passengerName: '',
-        passengerAadhar: '',
+        passengerAadharLast4: '',
+        mobileNumber: '',
         reason: '',
         fineAmount: '',
         location: '',
@@ -172,7 +183,8 @@ export default function IssueChallanPage() {
       <form onSubmit={handleSubmit} className="grid gap-5">
         <TextInput name="trainNumber" placeholder="Train Number" value={form.trainNumber} onChange={handleChange} />
         <TextInput name="passengerName" placeholder="Passenger Name" value={form.passengerName} onChange={handleChange} />
-        <TextInput name="passengerAadhar" placeholder="Passenger Aadhar Number" value={form.passengerAadhar} onChange={handleChange} maxLength={12} />
+        <TextInput name="passengerAadharLast4" placeholder="Passenger Aadhar Number" value={form.passengerAadharLast4} onChange={handleChange} maxLength={12} />
+        <TextInput name="mobileNumber" placeholder="Passenger Mobile Number" value={form.mobileNumber} onChange={handleChange} />
         <TextInput name="reason" placeholder="Reason for Challan" value={form.reason} onChange={handleChange} />
         <TextInput name="fineAmount" placeholder="Fine Amount" type="number" value={form.fineAmount} onChange={handleChange} />
         <TextInput name="location" placeholder="Location" value={form.location} onChange={handleChange} />

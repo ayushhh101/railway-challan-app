@@ -20,6 +20,10 @@ const challanSchema = new mongoose.Schema({
     match: /^[0-9]{4}$/, // Only 4 digits if provided
     required: false,
   },
+  mobileNumber:{
+    type: Number,
+    length: 10,
+  },
   reason: {
     type: String,
     enum: ['No Ticket', 'Fake Ticket', 'Misconduct', 'Overbooking', 'Other'],

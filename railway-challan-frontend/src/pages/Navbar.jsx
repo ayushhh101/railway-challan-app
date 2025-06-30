@@ -47,13 +47,14 @@ export default function Navbar() {
               <Link to="/view-challans" className="hover:text-[#F97316] font-medium">All Challans</Link>
             </>
           )}
-
+          {user &&
           <button
             onClick={handleLogout}
             className="bg-[#DC2626] text-white px-4 py-1.5 rounded-md hover:bg-red-700 transition"
           >
             Logout
           </button>
+          }
         </div>
       </div>
 
@@ -75,6 +76,7 @@ export default function Navbar() {
             </>
           )}
 
+          {user ?
           <button
             onClick={() => {
               handleLogout();
@@ -83,7 +85,18 @@ export default function Navbar() {
             className="bg-[#DC2626] text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
           >
             Logout
+          </button>:
+          <button
+            onClick={() => {
+              handleLogout();
+              setMenuOpen(false);
+            }}
+            className=" disabled: bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
+          >
+            Logout
           </button>
+           }
+          
         </div>
       )}
     </nav>

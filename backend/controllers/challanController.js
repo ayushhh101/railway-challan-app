@@ -14,6 +14,7 @@ exports.issueChallan = async (req, res) => {
       trainNumber,
       passengerName,
       passengerAadharLast4, // last 4 digits only
+      mobileNumber,
       reason,
       fineAmount,
       location,
@@ -43,6 +44,7 @@ exports.issueChallan = async (req, res) => {
       trainNumber,
       passengerName,
       passengerAadharLast4,
+      mobileNumber,
       reason,
       fineAmount,
       location,
