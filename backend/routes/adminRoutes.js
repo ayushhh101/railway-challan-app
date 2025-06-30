@@ -5,6 +5,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 const Anomaly = require('../models/anomalyModel');
 const { updateAnomaly } = require('../controllers/challanController');
+const { getAllAudits } = require('../controllers/auditController');
 
 router.get('/dashboard', verifyToken , isAdmin, getDashboardStats);
 
@@ -14,5 +15,7 @@ router.get('/anomalies' , verifyToken, isAdmin, async (req, res) => {
 });
 
 router.put('/anomalies/:anomalyId/:status', verifyToken, isAdmin, updateAnomaly);
+
+router.get('/getAllAudits', verifyToken, isAdmin ,getAllAudits);
 
 module.exports = router;
