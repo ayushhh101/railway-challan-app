@@ -7,6 +7,7 @@ const archiver = require('archiver');
 const puppeteer = require('puppeteer');
 const path = require('path');
 const { default: mongoose } = require('mongoose');
+const logAudit = require('../utils/auditLogger')
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -37,7 +38,7 @@ exports.issueChallan = async (req, res) => {
     if (!station) {
       return res.status(404).json({ message: "Station not found in records" });
     }
-    
+
     //creates challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
@@ -55,12 +56,30 @@ exports.issueChallan = async (req, res) => {
       signature, // base64 encoded image
     });
 
-    console.log("User issuing challan:", req.user); 
+    console.log("User issuing challan:", req.user);
     await newChallan.save();
 
     res.status(201).json({
       message: 'Challan issued successfully',
       challan: newChallan
+    });
+
+    await logAudit({
+      action: 'ISSUE_CHALLAN',
+      performedBy: req.user.id,
+      role: req.user.role,
+      metadata: {
+        challanId: newChallan._id,
+        passengerName: newChallan.passengerName,
+        fineAmount: newChallan.fineAmount,
+        location: newChallan.location,
+        paymentMode: newChallan.paymentMode,
+        paid: newChallan.paid,
+      },
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      severity: 'low',
+      status: 'SUCCESS',
     });
 
     const issuedByUser = await User.findById(req.user.id);
@@ -70,16 +89,16 @@ exports.issueChallan = async (req, res) => {
     const issuedAtLastHour = await Challan.find({
       issuedBy: req.user.id,
       issuedAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }
-      });
-    
-      if ( issuedAtLastHour.length > 20){
-        await Anomaly.create({
-          message: `TTE ${userName} issued more than 20 challans in the last hour.`,
-          user: req.user.id,
-          challan: newChallan._id,
-          status: 'pending'
-        })
-      }
+    });
+
+    if (issuedAtLastHour.length > 20) {
+      await Anomaly.create({
+        message: `TTE ${userName} issued more than 20 challans in the last hour.`,
+        user: req.user.id,
+        challan: newChallan._id,
+        status: 'pending'
+      })
+    }
 
     if (fineAmount > 1000) {
       await Anomaly.create({
@@ -125,7 +144,7 @@ exports.getMyChallans = async (req, res) => {
 
 // get challan locations
 exports.getChallanLocations = async (req, res) => {
-   try {
+  try {
     const result = await Challan.aggregate([
       {
         $group: {
@@ -152,7 +171,7 @@ exports.getChallanLocations = async (req, res) => {
 
 // Search challans by various criteria
 exports.searchChallans = async (req, res) => {
-  const { passenger, train, reason, date , status } = req.query;
+  const { passenger, train, reason, date, status } = req.query;
 
   const filter = {};
   if (passenger) filter.passengerName = { $regex: passenger, $options: 'i' };
@@ -228,50 +247,50 @@ exports.updateChallan = async (req, res) => {
   try {
     const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid challan ID' });
-  }
-
-  const challan = await Challan.findById(id);
-  if (!challan) {
-    return res.status(404).json({ message: 'Challan not found' });
-  }
-
-  // Check if TTE owns this challan
-  if (challan.issuedBy.toString() !== req.user.id) {
-    return res.status(403).json({ message: 'Not authorized to update this challan' });
-  }
-
-  // Update only allowed fields
-  const allowedFields = ['trainNumber', 'passengerName', 'passengerAadhar', 'reason', 'fineAmount', 'location'];
-  allowedFields.forEach(field => {
-    if (req.body[field] !== undefined) {
-      challan[field] = req.body[field];
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid challan ID' });
     }
-  });
 
-  await challan.save();
+    const challan = await Challan.findById(id);
+    if (!challan) {
+      return res.status(404).json({ message: 'Challan not found' });
+    }
 
-  res.json({ message: 'Challan updated successfully', challan });
+    // Check if TTE owns this challan
+    if (challan.issuedBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to update this challan' });
+    }
+
+    // Update only allowed fields
+    const allowedFields = ['trainNumber', 'passengerName', 'passengerAadhar', 'reason', 'fineAmount', 'location'];
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        challan[field] = req.body[field];
+      }
+    });
+
+    await challan.save();
+
+    res.json({ message: 'Challan updated successfully', challan });
   } catch (err) {
     console.error('Update Challan Error:', err);
     res.status(500).json({ message: 'Server error while updating challan' });
   }
 };
 
-exports.updateAnomaly = async(req,res) => {
+exports.updateAnomaly = async (req, res) => {
   try {
-    const { status , anomalyId } = req.params;
+    const { status, anomalyId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(anomalyId)) {
       return res.status(400).json({ message: 'Invalid anomaly ID' });
     }
-    const isValidStatus = [ 'resolved', 'dismissed'].includes(status);
-    if( !isValidStatus) {
+    const isValidStatus = ['resolved', 'dismissed'].includes(status);
+    if (!isValidStatus) {
       return res.status(400).json({ message: 'Invalid status value' });
-    } 
-    
-    const updatedAnomlay = await Anomaly.findByIdAndUpdate(req.params.anomalyId , { status }, { new: true });
-    res.status(200).json({ message: 'Anomaly updated successfully' , anomaly : updatedAnomlay});
+    }
+
+    const updatedAnomlay = await Anomaly.findByIdAndUpdate(req.params.anomalyId, { status }, { new: true });
+    res.status(200).json({ message: 'Anomaly updated successfully', anomaly: updatedAnomlay });
 
   } catch (error) {
     console.error("Error updating anomaly:", error);

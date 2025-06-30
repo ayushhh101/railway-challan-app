@@ -1,8 +1,9 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const logAudit = require('../utils/auditLogger')
 
-const JWT_SECRET = process.env.JWT_SECRET 
+const JWT_SECRET = process.env.JWT_SECRET
 
 const generateAccessToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
@@ -76,7 +77,20 @@ exports.login = async (req, res) => {
         zone: user.zone
       }
     });
-    
+
+    await logAudit({
+      action: 'LOGGED_IN',
+      performedBy: user._id,
+      role: user.role,
+      metadata: {
+        employeeId: user.employeeId,
+      },
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      status: 'SUCCESS',
+      severity: 'low' 
+    });
+
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
