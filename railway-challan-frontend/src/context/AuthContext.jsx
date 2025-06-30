@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   // function to login user and set token and user info in state and localStorage
   const login = (token, refreshToken ,user) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', user.refreshToken);
+    localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
     setAuth({ token, refreshToken, user });
   };

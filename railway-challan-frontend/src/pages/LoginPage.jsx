@@ -1,6 +1,7 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SHA256 from 'crypto-js/sha256'
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -35,6 +36,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
+    const hashedPassword = SHA256(formData.password).toString();
+
     if (!navigator.onLine) {
       // Offline login logic
       const savedCreds = JSON.parse(localStorage.getItem('offlineCredentials'));
@@ -44,16 +47,15 @@ export default function LoginPage() {
       if (
         savedCreds &&
         formData.employeeId === savedCreds.employeeId &&
-        formData.password === savedCreds.password
+        hashedPassword === savedCreds.passwordHash
       ) {
-        login(savedToken, savedUser);
+        login(savedToken, savedCreds.refreshToken, savedUser);
         return navigate('/issue-challan');
       } else {
         setError('Offline login failed. Try logging in online once.');
         return setLoading(false);
       }
     }
-
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
@@ -63,15 +65,23 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
-      login(data.token, data.refreshToken ,data.user);
+      login(data.token, data.refreshToken, data.user);
+
+      // store for offline login
+      localStorage.setItem('offlineCredentials', JSON.stringify({
+        employeeId: formData.employeeId,
+        passwordHash: hashedPassword,
+        refreshToken: data.refreshToken,
+      }));
+      localStorage.setItem('offlineUser', JSON.stringify(data.user));
+      localStorage.setItem('offlineToken', data.token);
 
       // Store token and user in sessionStorage for PWA support
-      sessionStorage.setItem('auth', JSON.stringify({token: data.token, user: data.user}))
+      sessionStorage.setItem('auth', JSON.stringify({ token: data.token, user: data.user }))
 
-      // redirect based on role
+      // redirect
       if (data.user.role === 'admin') navigate('/admin-dashboard');
       else if (data.user.role === 'tte') navigate('/issue-challan');
       else navigate('/');
