@@ -297,3 +297,13 @@ exports.updateAnomaly = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.getChallan = async (req,res) =>{
+   try {
+    const challan = await Challan.findById(req.params.id).populate('issuedBy', 'name');
+    if (!challan) return res.status(404).json({ message: 'Challan not found' });
+    res.json({ challan });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+}

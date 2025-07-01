@@ -7,6 +7,7 @@ import ViewChallansPage from './pages/ViewChallansPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminAnomalies from './pages/AdminAnomalies';
 import AdminAudit from './pages/AdminAudit';
+import VerifyChallan from './pages/VerifyChallan';
 
 function App() {
   return (
@@ -45,6 +46,9 @@ function App() {
             <AdminAudit />
           </PrivateRoute>
         } />
+
+        <Route path="/verify/:id" element={<VerifyChallan/>}
+        />
 
       </Routes>
     </Router>
