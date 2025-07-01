@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails, downloadBulkChallanPDF, updateChallan, getChallan } = require('../controllers/challanController');
+const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails, downloadBulkChallanPDF, updateChallan, getChallan, userHistory } = require('../controllers/challanController');
 const { verifyToken, isTTE } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 
@@ -27,6 +27,9 @@ router.post('/bulk-pdf', verifyToken, isAdmin, downloadBulkChallanPDF);
 
 router.put('/:id', verifyToken, isTTE , updateChallan)
 
+router.get('/history',  userHistory )
+
 router.get('/:id', getChallan)
+
 
 module.exports = router;

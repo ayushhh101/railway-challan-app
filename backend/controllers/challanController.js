@@ -307,3 +307,20 @@ exports.getChallan = async (req,res) =>{
     res.status(500).json({ message: 'Server error' });
   }
 }
+
+exports.userHistory = async (req, res) => {
+  try {
+    const name = req.query.name?.trim();
+    const aadhar = req.query.aadhar?.trim();
+
+    const challans = await Challan.find({
+      passengerName: { $regex: new RegExp(`^${name}$`, 'i') },
+      passengerAadharLast4: String(aadhar)
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({ challans });
+  } catch (err) {
+    console.error('Error fetching user history:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.stack });
+  }
+};
