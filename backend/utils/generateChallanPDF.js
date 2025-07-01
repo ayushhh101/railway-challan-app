@@ -5,7 +5,7 @@ const generateChallanPDF = async (challan) => {
   // fallback helpers
   const safe = (value) => (value !== undefined && value !== null ? value : 'N/A');
 
-  const qrData = `Challan ID: ${safe(challan._id)}\nAmount: ₹${safe(challan.fineAmount)}\nStatus: ${safe(challan.paymentStatus)}`;
+  const qrData = `${process.env.FRONTEND_URL}/verify/${challan._id}`;
   const qrCodeImage = await QRCode.toDataURL(qrData);
 
   const html = `

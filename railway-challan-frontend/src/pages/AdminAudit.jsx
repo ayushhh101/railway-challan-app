@@ -2,10 +2,18 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-const AdminAudit = ()=> {
+const AdminAudit = () => {
   const { token } = useAuth();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [currentPage, setcurrentPage] = useState(1)
+  const itemsPerPage = 12;
+
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const paginatedLogs = logs.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(logs.length / itemsPerPage);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -44,35 +52,33 @@ const AdminAudit = ()=> {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {logs.map((log) => (
+            {paginatedLogs.map((log) => (
               <tr key={log._id}>
                 <td className="px-4 py-2">{log.action}</td>
                 <td className="px-4 py-2">{log.performedBy?.name} ({log.performedBy?.employeeId})</td>
                 <td className="px-4 py-2 capitalize">{log.role}</td>
                 <td className="px-4 py-2">
                   <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      log.status === 'SUCCESS'
+                    className={`px-2 py-1 rounded text-xs font-medium ${log.status === 'SUCCESS'
                         ? 'bg-green-100 text-green-700'
                         : log.status === 'FAILURE'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}
                   >
                     {log.status}
                   </span>
                 </td>
                 <td className="px-4 py-2">
                   <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      log.severity === 'low'
-                        ? 'bg-blue-100 text-blue-700'
-                        : log.severity === 'medium'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : log.severity === 'high'
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
+                    className={`px-2 py-1 rounded text-xs font-medium ${log.severity === 'low' ? 'bg-blue-100 text-blue-700'
+                        :
+                        log.severity === 'medium' ? 'bg-yellow-100 text-yellow-700'
+                          :
+                          log.severity === 'high' ? 'bg-orange-100 text-orange-700'
+                            :
+                            'bg-red-100 text-red-700'
+                      }`}
                   >
                     {log.severity}
                   </span>
@@ -84,6 +90,28 @@ const AdminAudit = ()=> {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <button
+            onClick={() => setcurrentPage(p => Math.max(p - 1, 1))}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setcurrentPage(p => Math.min(p + 1, totalPages))}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
