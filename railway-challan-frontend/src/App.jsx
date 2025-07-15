@@ -8,6 +8,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminAnomalies from './pages/AdminAnomalies';
 import AdminAudit from './pages/AdminAudit';
 import VerifyChallan from './pages/VerifyChallan';
+import AdminMonthlyReport from './components/AdminMonthlyReport';
 
 function App() {
   return (
@@ -44,6 +45,12 @@ function App() {
         <Route path="/audit-log" element={
           <PrivateRoute allowedRoles={['admin']}>
             <AdminAudit />
+          </PrivateRoute>
+        } />
+
+        <Route path="/monthly-report" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <AdminMonthlyReport />
           </PrivateRoute>
         } />
 

@@ -39,6 +39,9 @@ const AdminDashboardPage = () => {
 
   // selected challans state
   const [selectedChallans, setSelectedChallans] = useState([]);
+  const [reportMonth, setReportMonth] = useState('');
+  const [reportYear, setReportYear] = useState('');
+  const [monthlyReport, setMonthlyReport] = useState(null);
 
   const toggleChallanSelection = (id) => {
     setSelectedChallans(prev =>
@@ -70,7 +73,7 @@ const AdminDashboardPage = () => {
           },
         });
         setStats(res.data);
-        
+
         const locationRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/locations`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -127,11 +130,11 @@ const AdminDashboardPage = () => {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Admin Download error:', err);  
+      console.error('Admin Download error:', err);
       alert('Download failed');
     }
   };
-  
+
   const downloadCSV = (data, fileName) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -158,13 +161,26 @@ const AdminDashboardPage = () => {
     downloadCSV(selectedData, 'selected-challans');
   };
 
+  const handleMonthlyReport = async () => {
+    if (!reportMonth || !reportYear) return alert('Please select both month and year');
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/monthly-report?month=${reportMonth}&year=${reportYear}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setMonthlyReport(res.data);
+    } catch (err) {
+      console.error('Monthly report error:', err);
+      alert('Failed to fetch monthly report');
+    }
+  };
+
   if (!stats) return <div className="text-center mt-10">Loading dashboard...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-10">
       <div className="flex items-center justify-between">
-      <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-      <Link to="/anomalies"><h1 className="text-1xl font-bold text-red-800 border border-red-800 bg-red-200 rounded-2xl p-3">Anomalies</h1></Link>
+        <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+        <Link to="/anomalies"><h1 className="text-1xl font-bold text-red-800 border border-red-800 bg-red-200 rounded-2xl p-3">Anomalies</h1></Link>
       </div>
 
       <ChallanFilters
@@ -191,6 +207,12 @@ const AdminDashboardPage = () => {
       />
 
       <SummaryCard stats={stats} />
+
+      <Link to='/monthly-report'>
+        <button className="bg-[#1E40AF] text-white px-4 py-2 rounded hover:bg-blue-900 transition">
+          📅 View Monthly Report
+        </button>
+      </Link>
 
       <ChallansByReasonChart data={stats.challansByReason} stats={stats} />
 
