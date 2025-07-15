@@ -1,7 +1,7 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 
-async function getDashboardStats(req, res) {
+exports.getDashboardStats = async (req,res)=>{
   try {
     // total challans
     const totalChallans = await Challan.countDocuments();
@@ -107,4 +107,34 @@ async function getDashboardStats(req, res) {
   }
 }
 
-module.exports = { getDashboardStats };
+exports.getMonthlyReport = async (req, res) => {
+  const { month, year } = req.query;
+
+  try {
+    const start = new Date(`${year}-${month}-01`);
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + 1);
+
+    const challans = await Challan.find({
+      issuedAt: { $gte: start, $lt: end }
+    }).populate('issuedBy', 'name zone');
+
+    const stats = {
+      totalChallans: challans.length,
+      totalRevenue: challans.reduce((sum, c) => sum + c.fineAmount, 0),
+      paymentModeBreakdown: {},
+      reasonBreakdown: {},
+      stationBreakdown: {},
+    };
+
+    challans.forEach(c => {
+      stats.paymentModeBreakdown[c.paymentMode] = (stats.paymentModeBreakdown[c.paymentMode] || 0) + 1;
+      stats.reasonBreakdown[c.reason] = (stats.reasonBreakdown[c.reason] || 0) + 1;
+      stats.stationBreakdown[c.location] = (stats.stationBreakdown[c.location] || 0) + 1;
+    });
+
+    res.json({ challans, stats });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
