@@ -324,3 +324,18 @@ exports.userHistory = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: err.stack });
   }
 };
+
+exports.markChallanAsPaid = async (req, res) => {
+  try {
+    const challan = await Challan.findById(req.params.id);
+    if (!challan) return res.status(404).json({ message: 'Challan not found' });
+
+    challan.paid = true;
+    await challan.save();
+
+    res.json({ message: 'Challan marked as paid', challan });
+  } catch (err) {
+    console.error('Error marking challan as paid:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

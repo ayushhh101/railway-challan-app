@@ -6,7 +6,7 @@ import { saveAs } from 'file-saver';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00C49F'];
 
-export default function AdminMonthlyRepor() {
+export default function AdminMonthlyReport() {
   const [month, setMonth] = useState('06');
   const [year, setYear] = useState('2025');
   const [report, setReport] = useState(null);
@@ -41,9 +41,9 @@ export default function AdminMonthlyRepor() {
 
   return (
     <div className="bg-white shadow-md rounded-xl p-6 mt-10">
-      <h2 className="text-xl font-bold text-[#1E40AF] mb-4">📊 Monthly Challan Report</h2>
+      <h2 className="text-xl font-bold text-[#1E40AF] mb-4 text-center">📊 Monthly Challan Report</h2>
 
-      <div className="flex gap-4 mb-6 items-center flex-wrap">
+      <div className="flex gap-4 mb-6 items-center flex-wrap justify-center">
         <select value={month} onChange={e => setMonth(e.target.value)} className="border px-3 py-2 rounded">
           {[...Array(12)].map((_, i) => (
             <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
@@ -93,7 +93,7 @@ export default function AdminMonthlyRepor() {
                     data={Object.entries(report.stats.paymentModeBreakdown).map(([name, value]) => ({ name, value }))}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={90}
                     dataKey="value"
                     label
                   >
