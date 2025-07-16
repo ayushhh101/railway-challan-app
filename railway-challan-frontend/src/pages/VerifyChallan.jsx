@@ -6,6 +6,8 @@ export default function VerifyChallan() {
   const { id } = useParams();
   const [challan, setChallan] = useState(null);
   const [error, setError] = useState('');
+  const [paying, setPaying] = useState(false);
+  const [paidSuccess, setPaidSuccess] = useState(false);
 
   useEffect(() => {
     const fetchChallan = async () => {
@@ -17,7 +19,20 @@ export default function VerifyChallan() {
       }
     };
     fetchChallan();
-  }, [id]);
+  }, [id, paidSuccess]);
+
+   const handlePayment = async () => {
+    setPaying(true);
+    try {
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/challan/pay/${id}`);
+      setPaidSuccess(true);
+    } catch (err) {
+      console.error('Payment error:', err);
+      alert('Payment failed. Try again.');
+    } finally {
+      setPaying(false);
+    }
+  };
 
   if (error) return <div className="text-center text-red-600 mt-10">{error}</div>;
   if (!challan) return <div className="text-center mt-10">Loading challan...</div>;
@@ -41,6 +56,21 @@ export default function VerifyChallan() {
           <p className="font-semibold">TTE Signature:</p>
           <img src={challan.signature} alt="Signature" className="border w-40 h-auto mt-2" />
         </div>
+      )}
+
+       {!challan.paid && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={handlePayment}
+            disabled={paying}
+            className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition"
+          >
+            {paying ? 'Processing Payment...' : `Pay ₹${challan.fineAmount} Online`}
+          </button>
+        </div>
+      )}
+      {paidSuccess && (
+        <p className="text-green-700 mt-4 text-center font-semibold">✅ Payment successful! This challan is now marked as paid.</p>
       )}
     </div>
   );

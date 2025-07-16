@@ -31,7 +31,7 @@ router.get('/history',  userHistory )
 
 router.get('/:id', getChallan)
 
-router.post('/pay/:id', markChallanAsPaid)
+router.put('/pay/:id', markChallanAsPaid)
 
 
 
