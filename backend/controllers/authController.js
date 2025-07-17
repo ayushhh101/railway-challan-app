@@ -58,18 +58,24 @@ exports.login = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
     // generates JWT token with user ID and role
     // this data gets "decoded" in the middleware
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-      expiresIn: '15m'
-    });
+    // const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
+    //   expiresIn: '15m'
+    // });
 
-    const refreshToken = jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
+     res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true, // Use HTTPS
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
     res.status(200).json({
       message: 'Login successful',
-      token,
-      refreshToken,
+      token: accessToken,
       user: {
         name: user.name,
         employeeId: user.employeeId,
@@ -97,15 +103,29 @@ exports.login = async (req, res) => {
 };
 
 exports.refreshToken = async (req, res) => {
-  const { token } = req.body;
+  const token = req.cookies.refreshToken;
   if (!token) return res.status(401).json({ message: 'Refresh token required' });
 
   try {
     const payload = jwt.verify(token, process.env.REFRESH_SECRET);
-    const newAccessToken = jwt.sign({ id: payload.id, role: payload.role }, JWT_SECRET, { expiresIn: '15m' });
+
+    const newAccessToken = generateAccessToken(payload);
+    const newRefreshToken = generateRefreshToken(payload);
+
+     res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
     res.status(200).json({ token: newAccessToken });
   } catch (err) {
     res.status(403).json({ message: 'Invalid or expired refresh token' });
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie('refreshToken');
+  res.status(200).json({ message: 'Logged out successfully' });
 };
