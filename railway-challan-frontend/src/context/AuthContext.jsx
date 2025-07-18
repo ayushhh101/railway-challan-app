@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   // initialize with values from localStorage if available
   const [auth, setAuth] = useState({
     token: localStorage.getItem('token'),
-    refreshToken: localStorage.getItem('refreshToken'),
     user: JSON.parse(localStorage.getItem('user')),
   });
 
@@ -28,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         if (err.response?.status === 401 && !originalRequest._retry && auth.refreshToken) {
           originalRequest._retry = true;
           try {
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}}/api/auth/refresh`, { token: auth.refreshToken }
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}}/api/auth/refresh`, { withCredentials :true }
             );
 
             const newToken = res.data.token;
@@ -51,17 +50,17 @@ export const AuthProvider = ({ children }) => {
   // function to login user and set token and user info in state and localStorage
   const login = (token, refreshToken ,user) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
-    setAuth({ token, refreshToken, user });
+    setAuth({ token,  user });
   };
 
   // function to logout user, clear token and user info from state and localStorage
-  const logout = () => {
+  const logout = async() => {
     localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
-    setAuth({ token: null, refreshToken:null, user: null });
+    setAuth({ token: null,  user: null });
+
+    await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
   };
 
   return (
