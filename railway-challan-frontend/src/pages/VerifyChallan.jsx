@@ -21,17 +21,58 @@ export default function VerifyChallan() {
     fetchChallan();
   }, [id, paidSuccess]);
 
-   const handlePayment = async () => {
+  const loadRazorpayScript = () => {
+    return new Promise(resolve => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => { resolve(true); };
+      script.onerror = () => { resolve(false); };
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async () => {
     setPaying(true);
-    try {
-      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/challan/pay/${id}`);
-      setPaidSuccess(true);
-    } catch (err) {
-      console.error('Payment error:', err);
-      alert('Payment failed. Try again.');
-    } finally {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      alert("Failed to load payment gateway");
       setPaying(false);
+      return;
     }
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_TEST_KEY, 
+      amount: challan.fineAmount * 100, 
+      currency: "INR",
+      name: "Railway Challan Payment",
+      description: `Challan ID: ${challan._id}`,
+      handler: async function (response) {
+        try {
+          await axios.put(`${import.meta.env.VITE_API_URL}/api/challan/pay/${id}`);
+          setPaidSuccess(true);
+        } catch (err) {
+          alert("Payment succeeded but backend failed! Contact support.");
+        } finally {
+          setPaying(false);
+        }
+      },
+      prefill: {
+        name: challan.passengerName,
+      },
+      notes: {
+        challan_id: challan._id,
+      },
+      theme: { color: "#1E40AF" },
+      modal: {
+        ondismiss: () => setPaying(false),
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
   if (error) return <div className="text-center text-red-600 mt-10">{error}</div>;
@@ -58,7 +99,7 @@ export default function VerifyChallan() {
         </div>
       )}
 
-       {!challan.paid && (
+      {!challan.paid && (
         <div className="mt-6 text-center">
           <button
             onClick={handlePayment}
