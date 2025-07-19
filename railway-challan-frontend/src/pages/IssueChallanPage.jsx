@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { saveOfflineChallan, getAllOfflineChallans, clearOfflineChallans } from '../utils/db';
+import { saveOfflineChallan, getAllOfflineChallans, clearOfflineChallans, deleteOfflineChallan } from '../utils/db';
 import TextInput from '../components/TextInput';
 import SignatureCanvas from 'react-signature-canvas';
 import { useRef } from 'react';
+import { FINE_RULES } from '../utils/fineRules';
 
 export default function IssueChallanPage() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const sigCanvas = useRef();
   const [signatureData, setSignatureData] = useState('');
+  const [pendingChallans, setPendingChallans] = useState([]);
+  const [priorOffenses, setPriorOffenses] = useState(1); // for Nuisance & Littering repeat
+  const [fareAmount, setFareAmount] = useState(""); // for ticketless travel
 
   const [form, setForm] = useState({
     trainNumber: '',
@@ -36,6 +40,18 @@ export default function IssueChallanPage() {
     console.log(`Message: ${message}`);
   }
 
+  async function refreshPendingChallans() {
+    setPendingChallans(await getAllOfflineChallans());
+  }
+
+  const isDuplicateChallan = (a, b) => (
+    a.trainNumber === b.trainNumber &&
+    a.passengerName === b.passengerName &&
+    a.reason === b.reason
+  );
+
+  useEffect(() => { refreshPendingChallans(); }, []);
+
   useEffect(() => {
     const syncOfflineChallans = async () => {
       if (!navigator.onLine || !token) return;
@@ -56,10 +72,12 @@ export default function IssueChallanPage() {
             }
           );
           console.log(" Synced challan:", challan);
+          await deleteOfflineChallan(challan.id);
         } catch (err) {
           console.error('Sync failed for challan:', challan, err);
           failedLogs.push({ challan, error: err.message });
         }
+        refreshPendingChallans();
       }
 
       await clearOfflineChallans();
@@ -95,6 +113,38 @@ export default function IssueChallanPage() {
     };
   }, [token]);
 
+  const handleReasonChange = (e) => {
+    const selectedReason = e.target.value;
+    setForm(f => ({ ...f, reason: selectedReason }));
+    const rule = FINE_RULES.find(r => r.reason === selectedReason);
+
+    if (rule) {
+      let fine = 0;
+      if (rule.reason === "Travelling without proper pass/ticket") {
+        // Wait for fareAmount as separate field (ask in UI)
+        fine = rule.autofill(fareAmount || 0);
+      } else if (rule.reason === "Nuisance and Littering") {
+        fine = rule.autofill(priorOffenses);
+      } else {
+        fine = rule.autofill();
+      }
+      setForm(f => ({ ...f, fineAmount: fine }));
+    }
+  };
+
+  // If fareAmount/priorOffenses changes, update fineAmount too (reactive)
+  useEffect(() => {
+    if (form.reason === "Travelling without proper pass/ticket") {
+      const rule = FINE_RULES.find(r => r.reason === form.reason);
+      setForm(f => ({ ...f, fineAmount: rule.autofill(fareAmount || 0) }));
+    }
+    if (form.reason === "Nuisance and Littering") {
+      const rule = FINE_RULES.find(r => r.reason === form.reason);
+      setForm(f => ({ ...f, fineAmount: rule.autofill(priorOffenses) }));
+    }
+    // eslint-disable-next-line
+  }, [fareAmount, priorOffenses]);
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -120,8 +170,15 @@ export default function IssueChallanPage() {
 
     try {
       if (!navigator.onLine) {
+        const all = await getAllOfflineChallans();
+        if (all.some(e => isDuplicateChallan(challanData, e))) {
+          setError('A similar offline challan is already queued.');
+          setLoading(false);
+          return;
+        }
         await saveOfflineChallan(challanData);
         setSuccess('Challan saved offline. Will sync when back online.');
+        refreshPendingChallans();
       } else {
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/challan/issue`,
@@ -135,7 +192,7 @@ export default function IssueChallanPage() {
         setSuccess('Challan issued successfully!');
         sendNotification(
           challanData.mobileNumber,
-          `Dear ${challanData.passengerName}, a challan of ₹${challanData.fineAmount} has been issued at ${challanData.location} for ${challanData.reason}. Challan Status : ${challanData.paid ? "Paid": "Not Paid "}`
+          `Dear ${challanData.passengerName}, a challan of ₹${challanData.fineAmount} has been issued at ${challanData.location} for ${challanData.reason}. Challan Status : ${challanData.paid ? "Paid" : "Not Paid "}`
         );
       }
       setForm({
@@ -160,7 +217,7 @@ export default function IssueChallanPage() {
 
   return (
     <div className="max-w-xl mx-auto p-6 mt-8 bg-white shadow-lg rounded-xl border border-slate-200">
-      <h2 className="text-2xl font-bold mb-6 text-[#1E40AF] text-center">Issue Challan</h2>
+      <h2 className="text-2xl font-bold mb-5 text-[#1E40AF] text-center">Issue Challan</h2>
 
       {/* ✅ Show Offline Badge */}
       {isOffline && (
@@ -168,6 +225,22 @@ export default function IssueChallanPage() {
           ⚠️ You are currently offline. Submitted challans will be saved locally.
         </p>
       )}
+
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm text-slate-600">
+          {pendingChallans.length > 0
+            ? `Pending offline challans: ${pendingChallans.length}`
+            : "No offline challans pending."}
+        </span>
+        <button
+          className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 text-xs font-bold"
+          onClick={async () => { await syncOfflineChallans(); }}
+          disabled={pendingChallans.length === 0 || loading}
+        >
+          Sync Offline Challans
+        </button>
+      </div>
+
 
       {error && (
         <p className="text-[#DC2626] bg-red-50 border border-red-200 p-2 rounded mb-4 text-sm text-center">
@@ -185,8 +258,59 @@ export default function IssueChallanPage() {
         <TextInput name="passengerName" placeholder="Passenger Name" value={form.passengerName} onChange={handleChange} />
         <TextInput name="passengerAadharLast4" placeholder="Passenger Aadhar Number" value={form.passengerAadharLast4} onChange={handleChange} maxLength={12} />
         <TextInput name="mobileNumber" placeholder="Passenger Mobile Number" value={form.mobileNumber} onChange={handleChange} />
-        <TextInput name="reason" placeholder="Reason for Challan" value={form.reason} onChange={handleChange} />
-        <TextInput name="fineAmount" placeholder="Fine Amount" type="number" value={form.fineAmount} onChange={handleChange} />
+        {/* Reason select with autofill */}
+        <select
+          name="reason"
+          value={form.reason}
+          onChange={handleReasonChange}
+          required
+          className="border p-3 rounded-md text-sm"
+        >
+          <option value="">Select Offense</option>
+          {FINE_RULES.map(r =>
+            <option key={r.code} value={r.reason}>
+              {r.reason} ({r.section})
+            </option>
+          )}
+        </select>
+
+        {/* Fare for Ticketless travel */}
+        {form.reason === "Travelling without proper pass/ticket" && (
+          <TextInput
+            name="fareAmount"
+            placeholder="Fare for this journey ₹"
+            type="number"
+            value={fareAmount}
+            onChange={e => setFareAmount(e.target.value)}
+          />
+        )}
+
+        {/* Nuisance/Littering prior offences field */}
+        {form.reason === "Nuisance and Littering" && (
+          <>
+          <p className='pl-3 font-normal text-sm text-gray-500'>No. of Prior Offenses</p>
+          <TextInput
+            name="priorOffenses"
+            placeholder="No. of prior offences (1 for first time)"
+            type="number"
+            value={priorOffenses}
+            onChange={e => setPriorOffenses(Number(e.target.value || 1))}
+          />
+          </>
+        )}
+
+        {/* Fine Amount (readonly, autofilled!) */}
+        <p className='pl-3 pt-0 font-normal text-sm text-gray-500'>Fine Amount</p>
+        <TextInput
+          name="fineAmount"
+          placeholder="Fine Amount"
+          type="number"
+          value={form.fineAmount}
+          readOnly
+        />
+
+        {/* <TextInput name="reason" placeholder="Reason for Challan" value={form.reason} onChange={handleChange} />
+        <TextInput name="fineAmount" placeholder="Fine Amount" type="number" value={form.fineAmount} onChange={handleChange} /> */}
         <TextInput name="location" placeholder="Location" value={form.location} onChange={handleChange} />
         <select
           name="paymentMode"

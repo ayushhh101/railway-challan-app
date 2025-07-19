@@ -26,3 +26,9 @@ export async function clearOfflineChallans() {
   await tx.store.clear();
   await tx.done;
 }
+
+export async function deleteOfflineChallan(id) {
+  const db = await getDB();
+  await db.delete('offlineChallans', id);
+}
+

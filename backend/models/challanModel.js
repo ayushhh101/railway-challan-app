@@ -1,5 +1,18 @@
 const mongoose = require('mongoose');
 
+const REASON_ENUM = [
+  "Travelling without proper pass/ticket",
+  "Travelling Fraudulently",
+  "Alarm Chain Pulling",
+  "Coach Reserved for Handicapped",
+  "Travelling on Roof Top",
+  "Trespassing",
+  "Nuisance and Littering",
+  "Bill Pasting",
+  "Touting",
+  "Unauthorised Hawking"
+];
+
 const challanSchema = new mongoose.Schema({
   issuedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -26,7 +39,7 @@ const challanSchema = new mongoose.Schema({
   },
   reason: {
     type: String,
-    enum: ['No Ticket', 'Fake Ticket', 'Misconduct', 'Overbooking', 'Other'],
+    enum: REASON_ENUM,
     required: true,
   },
   fineAmount: {
