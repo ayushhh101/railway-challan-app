@@ -32,6 +32,8 @@ exports.issueChallan = async (req, res) => {
       return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
     }
 
+    const proofFiles = req.files?.map(f => f.path) || [];
+
     // lookup station lat/lng
     const station = await Station.findOne({ name: location });
 
@@ -54,6 +56,7 @@ exports.issueChallan = async (req, res) => {
       paymentMode,
       paid,
       signature, // base64 encoded image
+      proofFiles
     });
 
     console.log("User issuing challan:", req.user);

@@ -64,6 +64,10 @@ const challanSchema = new mongoose.Schema({
   signature: {
     type: String,
   },
+  proofFiles: {
+    type: [String],
+    default: []
+  },
   issuedAt: {
     type: Date,
     default: Date.now

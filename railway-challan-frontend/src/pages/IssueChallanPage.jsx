@@ -16,6 +16,7 @@ export default function IssueChallanPage() {
   const [pendingChallans, setPendingChallans] = useState([]);
   const [priorOffenses, setPriorOffenses] = useState(1); // for Nuisance & Littering repeat
   const [fareAmount, setFareAmount] = useState(""); // for ticketless travel
+  const [proofs, setProofs] = useState([]);
 
   const [form, setForm] = useState({
     trainNumber: '',
@@ -165,8 +166,8 @@ export default function IssueChallanPage() {
       issuedBy: user?._id,
       date: new Date().toISOString(),
       signature: signatureImage,
+      proofFiles: [],
     };
-
 
     try {
       if (!navigator.onLine) {
@@ -180,9 +181,21 @@ export default function IssueChallanPage() {
         setSuccess('Challan saved offline. Will sync when back online.');
         refreshPendingChallans();
       } else {
+
+        const formData = new FormData();
+        for (const [key, value] of Object.entries({
+          ...form,
+          issuedBy: user?._id,
+          date: new Date().toISOString(),
+          signature: signatureImage,
+        })) {
+          formData.append(key, value);
+        }
+        proofs.forEach(file => formData.append("proofs", file));
+
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/challan/issue`,
-          challanData,
+          formData,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -194,6 +207,7 @@ export default function IssueChallanPage() {
           challanData.mobileNumber,
           `Dear ${challanData.passengerName}, a challan of ₹${challanData.fineAmount} has been issued at ${challanData.location} for ${challanData.reason}. Challan Status : ${challanData.paid ? "Paid" : "Not Paid "}`
         );
+        setProofs([]);
       }
       setForm({
         trainNumber: '',
@@ -288,14 +302,14 @@ export default function IssueChallanPage() {
         {/* Nuisance/Littering prior offences field */}
         {form.reason === "Nuisance and Littering" && (
           <>
-          <p className='pl-3 font-normal text-sm text-gray-500'>No. of Prior Offenses</p>
-          <TextInput
-            name="priorOffenses"
-            placeholder="No. of prior offences (1 for first time)"
-            type="number"
-            value={priorOffenses}
-            onChange={e => setPriorOffenses(Number(e.target.value || 1))}
-          />
+            <p className='pl-3 font-normal text-sm text-gray-500'>No. of Prior Offenses</p>
+            <TextInput
+              name="priorOffenses"
+              placeholder="No. of prior offences (1 for first time)"
+              type="number"
+              value={priorOffenses}
+              onChange={e => setPriorOffenses(Number(e.target.value || 1))}
+            />
           </>
         )}
 
@@ -356,6 +370,33 @@ export default function IssueChallanPage() {
           >
             Clear Signature
           </button>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">
+            Attach Proof (Photo/PDF, optional, up to 4)
+          </label>
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            capture="environment"
+            multiple
+            disabled={isOffline}
+            onChange={e => setProofs(Array.from(e.target.files))}
+            className="block mt-1"
+          />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {proofs.map((file, idx) => (
+              <span key={idx} className="text-xs px-2 py-1 bg-slate-100 rounded">
+                {file.name}
+              </span>
+            ))}
+          </div>
+          {isOffline && (
+            <p className="text-xs text-orange-600 mt-1">
+              Proof/photo uploads available only when online.
+            </p>
+          )}
         </div>
 
         <button
