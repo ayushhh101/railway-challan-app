@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails, downloadBulkChallanPDF, updateChallan, getChallan, userHistory, markChallanAsPaid } = require('../controllers/challanController');
+const { issueChallan,getAllChallans,getMyChallans, getChallanLocations, searchChallans, getChallanDetails, downloadBulkChallanPDF, updateChallan, getChallan, userHistory, markChallanAsPaid, getPassengerHistory } = require('../controllers/challanController');
 const { verifyToken, isTTE } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 
@@ -25,6 +25,8 @@ router.get('/details/:id', verifyToken, isAdmin , getChallanDetails);
 // Download bulk challan PDF (Admin only)
 router.post('/bulk-pdf', verifyToken, isAdmin, downloadBulkChallanPDF);
 
+router.get('/passenger-history',verifyToken,getPassengerHistory)
+
 router.put('/:id', verifyToken, isTTE , updateChallan)
 
 router.get('/history',  userHistory )
@@ -32,8 +34,6 @@ router.get('/history',  userHistory )
 router.get('/:id', getChallan)
 
 router.put('/pay/:id', markChallanAsPaid)
-
-
 
 
 module.exports = router;

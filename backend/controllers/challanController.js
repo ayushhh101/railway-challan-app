@@ -339,3 +339,20 @@ exports.markChallanAsPaid = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+exports.getPassengerHistory = async(req,res)=>{
+  const { name, aadharLast4 } = req.query;
+  if (!name && !aadharLast4) {
+    return res.status(400).json({ message: 'Provide name or aadharLast4' });
+  }
+  let filter = {};
+  if (name) filter.passengerName = { $regex: new RegExp(name, 'i') };
+  if (aadharLast4) filter.passengerAadharLast4 = aadharLast4;
+
+  try {
+    const challans = await Challan.find(filter).sort({ createdAt: -1 });
+    res.json(challans);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching challans' });
+  }
+}
