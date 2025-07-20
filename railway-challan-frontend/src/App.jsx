@@ -9,6 +9,7 @@ import AdminAnomalies from './pages/AdminAnomalies';
 import AdminAudit from './pages/AdminAudit';
 import VerifyChallan from './pages/VerifyChallan';
 import AdminMonthlyReport from './components/AdminMonthlyReport';
+import PassengerHistoryPage from './pages/PassengerHistoryPage';
 
 function App() {
   return (
@@ -51,6 +52,17 @@ function App() {
         <Route path="/monthly-report" element={
           <PrivateRoute allowedRoles={['admin']}>
             <AdminMonthlyReport />
+          </PrivateRoute>
+        } />
+
+        <Route path="/passenger-history" element={
+          <PrivateRoute allowedRoles={['tte','admin']}>
+            <PassengerHistoryPage/>
+          </PrivateRoute>
+        } />
+        <Route path="/passenger-history/:name/:aadhar" element={
+          <PrivateRoute allowedRoles={['tte','admin']}>
+            <PassengerHistoryPage/>
           </PrivateRoute>
         } />
 
