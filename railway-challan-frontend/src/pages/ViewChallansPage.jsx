@@ -5,6 +5,7 @@ import axios from 'axios';
 import ChallanCard from '../components/ChallanCard';
 
 const ViewChallansPage = () => {
+
   const { token, user } = useAuth();
   const [challans, setChallans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +105,7 @@ const ViewChallansPage = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto bg-[#F8FAFC] min-h-screen">
-      <h1 className="text-3xl font-bold text-[#1E40AF] mb-2 text-center">
+      <h1 className="text-2xl sm:text-3xl font-bold text-[#1E40AF] mb-3 text-center">
         {searchMode
           ? `History for ${nameQuery} (****${aadharQuery})`
           : 'Challan History'}
@@ -136,7 +137,7 @@ const ViewChallansPage = () => {
         />
         <button
           type="submit"
-          className="bg-[#1E40AF] text-white px-5 py-2 rounded-md hover:bg-blue-900 transition"
+          className="bg-[#1E40AF] text-base text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-blue-900 transition"
         >
           Search History
         </button>
@@ -144,7 +145,7 @@ const ViewChallansPage = () => {
           <button
             type="button"
             onClick={resetSearch}
-            className="text-sm bg-gray-500 rounded-md text-white mt-2 sm:mt-0 px-3 py-2 "
+            className="text-sm bg-gray-500 rounded-md text-white mt-1 sm:mt-0 px-2 py-1 sm:px-3 sm:py-2 "
           >
             Clear Search
           </button>

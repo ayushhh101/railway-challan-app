@@ -138,7 +138,7 @@ exports.getAllChallans = async (req, res) => {
 // for TTE to view their own challans
 exports.getMyChallans = async (req, res) => {
   try {
-    const challans = await Challan.find({ issuedBy: req.user.id }).sort({ createdAt: -1 });
+    const challans = await Challan.find({ issuedBy: req.user.id }).sort({ createdAt: -1 }).populate('issuedBy');
     res.status(200).json(challans);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching challans', error: err.message });
@@ -319,7 +319,7 @@ exports.userHistory = async (req, res) => {
     const challans = await Challan.find({
       passengerName: { $regex: new RegExp(`^${name}$`, 'i') },
       passengerAadharLast4: String(aadhar)
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).populate('issuedBy');
 
     res.status(200).json({ challans });
   } catch (err) {

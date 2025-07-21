@@ -143,7 +143,7 @@ export default function IssueChallanPage() {
       const rule = FINE_RULES.find(r => r.reason === form.reason);
       setForm(f => ({ ...f, fineAmount: rule.autofill(priorOffenses) }));
     }
-    // eslint-disable-next-line
+
   }, [fareAmount, priorOffenses]);
 
 
@@ -230,8 +230,8 @@ export default function IssueChallanPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 mt-8 bg-white shadow-lg rounded-xl border border-slate-200">
-      <h2 className="text-2xl font-bold mb-5 text-[#1E40AF] text-center">Issue Challan</h2>
+    <div className="w-full max-w-md mx-auto sm:max-w-xl p-2 sm:p-6 mt-8 min-h-screen bg-white shadow-lg rounded-xl border border-slate-200 overflow-x-hidden">
+      <h2 className="text-xl sm:text-2xl font-bold mb-5 text-[#1E40AF] text-center">Issue Challan</h2>
 
       {/* offline Badge */}
       {isOffline && (
@@ -267,7 +267,7 @@ export default function IssueChallanPage() {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="grid gap-5">
+      <form onSubmit={handleSubmit} className="grid gap-3 sm:gap-5">
         <TextInput name="trainNumber" placeholder="Train Number" value={form.trainNumber} onChange={handleChange} />
         <TextInput name="passengerName" placeholder="Passenger Name" value={form.passengerName} onChange={handleChange} />
         <TextInput name="passengerAadharLast4" placeholder="Passenger Aadhar Number" value={form.passengerAadharLast4} onChange={handleChange} maxLength={12} />
@@ -278,7 +278,7 @@ export default function IssueChallanPage() {
           value={form.reason}
           onChange={handleReasonChange}
           required
-          className="border p-3 rounded-md text-sm"
+          className="w-full border p-3 rounded-md text-sm"
         >
           <option value="">Select Offense</option>
           {FINE_RULES.map(r =>
@@ -314,7 +314,7 @@ export default function IssueChallanPage() {
         )}
 
         {/* Fine Amount (readonly, autofilled!) */}
-        <p className='pl-3 pt-0 font-normal text-sm text-gray-500'>Fine Amount</p>
+        <p className='pl-2 pt-0 font-normal text-sm text-gray-500'>Select Fine Amount :</p>
         <TextInput
           name="fineAmount"
           placeholder="Fine Amount"
@@ -322,16 +322,14 @@ export default function IssueChallanPage() {
           value={form.fineAmount}
           readOnly
         />
-
-        {/* <TextInput name="reason" placeholder="Reason for Challan" value={form.reason} onChange={handleChange} />
-        <TextInput name="fineAmount" placeholder="Fine Amount" type="number" value={form.fineAmount} onChange={handleChange} /> */}
         <TextInput name="location" placeholder="Location" value={form.location} onChange={handleChange} />
+
         <select
           name="paymentMode"
           value={form.paymentMode}
           onChange={handleChange}
           required
-          className="border p-3 rounded-md text-sm"
+          className="w-full border p-3 rounded-md text-sm"
         >
           <option value="">Select Payment Mode</option>
           <option value="online">Online</option>
@@ -360,7 +358,8 @@ export default function IssueChallanPage() {
             <SignatureCanvas
               penColor="black"
               ref={sigCanvas}
-              canvasProps={{ width: 300, height: 150, className: 'bg-white rounded border' }}
+              canvasProps={{  width:  450 ,
+              height: 150, className: 'bg-white rounded border w-full' }}
             />
           </div>
           <button
@@ -402,7 +401,7 @@ export default function IssueChallanPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#1E40AF] text-white py-3 rounded-md text-sm font-medium hover:bg-blue-900 transition"
+          className="bg-[#1E40AF] text-white py-2 sm:py-3 rounded-md text-base font-medium hover:bg-blue-900 transition"
         >
           {loading ? 'Issuing Challan...' : 'Issue Challan'}
         </button>

@@ -17,7 +17,7 @@ export default function Navbar() {
      <nav className="bg-[#F8FAFC] border-b border-gray-200 shadow-sm px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <h1 className="text-xl font-bold text-[#1E40AF]">Railway Challan Portal</h1>
+        <h1 className="text-lg sm:text-xl font-bold text-[#1E40AF]">Railway Challan Portal</h1>
 
         {/* Hamburger */}
         <button

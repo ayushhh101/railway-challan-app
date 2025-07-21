@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // If offline and credentials exist, allow instant access
+    // if offline and credentials exist, allow instant access
     if (!navigator.onLine) {
       const savedCreds = JSON.parse(localStorage.getItem('offlineCredentials'));
       const savedUser = JSON.parse(localStorage.getItem('offlineUser'));
@@ -38,8 +38,8 @@ export default function LoginPage() {
 
     const hashedPassword = SHA256(formData.password).toString();
 
+    //offline login logic
     if (!navigator.onLine) {
-      // Offline login logic
       const savedCreds = JSON.parse(localStorage.getItem('offlineCredentials'));
       const savedUser = JSON.parse(localStorage.getItem('offlineUser'));
       const savedToken = localStorage.getItem('offlineToken');
@@ -79,7 +79,7 @@ export default function LoginPage() {
       localStorage.setItem('offlineUser', JSON.stringify(data.user));
       localStorage.setItem('offlineToken', data.token);
 
-      // Store token and user in sessionStorage for PWA support
+      // store token and user in sessionStorage for PWA support
       sessionStorage.setItem('auth', JSON.stringify({ token: data.token, user: data.user }))
 
       // redirect
