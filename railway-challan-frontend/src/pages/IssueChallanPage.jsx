@@ -37,10 +37,92 @@ export default function IssueChallanPage() {
   const [success, setSuccess] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
+  useEffect(() => {
+  if ((error || success) && messageRef.current) {
+    messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}, [error, success]);
+
+
   const sendNotification = (mobileNumber, message) => {
     console.log(`SMS To: +91${mobileNumber}`);
     console.log(`Message: ${message}`);
   }
+
+  const validateForm = () => {
+    // Clear previous errors
+    setError('');
+
+    if (!form.trainNumber.trim()) {
+      setError("Train Number is required");
+      return false;
+    }
+    if (!/^[A-Za-z0-9\s\-]+$/.test(form.trainNumber)) {
+      setError("Train Number contains invalid characters");
+      return false;
+    }
+    if (!form.passengerName.trim()) {
+      setError("Passenger Name is required");
+      return false;
+    }
+    if (!/^[A-Za-z\s]+$/.test(form.passengerName)) {
+      setError("Passenger Name can only contain letters and spaces");
+      return false;
+    }
+    if (form.passengerAadharLast4) {
+      if (!/^\d{4}$/.test(form.passengerAadharLast4)) {
+        setError("Aadhar last 4 digits must be exactly 4 digits");
+        return false;
+      }
+    }
+    if (form.mobileNumber) {
+      if (!/^[6-9]\d{9}$/.test(form.mobileNumber)) {
+        setError("Invalid Indian mobile number");
+        return false;
+      }
+    }
+    if (!form.reason) {
+      setError("Please select a Reason");
+      return false;
+    }
+    if (form.reason === "Travelling without proper pass/ticket") {
+      if (!fareAmount || fareAmount <= 0) {
+        setError("Please enter a valid Fare Amount");
+        return false;
+      }
+    }
+    if (form.reason === "Nuisance and Littering") {
+      if (!priorOffenses || !Number.isInteger(priorOffenses) || priorOffenses < 1) {
+        setError("Please enter a valid number of prior offenses");
+        return false;
+      }
+    }
+    if (!form.fineAmount || form.fineAmount <= 0) {
+      setError("Fine Amount must be greater than zero");
+      return false;
+    }
+    if (!form.location.trim()) {
+      setError("Location is required");
+      return false;
+    }
+    if (!form.paymentMode) {
+      setError("Please select a Payment Mode");
+      return false;
+    }
+    if (proofs.length > 4) {
+      setError("You can upload up to 4 proof files only");
+      return false;
+    }
+    for (const file of proofs) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError(`File ${file.name} exceeds 2MB size limit`);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
 
   useEffect(() => {
     if (error || success) {
@@ -166,6 +248,9 @@ export default function IssueChallanPage() {
     e.preventDefault();
     setError('');
     setSuccess('');
+    if (!validateForm()) {
+      return setLoading(false);
+    }
     setLoading(true);
 
     const signatureImage = sigCanvas.current.isEmpty()
@@ -214,7 +299,7 @@ export default function IssueChallanPage() {
           }
         );
         setSuccess('Challan issued successfully!');
-        
+
         sendNotification(
           challanData.mobileNumber,
           `Dear ${challanData.passengerName}, a challan of ₹${challanData.fineAmount} has been issued at ${challanData.location} for ${challanData.reason}. Challan Status : ${challanData.paid ? "Paid" : "Not Paid "}`
@@ -233,8 +318,8 @@ export default function IssueChallanPage() {
         paid: false
       });
       if (messageRef.current) {
-          messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       // setTimeout(() => navigate('/view-challans'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to issue challan');
