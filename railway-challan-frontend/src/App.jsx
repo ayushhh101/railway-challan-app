@@ -10,9 +10,19 @@ import AdminAudit from './pages/AdminAudit';
 import VerifyChallan from './pages/VerifyChallan';
 import AdminMonthlyReport from './components/AdminMonthlyReport';
 import PassengerHistoryPage from './pages/PassengerHistoryPage';
+import {Toaster} from 'react-hot-toast'
 
 function App() {
   return (
+    <>
+    <Toaster
+        position="top-center"
+        toastOptions={{
+          success: { style: { background: "#d1fae5", color: "#065f46", fontWeight: 600 } },
+          error: { style: { background: "#fee2e2", color: "#b91c1c", fontWeight: 600 } },
+        }}
+        reverseOrder={false}
+      />
     <Router>
       <Navbar />
       <Routes>
@@ -71,6 +81,7 @@ function App() {
 
       </Routes>
     </Router>
+    </>
   );
 }
 

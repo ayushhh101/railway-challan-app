@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SHA256 from 'crypto-js/sha256'
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -9,7 +10,7 @@ export default function LoginPage() {
 
   const [formData, setFormData] = useState({ employeeId: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  // const [error, setError] = useState('');
 
   useEffect(() => {
     // if offline and credentials exist, allow instant access
@@ -33,7 +34,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    // setError('');
     setLoading(true);
 
     const hashedPassword = SHA256(formData.password).toString();
@@ -82,12 +83,17 @@ export default function LoginPage() {
       // store token and user in sessionStorage for PWA support
       sessionStorage.setItem('auth', JSON.stringify({ token: data.token, user: data.user }))
 
+      toast.success(`Welcome, ${data.user.name || data.user.employeeId || 'User'}!`)
       // redirect
-      if (data.user.role === 'admin') navigate('/admin-dashboard');
+      setTimeout(()=>{
+        if (data.user.role === 'admin') navigate('/admin-dashboard');
       else if (data.user.role === 'tte') navigate('/issue-challan');
       else navigate('/');
+      },600);
+      
     } catch (err) {
-      setError(err.message);
+      // setError(err.message);
+      toast.error(err.message || 'Login error. Try again.')
     } finally {
       setLoading(false);
     }
@@ -124,12 +130,12 @@ export default function LoginPage() {
               required
             />
           </div>
-
+{/* 
           {error && (
             <p className="text-[#DC2626] text-sm text-center bg-red-50 border border-[#FCA5A5] p-2 rounded-md">
               {error}
             </p>
-          )}
+          )} */}
 
           <button
             type="submit"

@@ -17,6 +17,7 @@ export default function IssueChallanPage() {
   const [priorOffenses, setPriorOffenses] = useState(1); // for Nuisance & Littering repeat
   const [fareAmount, setFareAmount] = useState(""); // for ticketless travel
   const [proofs, setProofs] = useState([]);
+  const messageRef = useRef(null);
 
   const [form, setForm] = useState({
     trainNumber: '',
@@ -40,6 +41,16 @@ export default function IssueChallanPage() {
     console.log(`SMS To: +91${mobileNumber}`);
     console.log(`Message: ${message}`);
   }
+
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 4000); // 4 seconds visible
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
 
   async function refreshPendingChallans() {
     setPendingChallans(await getAllOfflineChallans());
@@ -203,6 +214,7 @@ export default function IssueChallanPage() {
           }
         );
         setSuccess('Challan issued successfully!');
+        
         sendNotification(
           challanData.mobileNumber,
           `Dear ${challanData.passengerName}, a challan of ₹${challanData.fineAmount} has been issued at ${challanData.location} for ${challanData.reason}. Challan Status : ${challanData.paid ? "Paid" : "Not Paid "}`
@@ -220,10 +232,15 @@ export default function IssueChallanPage() {
         paymentMode: '',
         paid: false
       });
-
-      setTimeout(() => navigate('/view-challans'), 2000);
+      if (messageRef.current) {
+          messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      // setTimeout(() => navigate('/view-challans'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to issue challan');
+      if (messageRef.current) {
+        messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     } finally {
       setLoading(false);
     }
@@ -256,16 +273,19 @@ export default function IssueChallanPage() {
       </div>
 
 
-      {error && (
-        <p className="text-[#DC2626] bg-red-50 border border-red-200 p-2 rounded mb-4 text-sm text-center">
-          {error}
-        </p>
+      {(error || success) && (
+        <div
+          ref={messageRef}
+          className={`p-2 mb-4 rounded text-center text-sm font-medium ${error
+            ? 'bg-red-50 text-red-700 border border-red-200'
+            : 'bg-green-50 text-green-700 border border-green-200'
+            }`}
+          role="alert"
+        >
+          {error || success}
+        </div>
       )}
-      {success && (
-        <p className="text-[#16A34A] bg-green-50 border border-green-200 p-2 rounded mb-4 text-sm text-center">
-          {success}
-        </p>
-      )}
+
 
       <form onSubmit={handleSubmit} className="grid gap-3 sm:gap-5">
         <TextInput name="trainNumber" placeholder="Train Number" value={form.trainNumber} onChange={handleChange} />
@@ -358,8 +378,10 @@ export default function IssueChallanPage() {
             <SignatureCanvas
               penColor="black"
               ref={sigCanvas}
-              canvasProps={{  width:  450 ,
-              height: 150, className: 'bg-white rounded border w-full' }}
+              canvasProps={{
+                width: 450,
+                height: 150, className: 'bg-white rounded border w-full'
+              }}
             />
           </div>
           <button
@@ -404,7 +426,9 @@ export default function IssueChallanPage() {
           className="bg-[#1E40AF] text-white py-2 sm:py-3 rounded-md text-base font-medium hover:bg-blue-900 transition"
         >
           {loading ? 'Issuing Challan...' : 'Issue Challan'}
+
         </button>
+
       </form>
     </div>
 
