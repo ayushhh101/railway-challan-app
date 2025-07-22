@@ -35,10 +35,46 @@ const AdminAudit = () => {
   if (loading) return <p className="text-center mt-6">Loading audit logs...</p>;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-[#1E40AF]">Audit Logs</h1>
+    <div className="p-3 sm:p-6 max-w-6xl mx-auto">
+      <h1 className="text-xl sm:text-3xl font-bold mb-6 text-[#1E40AF]">Audit Logs</h1>
 
-      <div className="overflow-x-auto border rounded-lg shadow-sm bg-white">
+      {/* Mobile: cards view. Desktop: table */}
+      <div className="block sm:hidden">
+        <div className="flex flex-col gap-3">
+          {paginatedLogs.map((log) => (
+            <div key={log._id} className="rounded-lg border shadow-sm bg-white p-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-base font-semibold">{log.action}</span>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${log.status === 'SUCCESS'
+                  ? 'bg-green-100 text-green-700'
+                  : log.status === 'FAILURE'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                  {log.status}
+                </span>
+              </div>
+              <div className="text-xs text-gray-700">
+                <b>User:</b> {log.performedBy?.name} ({log.performedBy?.employeeId})<br />
+                <b>Role:</b> {log.role}<br />
+                <b>Severity:</b> <span className={`font-medium ${log.severity === 'low' ? 'text-blue-700'
+                  : log.severity === 'medium' ? 'text-yellow-700'
+                    : log.severity === 'high' ? 'text-orange-700'
+                      : 'text-red-700'
+                  }`}>
+                  {log.severity}
+                </span>
+                <br />
+                <b>Date:</b> {new Date(log.createdAt).toLocaleString()}
+                <br />
+                <b>User Agent:</b> <span className="break-all">{log.userAgent || "-"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="hidden sm:block overflow-x-auto border rounded-lg shadow-sm bg-white">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-200">
             <tr>
@@ -58,28 +94,24 @@ const AdminAudit = () => {
                 <td className="px-4 py-2">{log.performedBy?.name} ({log.performedBy?.employeeId})</td>
                 <td className="px-4 py-2 capitalize">{log.role}</td>
                 <td className="px-4 py-2">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${log.status === 'SUCCESS'
-                        ? 'bg-green-100 text-green-700'
-                        : log.status === 'FAILURE'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}
-                  >
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${log.status === 'SUCCESS'
+                    ? 'bg-green-100 text-green-700'
+                    : log.status === 'FAILURE'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                    }`}>
                     {log.status}
                   </span>
                 </td>
                 <td className="px-4 py-2">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${log.severity === 'low' ? 'bg-blue-100 text-blue-700'
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${log.severity === 'low' ? 'bg-blue-100 text-blue-700'
+                    :
+                    log.severity === 'medium' ? 'bg-yellow-100 text-yellow-700'
+                      :
+                      log.severity === 'high' ? 'bg-orange-100 text-orange-700'
                         :
-                        log.severity === 'medium' ? 'bg-yellow-100 text-yellow-700'
-                          :
-                          log.severity === 'high' ? 'bg-orange-100 text-orange-700'
-                            :
-                            'bg-red-100 text-red-700'
-                      }`}
-                  >
+                        'bg-red-100 text-red-700'
+                    }`}>
                     {log.severity}
                   </span>
                 </td>
@@ -113,6 +145,7 @@ const AdminAudit = () => {
         </div>
       )}
     </div>
+
   );
 }
 

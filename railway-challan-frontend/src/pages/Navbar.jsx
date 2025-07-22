@@ -16,10 +16,8 @@ export default function Navbar() {
   return (
      <nav className="bg-[#F8FAFC] border-b border-gray-200 shadow-sm px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
         <h1 className="text-lg sm:text-xl font-bold text-[#1E40AF]">Railway Challan Portal</h1>
 
-        {/* Hamburger */}
         <button
           className="sm:hidden focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -45,6 +43,7 @@ export default function Navbar() {
               <Link to="/admin-dashboard" className="hover:text-[#F97316] font-medium">Dashboard</Link>
               <Link to="/manage-users" className="hover:text-[#F97316] font-medium">Manage Users</Link>
               <Link to="/view-challans" className="hover:text-[#F97316] font-medium">All Challans</Link>
+              <Link to="/passenger-history" className="hover:text-[#F97316] font-medium">History</Link>
             </>
           )}
           {user &&
@@ -73,6 +72,8 @@ export default function Navbar() {
               <Link to="/admin-dashboard" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Dashboard</Link>
               <Link to="/manage-users" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Manage Users</Link>
               <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>All Challans</Link>
+              <Link to="/passenger-history" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>History</Link>
+              
             </>
           )}
 

@@ -54,10 +54,10 @@ const AdminAnomalies = () => {
   if (loading) return <div>Loading anomalies...</div>;
   
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-[#1E40AF] mb-6 text-center">Anomaly Alerts</h1>
+    <div className="w-full max-w-3xl mx-auto px-2 sm:p-6">
+      <h1 className="text-xl sm:text-2xl pt-3 font-bold text-[#1E40AF] mb-6 text-center">Anomaly Alerts</h1>
       
-      <div className="flex gap-4 mb-6 border-b border-blue-400">
+      <div className="flex text-sm sm:text-base gap-2 sm:gap-4 mb-6 border-b border-blue-400">
         {['all', 'pending', 'resolved', 'dismissed'].map(tab => (
           <button
             key={tab}
@@ -77,8 +77,8 @@ const AdminAnomalies = () => {
       ) : (
         <div className="space-y-4">
           {filteredAnomalies.map((anomal) => (
-            <div key={anomal._id} className="border border-red-200 bg-red-50 p-3 rounded shadow-sm">
-              <p className="font-medium text-red-800">{anomal.message}</p>
+            <div key={anomal._id} className="border border-red-200 bg-red-50 p-3 rounded shadow-sm break-words">
+              <p className="font-medium text-red-800 break-words">{anomal.message}</p>
               <p className="text-xs text-gray-500">By: {anomal.user.name}</p>
               <p className="text-xs text-blue-600 underline">Related Challan: #{anomal.challan._id}</p>
               <p className="text-xs text-gray-500">Status: {anomal.status}</p>

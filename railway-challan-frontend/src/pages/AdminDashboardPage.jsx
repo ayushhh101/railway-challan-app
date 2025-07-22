@@ -178,9 +178,18 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <Link to="/anomalies"><h1 className="text-1xl font-bold text-red-800 border border-red-800 bg-red-200 rounded-2xl p-3">Anomalies</h1></Link>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+        <h1 className="text-2xl pl-0 sm:pl-5 font-bold text-gray-800 text-center sm:text-left">
+          Admin Dashboard
+        </h1>
+        <div className='flex gap-2 justify-center sm:justify-end'>
+          <Link to="/anomalies">
+            <h1 className="text-base font-bold text-red-800 border border-red-800 bg-red-100 rounded-2xl px-2 py-1 sm:p-2">Anomalies</h1>
+          </Link>
+          <Link to="/audit-log">
+            <h1 className="text-base font-bold text-[#1E40AF] border border-blue-800 bg-blue-100 rounded-2xl px-2 py-1 sm:p-2">Audit Log</h1>
+          </Link>
+        </div>
       </div>
 
       <ChallanFilters
@@ -209,7 +218,7 @@ const AdminDashboardPage = () => {
       <SummaryCard stats={stats} />
 
       <Link to='/monthly-report'>
-        <button className="bg-[#1E40AF] text-white px-4 py-2 rounded hover:bg-blue-900 transition">
+        <button className="bg-[#1E40AF] text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded hover:bg-blue-900 transition">
           📅 View Monthly Report
         </button>
       </Link>

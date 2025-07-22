@@ -1,4 +1,3 @@
-{/* Filter UI */}
 export default function ChallanFilters({ filters, setFilters, handleFilter, clearFilters, viewType, setViewType }) {
   return (
     <div className="bg-white p-4 shadow rounded-xl space-y-4">
@@ -15,9 +14,9 @@ export default function ChallanFilters({ filters, setFilters, handleFilter, clea
       </div>
 
       <div className="flex items-center gap-4">
-        <button onClick={handleFilter} className="bg-blue-500 text-white px-4 py-2 rounded">Search</button>
-        <button onClick={clearFilters} className="bg-gray-300 px-4 py-2 rounded">Clear Filters</button>
-        <button onClick={() => setViewType(viewType === 'card' ? 'table' : 'card')} className="bg-indigo-500 text-white px-4 py-2 rounded">
+        <button onClick={handleFilter} className="bg-[#1E40AF] text-white px-2 py-1 sm:px-3 sm:py-1 rounded hover:bg-blue-900 transition" >Search</button>
+        <button onClick={clearFilters} className="bg-gray-300 px-2 py-1 sm:px-3 sm:py-1 rounded">Clear Filters</button>
+        <button onClick={() => setViewType(viewType === 'card' ? 'table' : 'card')} className="bg-indigo-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded">
           Switch to {viewType === 'card' ? 'Table' : 'Card'} View
         </button>
       </div>

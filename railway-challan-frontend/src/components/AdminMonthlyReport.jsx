@@ -40,7 +40,7 @@ export default function AdminMonthlyReport() {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-6 mt-10">
+    <div className="bg-white shadow-md rounded-xl px-2 py-5 mt-4 sm:p-6 sm:mt-6">
       <h2 className="text-xl font-bold text-[#1E40AF] mb-4 text-center">📊 Monthly Challan Report</h2>
 
       <div className="flex gap-4 mb-6 items-center flex-wrap justify-center">
@@ -53,6 +53,8 @@ export default function AdminMonthlyReport() {
         </select>
         <input
           type="number"
+          min={2020}
+          max={2099}
           value={year}
           onChange={e => setYear(e.target.value)}
           className="border px-3 py-2 rounded w-24"
@@ -69,7 +71,7 @@ export default function AdminMonthlyReport() {
 
       {report && (
         <>
-          <div className="mb-4 text-center">
+          <div className="mb-4 text-center space-y-1">
             <p className="font-semibold text-lg text-gray-800">
               Total Challans: <span className="text-blue-700">{report.stats.totalChallans}</span>
             </p>
@@ -85,7 +87,7 @@ export default function AdminMonthlyReport() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div>
+            <div className="border rounded-lg p-3 shadow-sm bg-[#F1F5F9]">
               <h3 className="font-bold mb-2">Payment Mode Distribution</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -93,7 +95,7 @@ export default function AdminMonthlyReport() {
                     data={Object.entries(report.stats.paymentModeBreakdown).map(([name, value]) => ({ name, value }))}
                     cx="50%"
                     cy="50%"
-                    outerRadius={90}
+                    outerRadius={80}
                     dataKey="value"
                     label
                   >
@@ -106,19 +108,22 @@ export default function AdminMonthlyReport() {
               </ResponsiveContainer>
             </div>
 
-            <div>
+            <div className="border rounded-lg p-3 shadow-sm bg-[#F1F5F9] w-full overflow-x-auto">
               <h3 className="font-bold mb-2">Challans per Station</h3>
+              <div style={{ minWidth: Math.max(400, Object.keys(report.stats.stationBreakdown).length * 75) }}>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart
                   data={Object.entries(report.stats.stationBreakdown).map(([name, value]) => ({ name, value }))}
+                  margin={{ left: 10, right: 10 }}
                 >
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-20} height={55} interval={0} />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="value" fill="#1E40AF" />
+                  <Bar dataKey="value" fill="#1E40AF" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </>
