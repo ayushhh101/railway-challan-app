@@ -138,3 +138,38 @@ exports.getMonthlyReport = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+exports.getTTEAnalytics = async (req,res) =>{
+  try {
+    // Get all TTE users
+    const ttes = await User.find({ role: 'tte' });
+
+    // For each TTE, aggregate challan stats
+    // This could be done efficiently with aggregate, but for clarity, here's simpler approach:
+    const stats = await Promise.all(
+      ttes.map(async (tte) => {
+        const challans = await Challan.find({ issuedBy: tte._id });
+        const issued = challans.length;
+        const paid = challans.filter(c => c.paid).length;
+        const unpaid = issued - paid;
+        const recovery = issued === 0 ? 0 : Math.round((paid/issued)*100);
+        return {
+          id: tte._id,
+          name: tte.name,
+          employeeId: tte.employeeId,
+          zone: tte.zone || "N/A",
+          lastLogin: tte.lastLogin,
+          issued,
+          paid,
+          unpaid,
+          recovery,
+        };
+      })
+    );
+
+    res.json({ tteStats: stats });
+
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch analytics", error: error.toString() });
+  }
+}

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDashboardStats, getMonthlyReport } = require('../controllers/adminController');
+const { getDashboardStats, getMonthlyReport, getTTEAnalytics } = require('../controllers/adminController');
 const { verifyToken } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 const Anomaly = require('../models/anomalyModel');
@@ -19,5 +19,7 @@ router.put('/anomalies/:anomalyId/:status', verifyToken, isAdmin, updateAnomaly)
 router.get('/getAllAudits', verifyToken, isAdmin ,getAllAudits);
 
 router.get('/monthly-report', verifyToken, isAdmin ,getMonthlyReport);
+
+router.get('/getTTEAnalytics', verifyToken, isAdmin , getTTEAnalytics);
 
 module.exports = router;

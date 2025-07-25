@@ -137,7 +137,7 @@ const ViewChallansPage = () => {
         </p>
       )}
 
-      <form onSubmit={handleSearch} className="mb-6 flex flex-col sm:flex-row gap-3 justify-center items-center">
+      <form onSubmit={handleSearch} className="mb-6 flex flex-col sm:flex-row sm:gap-2 gap-2 justify-center items-center">
         <input
           type="text"
           placeholder="Passenger Name"
@@ -157,7 +157,7 @@ const ViewChallansPage = () => {
         />
         <button
           type="submit"
-          className="bg-[#1E40AF] text-sm text-white px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-blue-900 transition"
+          className="bg-[#1E40AF] text-sm text-white px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-blue-900 transition text-nowrap"
         >
           Search History
         </button>
@@ -165,7 +165,7 @@ const ViewChallansPage = () => {
           <button
             type="button"
             onClick={resetSearch}
-            className="text-sm bg-gray-500 rounded-md text-white mt-1 sm:mt-0 px-2 py-1 sm:px-3 sm:py-2 "
+            className="text-sm bg-gray-500 rounded-md text-white mt-1 sm:mt-0 px-2 py-1 sm:px-3 sm:py-2 text-nowrap"
           >
             Clear Search
           </button>

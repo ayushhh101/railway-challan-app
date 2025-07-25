@@ -11,6 +11,7 @@ import VerifyChallan from './pages/VerifyChallan';
 import AdminMonthlyReport from './components/AdminMonthlyReport';
 import PassengerHistoryPage from './pages/PassengerHistoryPage';
 import {Toaster} from 'react-hot-toast'
+import ManageUsersPage from './pages/ManageUsersPage';
 
 function App() {
   return (
@@ -26,7 +27,6 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-        {/* <Route path="/" element={<LoginPage/>} /> */}
         <Route path="/login" element={<LoginPage />} />
 
         <Route path="/issue-challan" element={
@@ -70,9 +70,16 @@ function App() {
             <PassengerHistoryPage/>
           </PrivateRoute>
         } />
+
         <Route path="/passenger-history/:name/:aadhar" element={
           <PrivateRoute allowedRoles={['tte','admin']}>
             <PassengerHistoryPage/>
+          </PrivateRoute>
+        } />
+
+        <Route path="/manage-users" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <ManageUsersPage/>
           </PrivateRoute>
         } />
 
