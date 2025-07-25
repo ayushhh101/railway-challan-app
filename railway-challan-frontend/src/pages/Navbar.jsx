@@ -35,6 +35,7 @@ export default function Navbar() {
             <>
               <Link to="/issue-challan" className="hover:text-[#F97316] font-medium">Issue Challan</Link>
               <Link to="/view-challans" className="hover:text-[#F97316] font-medium">My Challans</Link>
+              <Link to="/tte-profile" className="hover:text-[#F97316] font-medium">Profile</Link>
             </>
           )}
 
@@ -64,6 +65,7 @@ export default function Navbar() {
             <>
               <Link to="/issue-challan" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Issue Challan</Link>
               <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>My Challans</Link>
+              <Link to="/tte-profile" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Profile</Link>
             </>
           )}
 

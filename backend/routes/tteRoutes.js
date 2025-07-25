@@ -1,8 +1,8 @@
 const express = require('express');
 const { verifyToken, isTTE } = require('../middleware/authMiddleware');
-const { getTTEstats } = require('../controllers/tteController');
+const { getTTEstats, getTTEProfile } = require('../controllers/tteController');
 const router = express.Router();
 
-router.get('/tteStats', verifyToken, isTTE, getTTEstats)
+router.get('/tteProfile', verifyToken, isTTE, getTTEProfile)
 
 module.exports = router;

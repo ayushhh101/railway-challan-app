@@ -12,6 +12,7 @@ import AdminMonthlyReport from './components/AdminMonthlyReport';
 import PassengerHistoryPage from './pages/PassengerHistoryPage';
 import {Toaster} from 'react-hot-toast'
 import ManageUsersPage from './pages/ManageUsersPage';
+import TTEProfilePage from './pages/TTEProfilePage';
 
 function App() {
   return (
@@ -82,6 +83,13 @@ function App() {
             <ManageUsersPage/>
           </PrivateRoute>
         } />
+
+         <Route path="/tte-profile" element={
+          <PrivateRoute allowedRoles={['tte']}>
+            <TTEProfilePage />
+          </PrivateRoute>
+        } />
+
 
         <Route path="/verify/:id" element={<VerifyChallan/>}
         />

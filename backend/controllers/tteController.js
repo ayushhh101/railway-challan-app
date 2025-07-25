@@ -1,7 +1,7 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 
-exports.getTTEstats = async(req,res) =>{
+exports.getTTEProfile = async(req,res) =>{
    try {
     const tteId = req.user.id; // Assumes auth middleware sets req.user
 
