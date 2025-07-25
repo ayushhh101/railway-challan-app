@@ -344,18 +344,57 @@ exports.markChallanAsPaid = async (req, res) => {
 };
 
 exports.getPassengerHistory = async(req,res)=>{
-  const { name, aadharLast4 } = req.query;
-  if (!name && !aadharLast4) {
-    return res.status(400).json({ message: 'Provide name or aadharLast4' });
-  }
-  let filter = {};
-  if (name) filter.passengerName = { $regex: new RegExp(name, 'i') };
-  if (aadharLast4) filter.passengerAadharLast4 = aadharLast4;
+    try {
+    const name = req.query.name?.trim();
+    const aadhar = req.query.aadharLast4?.trim();
+    const dateFrom = req.query.dateFrom;
+    const dateTo = req.query.dateTo;
+    const paymentStatus = req.query.paymentStatus;
 
-  try {
-    const challans = await Challan.find(filter).sort({ createdAt: -1 });
-    res.json(challans);
+
+    const query = {};
+    if (name) {
+      query.passengerName = { $regex: new RegExp(`^${name}$`, 'i') };
+    }
+    if (aadhar) {
+      query.passengerAadharLast4 = aadhar;
+    }
+    if (dateFrom || dateTo) {
+      query.createdAt = {};
+      if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) query.createdAt.$lte = new Date(dateTo);
+    }
+    if (paymentStatus === "paid") {
+      query.paid = true;
+    } else if (paymentStatus === "unpaid") {
+      query.paid = false;
+    }
+
+
+    // Find challans matching query
+    const challans = await Challan.find(query)
+      .sort({ createdAt: -1 })
+      .populate('issuedBy');
+
+
+    // Aggregate stats for passenger
+    const totalChallans = challans.length;
+    const paidCount = challans.filter(c => c.paid).length;
+    const unpaidCount = totalChallans - paidCount;
+    const totalFine = challans.reduce((acc, c) => acc + (c.fineAmount || 0), 0);
+
+
+    res.status(200).json({
+      challans,
+      stats: {
+        totalChallans,
+        paidCount,
+        unpaidCount,
+        totalFine,
+      }
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching challans' });
+    console.error('Error fetching user history:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.stack });
   }
 }

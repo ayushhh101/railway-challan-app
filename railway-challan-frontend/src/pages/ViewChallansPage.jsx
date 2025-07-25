@@ -16,8 +16,27 @@ const ViewChallansPage = () => {
   const [nameQuery, setNameQuery] = useState('');
   const [aadharQuery, setAadharQuery] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  // const paginatedChallans = challans.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(challans.length / itemsPerPage);
+  const [sortOrder, setSortOrder] = useState('desc');
+
+  const sortedChallans = [...challans].sort((a, b) => {
+    const dateA = new Date(a.issuedAt);
+    const dateB = new Date(b.issuedAt);
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+  });
+
+  const paginatedChallans = sortedChallans.slice(indexOfFirstItem, indexOfLastItem);
+
+
   useEffect(() => {
-    if(searchMode) return ;
+    if (searchMode) return;
     const fetchChallans = async () => {
       try {
         const res = await axios.get(
@@ -30,7 +49,7 @@ const ViewChallansPage = () => {
             },
           }
         );
-        console.log('API Response:', res.data); 
+        console.log('API Response:', res.data);
 
         if (user.role === 'admin') {
           setChallans(res.data.challans || []);
@@ -62,6 +81,7 @@ const ViewChallansPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setChallans(res.data.challans || []);
+      setCurrentPage(1);
       setError(null);
 
     } catch (err) {
@@ -72,35 +92,35 @@ const ViewChallansPage = () => {
     }
   };
 
-  const resetSearch = async() => {
+  const resetSearch = async () => {
     setNameQuery('');
     setAadharQuery('');
     setSearchMode(false);
     setLoading(true);
 
     try {
-    const res = await axios.get(
-      user.role === 'admin'
-        ? `${import.meta.env.VITE_API_URL}/api/challan/admin/all`
-        : `${import.meta.env.VITE_API_URL}/api/challan/my`,
-      {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await axios.get(
+        user.role === 'admin'
+          ? `${import.meta.env.VITE_API_URL}/api/challan/admin/all`
+          : `${import.meta.env.VITE_API_URL}/api/challan/my`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (user.role === 'admin') {
+        setChallans(res.data.challans || []);
+      } else {
+        setChallans(Array.isArray(res.data) ? res.data : []);
       }
-    );
 
-    if (user.role === 'admin') {
-      setChallans(res.data.challans || []);
-    } else {
-      setChallans(Array.isArray(res.data) ? res.data : []);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to reload original challans.');
+    } finally {
+      setLoading(false);
     }
-
-    setError(null);
-  } catch (err) {
-    console.error(err);
-    setError('Failed to reload original challans.');
-  } finally {
-    setLoading(false);
-  }
   };
 
   return (
@@ -137,7 +157,7 @@ const ViewChallansPage = () => {
         />
         <button
           type="submit"
-          className="bg-[#1E40AF] text-base text-white px-3 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-blue-900 transition"
+          className="bg-[#1E40AF] text-sm text-white px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-blue-900 transition"
         >
           Search History
         </button>
@@ -150,7 +170,22 @@ const ViewChallansPage = () => {
             Clear Search
           </button>
         )}
-      </form> 
+
+        <div className=" flex justify-center gap-4">
+          <label className="flex items-center gap-2 text-sm font-normal text-[#1E40AF]">
+            Sort by date:
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              className="border rounded p-0.5 sm:p-2 text-sm"
+            >
+              <option value="desc">Newest First</option>
+              <option value="asc">Oldest First</option>
+            </select>
+          </label>
+        </div>
+
+      </form>
 
       <h2 className="text-md font-semibold text-[#1E40AF] mb-2 text-left">Recent Issued Challans</h2>
 
@@ -162,11 +197,33 @@ const ViewChallansPage = () => {
         <p className="text-center text-slate-500 text-md">No challans found.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
-          {challans.map((challan) => (
+          {paginatedChallans.map((challan) => (
             <ChallanCard key={challan._id} challan={challan} />
           ))}
         </div>
       )}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6 select-none">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            Previous
+          </button>
+          <span className="text-sm font-medium text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
     </div>
   );
 };

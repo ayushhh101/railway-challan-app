@@ -10,15 +10,19 @@ export default function PassengerHistoryPage() {
   const [query, setQuery] = useState({
     name: params.get("name") || "",
     aadhar: params.get("aadharLast4") || "",
+    dateFrom: "",
+    dateTo: "",
+    paymentStatus: "",
   });
+
+  const [passengerStats, setPassengerStats] = useState(null);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // For pagination and viewType reuse
   const [selectedChallans, setSelectedChallans] = useState([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-
   const paginatedChallans = results.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -31,94 +35,201 @@ export default function PassengerHistoryPage() {
     );
   };
   const toggleSelectAll = () => {
-    const allSelected = results.every((challan) => selectedChallans.includes(challan._id));
+    const allSelected = results.every((challan) =>
+      selectedChallans.includes(challan._id)
+    );
     setSelectedChallans(allSelected ? [] : results.map((c) => c._id));
   };
 
-  // Download PDF logic (reuse your admin one)
   const handleAdminDownload = async (challanId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challanId}/pdf`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/pdf/challan/${challanId}/pdf`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch PDF');
+        throw new Error("Failed to fetch PDF");
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `challan-${challanId}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Admin Download error:', err);
-      alert('Download failed');
+      console.error("Admin Download error:", err);
+      alert("Download failed");
     }
   };
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     setLoading(true);
+
     try {
       let searchParams = [];
-      if (query.name.trim()) searchParams.push(`name=${encodeURIComponent(query.name.trim())}`);
-      if (query.aadhar.trim()) searchParams.push(`aadharLast4=${encodeURIComponent(query.aadhar.trim())}`);
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/challan/passenger-history?${searchParams.join("&")}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setResults(res.data || []);
+      if (query.name.trim())
+        searchParams.push(`name=${encodeURIComponent(query.name.trim())}`);
+      if (query.aadhar.trim())
+        searchParams.push(`aadharLast4=${encodeURIComponent(query.aadhar.trim())}`);
+      if (query.dateFrom) searchParams.push(`dateFrom=${query.dateFrom}`);
+      if (query.dateTo) searchParams.push(`dateTo=${query.dateTo}`);
+      if (query.paymentStatus) searchParams.push(`paymentStatus=${query.paymentStatus}`);
+
+      const url = `${import.meta.env.VITE_API_URL}/api/challan/passenger-history?${searchParams.join(
+        "&"
+      )}`;
+
+      const res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+
+      setResults(res.data.challans || []);
+      setPassengerStats(res.data.stats || null);
       setCurrentPage(1);
-    } catch {
+      setSelectedChallans([]);
+    } catch (error) {
       setResults([]);
+      setPassengerStats(null);
+      console.error("Search failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-search on mount if pre-filled query
   useEffect(() => {
     if (query.name || query.aadhar) {
       handleSearch({ preventDefault: () => {} });
     }
-    // eslint-disable-next-line
   }, []);
 
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [results, currentPage, totalPages]);
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4 text-[#1E40AF]">Passenger Challan History</h2>
-      <form onSubmit={handleSearch} className="flex gap-4 mb-6 flex-wrap">
-        <input
-          type="text"
-          placeholder="Passenger Name"
-          className="border px-4 py-2 rounded text-sm w-64"
-          value={query.name}
-          onChange={(e) => setQuery((q) => ({ ...q, name: e.target.value }))}
-        />
-        <input
-          type="text"
-          placeholder="Aadhar Last 4"
-          className="border px-4 py-2 rounded text-sm w-32"
-          maxLength={4}
-          value={query.aadhar}
-          onChange={(e) => setQuery((q) => ({ ...q, aadhar: e.target.value.replace(/\D/, "") }))}
-        />
+    <div className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-blue-800 border-b pb-3">
+        Passenger Challan History
+      </h2>
+
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-4 mb-8 items-end">
+        <div className="flex flex-col">
+          <label className="text-sm font-semibold mb-1" htmlFor="name">
+            Passenger Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            placeholder="Passenger Name"
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={query.name}
+            onChange={(e) => setQuery((q) => ({ ...q, name: e.target.value }))}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-semibold mb-1" htmlFor="aadhar">
+            Aadhar Last 4
+          </label>
+          <input
+            id="aadhar"
+            type="text"
+            maxLength={4}
+            placeholder="1234"
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={query.aadhar}
+            onChange={(e) =>
+              setQuery((q) => ({ ...q, aadhar: e.target.value.replace(/\D/, "") }))
+            }
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-semibold mb-1" htmlFor="dateFrom">
+            From Date
+          </label>
+          <input
+            id="dateFrom"
+            type="date"
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={query.dateFrom}
+            onChange={(e) => setQuery((q) => ({ ...q, dateFrom: e.target.value }))}
+            max={query.dateTo || undefined}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-semibold mb-1" htmlFor="dateTo">
+            To Date
+          </label>
+          <input
+            id="dateTo"
+            type="date"
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={query.dateTo}
+            onChange={(e) => setQuery((q) => ({ ...q, dateTo: e.target.value }))}
+            min={query.dateFrom || undefined}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm font-semibold mb-1" htmlFor="paymentStatus">
+            Payment Status
+          </label>
+          <select
+            id="paymentStatus"
+            className="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={query.paymentStatus}
+            onChange={(e) => setQuery((q) => ({ ...q, paymentStatus: e.target.value }))}
+          >
+            <option value="">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+          </select>
+        </div>
+
         <button
-          className="bg-[#1E40AF] hover:bg-blue-900 text-white rounded px-4 py-2 font-semibold text-sm"
+          type="submit"
           disabled={loading}
+          className="bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold rounded px-6 py-2 ml-auto transition"
         >
           {loading ? "Searching..." : "Search"}
         </button>
       </form>
+
+      {passengerStats && (
+        <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="p-4 bg-blue-100 rounded shadow text-center">
+            <p className="text-xl font-semibold text-blue-700">{passengerStats.totalChallans}</p>
+            <p className="text-gray-700 text-sm mt-1">Total Challans</p>
+          </div>
+          <div className="p-4 bg-green-100 rounded shadow text-center">
+            <p className="text-xl font-semibold text-green-700">{passengerStats.paidCount}</p>
+            <p className="text-gray-700 text-sm mt-1">Paid</p>
+          </div>
+          <div className="p-4 bg-red-100 rounded shadow text-center">
+            <p className="text-xl font-semibold text-red-700">{passengerStats.unpaidCount}</p>
+            <p className="text-gray-700 text-sm mt-1">Unpaid</p>
+          </div>
+          <div className="p-4 bg-yellow-100 rounded shadow text-center">
+            <p className="text-xl font-semibold text-yellow-700">₹{passengerStats.totalFine.toLocaleString()}</p>
+            <p className="text-gray-700 text-sm mt-1">Total Fine Amount</p>
+          </div>
+        </div>
+      )}
+
       {results.length > 0 ? (
         <ChallanList
           filteredChallans={results}
@@ -133,7 +244,11 @@ export default function PassengerHistoryPage() {
           setCurrentPage={setCurrentPage}
         />
       ) : (
-        !loading && <div className="text-gray-500 text-center text-sm mt-12">No challan records found.</div>
+        !loading && (
+          <div className="text-center text-gray-500 text-sm mt-12 italic">
+            No challan records found.
+          </div>
+        )
       )}
     </div>
   );
