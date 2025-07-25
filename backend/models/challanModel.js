@@ -33,9 +33,14 @@ const challanSchema = new mongoose.Schema({
     match: /^[0-9]{4}$/, // Only 4 digits if provided
     required: false,
   },
-  mobileNumber:{
+  mobileNumber: {
     type: Number,
     length: 10,
+  },
+  passenger: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Passenger',
+    required: false,
   },
   reason: {
     type: String,

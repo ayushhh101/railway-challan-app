@@ -7,7 +7,8 @@ const archiver = require('archiver');
 const puppeteer = require('puppeteer');
 const path = require('path');
 const { default: mongoose } = require('mongoose');
-const logAudit = require('../utils/auditLogger')
+const logAudit = require('../utils/auditLogger');
+const Passenger = require('../models/passengerModel');
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -41,6 +42,38 @@ exports.issueChallan = async (req, res) => {
       return res.status(404).json({ message: "Station not found in records" });
     }
 
+    let passengerUser = null;
+
+    if (mobileNumber && passengerAadharLast4) {
+      passengerUser = await Passenger.findOne({
+        mobileNumber: mobileNumber.toString(),
+        aadharLast4: passengerAadharLast4
+      });
+    } else if (mobileNumber) {
+      passengerUser = await Passenger.findOne({ mobileNumber: mobileNumber.toString() });
+    }
+
+    if (!passengerUser) {
+      // Create passenger user
+      passengerUser = new Passenger({
+        name: passengerName,
+        aadharLast4: passengerAadharLast4 || '', // store empty string if not provided
+        mobileNumber: mobileNumber ? mobileNumber.toString() : '', // string to store uniformly
+      });
+
+      try {
+        await passengerUser.save();
+        console.log(`Created new passenger user for ${passengerName}, mobile ${mobileNumber}`);
+      } catch (e) {
+        // Handle duplicate or validation errors gracefully (might have race conditions)
+        console.warn(`Passenger user creation failed: ${e.message}`);
+        passengerUser = await Passenger.findOne({
+          mobileNumber: mobileNumber.toString(),
+          aadharLast4: passengerAadharLast4
+        });
+      }
+    }
+
     //creates challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
@@ -48,6 +81,7 @@ exports.issueChallan = async (req, res) => {
       passengerName,
       passengerAadharLast4,
       mobileNumber,
+      passenger: passengerUser ? passengerUser._id : undefined,
       reason,
       fineAmount,
       location,
@@ -301,8 +335,8 @@ exports.updateAnomaly = async (req, res) => {
   }
 };
 
-exports.getChallan = async (req,res) =>{
-   try {
+exports.getChallan = async (req, res) => {
+  try {
     const challan = await Challan.findById(req.params.id).populate('issuedBy', 'name');
     if (!challan) return res.status(404).json({ message: 'Challan not found' });
     res.json({ challan });
@@ -343,8 +377,8 @@ exports.markChallanAsPaid = async (req, res) => {
   }
 };
 
-exports.getPassengerHistory = async(req,res)=>{
-    try {
+exports.getPassengerHistory = async (req, res) => {
+  try {
     const name = req.query.name?.trim();
     const aadhar = req.query.aadharLast4?.trim();
     const dateFrom = req.query.dateFrom;
