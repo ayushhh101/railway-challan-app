@@ -13,6 +13,8 @@ import PassengerHistoryPage from './pages/PassengerHistoryPage';
 import {Toaster} from 'react-hot-toast'
 import ManageUsersPage from './pages/ManageUsersPage';
 import TTEProfilePage from './pages/TTEProfilePage';
+import PassengerLoginPage from './pages/PassengerLoginPage';
+import PassengerDashboard from './pages/PassengerDashboard';
 
 function App() {
   return (
@@ -87,6 +89,16 @@ function App() {
          <Route path="/tte-profile" element={
           <PrivateRoute allowedRoles={['tte']}>
             <TTEProfilePage />
+          </PrivateRoute>
+        } />
+
+        <Route path="/passenger/login" element={
+            <PassengerLoginPage/>
+        } />
+
+        <Route path="/passenger/dashboard" element={
+          <PrivateRoute allowedRoles={['passenger']}>
+            <PassengerDashboard />
           </PrivateRoute>
         } />
 

@@ -63,10 +63,10 @@ exports.login = async (req, res) => {
     }
 
     const passenger = await Passenger.findOne({ mobileNumber });
-    if (!passenger) return res.status(400).json({ message: 'Passenger not found' });
+    if (!passenger) { return res.status(400).json({ message: 'Passenger not found' }); }
 
     const isMatch = await bcrypt.compare(password, passenger.passwordHash);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) return res.status(400).json({ message: 'Passenger must complete onboarding before login' });
 
     const accessToken = generateAccessToken(passenger);
     const refreshToken = generateRefreshToken(passenger);
@@ -78,7 +78,22 @@ exports.login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.status(200).json({
+     try {
+      await logAudit({
+        action: 'PASSENGER_LOGIN',
+        performedBy: passenger._id,
+        role: 'passenger',
+        metadata: { mobileNumber },
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        status: 'SUCCESS',
+        severity: 'low',
+      });
+    } catch (err) {
+      console.warn("Audit logging failed:", err);
+    }
+
+    return res.status(200).json({
       message: 'Login successful',
       token: accessToken,
       user: {
@@ -89,17 +104,9 @@ exports.login = async (req, res) => {
       },
     });
 
-    await logAudit({
-      action: 'PASSENGER_LOGIN',
-      performedBy: passenger._id,
-      role: 'passenger',
-      metadata: { mobileNumber },
-      ip: req.ip,
-      userAgent: req.headers['user-agent'],
-      status: 'SUCCESS',
-      severity: 'low',
-    });
+   
   } catch (err) {
+    console.error("Passenger login error:", err); 
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

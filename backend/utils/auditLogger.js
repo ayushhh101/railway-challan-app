@@ -22,7 +22,7 @@ const logAudit = async ({
       status,
     });
   } catch (error) {
-    console.error('Audit logging failed:', err.message);
+    console.error('Audit logging failed:', error.message);
   }
 }
 
