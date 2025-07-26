@@ -21,3 +21,10 @@ exports.isTTE = (req, res, next) => {
   }
   next();
 };
+
+exports.isAdminOrTTE = (req, res, next) => {
+  if (req.user.role === 'tte' || req.user.role === 'admin') {
+    return next();
+  }
+  return res.status(403).json({ message: 'Admins/TTEs only' });
+};

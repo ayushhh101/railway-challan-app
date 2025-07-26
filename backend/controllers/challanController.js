@@ -9,6 +9,19 @@ const path = require('path');
 const { default: mongoose } = require('mongoose');
 const logAudit = require('../utils/auditLogger');
 const Passenger = require('../models/passengerModel');
+const jwt = require('jsonwebtoken');
+
+const PASSENGER_ONBOARD_SECRET = process.env.PASSENGER_ONBOARD_SECRET ;
+
+function generateOnboardingToken(passengerId) {
+  return jwt.sign({ passengerId }, PASSENGER_ONBOARD_SECRET, { expiresIn: '24h' });
+}
+
+async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
+  // Integration with SMS/email provider here
+  console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
+  console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
+}
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -37,13 +50,11 @@ exports.issueChallan = async (req, res) => {
 
     // lookup station lat/lng
     const station = await Station.findOne({ name: location });
-
     if (!station) {
       return res.status(404).json({ message: "Station not found in records" });
     }
 
     let passengerUser = null;
-
     if (mobileNumber && passengerAadharLast4) {
       passengerUser = await Passenger.findOne({
         mobileNumber: mobileNumber.toString(),
@@ -53,6 +64,7 @@ exports.issueChallan = async (req, res) => {
       passengerUser = await Passenger.findOne({ mobileNumber: mobileNumber.toString() });
     }
 
+    let justCreatedPassenger = false;
     if (!passengerUser) {
       // Create passenger user
       passengerUser = new Passenger({
@@ -64,6 +76,7 @@ exports.issueChallan = async (req, res) => {
       try {
         await passengerUser.save();
         console.log(`Created new passenger user for ${passengerName}, mobile ${mobileNumber}`);
+        justCreatedPassenger=true;
       } catch (e) {
         // Handle duplicate or validation errors gracefully (might have race conditions)
         console.warn(`Passenger user creation failed: ${e.message}`);
@@ -95,6 +108,14 @@ exports.issueChallan = async (req, res) => {
 
     console.log("User issuing challan:", req.user);
     await newChallan.save();
+
+    // ONBOARDING: If passenger has *no* password yet (new account or never onboarded), send onboarding notification
+    if (!passengerUser.passwordHash) {
+      const onboardingToken = generateOnboardingToken(passengerUser._id);
+      const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
+      // Send SMS or email to passenger with registration link
+      await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
+    }
 
     res.status(201).json({
       message: 'Challan issued successfully',

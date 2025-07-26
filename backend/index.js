@@ -26,6 +26,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/pdf', require('./routes/pdfRoutes'));
 app.use('/api/proofs', require('./routes/proofRoutes'));
 app.use('/api/tte', require('./routes/tteRoutes.js'));
+app.use('/api/passenger', require('./routes/passengerRoutes.js'));
 
 // starts the server
 const PORT = process.env.PORT || 5000;
