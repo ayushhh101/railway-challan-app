@@ -1,4 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';  // Adjust path if needed
+import { useEffect } from 'react';
+
 import LoginPage from './pages/LoginPage';
 import Navbar from './pages/Navbar';
 import PrivateRoute from './routes/PrivateRoute';
@@ -17,6 +20,49 @@ import PassengerLoginPage from './pages/PassengerLoginPage';
 import PassengerDashboard from './pages/PassengerDashboard';
 import PassengerOnboardingPage from './pages/PassengerOnBoardingPage';
 
+function HomeRedirect() {
+  const { user } = useAuth();
+
+  if (!user) {
+    // Not logged in → redirect to choose login
+    return <Navigate to="/choose-login" replace />;
+  }
+
+  switch (user.role) {
+    case 'admin':
+      return <Navigate to="/admin-dashboard" replace />;
+    case 'tte':
+      return <Navigate to="/issue-challan" replace />;
+    case 'passenger':
+      return <Navigate to="/passenger/dashboard" replace />;
+    default:
+      // Unknown role → fallback to main login page
+      return <Navigate to="/login" replace />;
+  }
+}
+
+function ChooseLoginPage() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen gap-6 bg-gray-50 px-4">
+      <h1 className="text-4xl font-bold mb-6 text-center text-blue-800">Welcome to Railway Challan Portal</h1>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <a
+          href="/login"
+          className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg text-center hover:bg-blue-700 transition"
+        >
+          TTE / Admin Login
+        </a>
+        <a
+          href="/passenger/login"
+          className="px-8 py-4 bg-green-600 text-white rounded-lg text-lg text-center hover:bg-green-700 transition"
+        >
+          Passenger Login
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <>
@@ -31,6 +77,11 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
+
+        <Route path="/" element={<HomeRedirect />} />
+
+        <Route path="/choose-login" element={<ChooseLoginPage />} />
+
         <Route path="/login" element={<LoginPage />} />
 
         <Route path="/issue-challan" element={

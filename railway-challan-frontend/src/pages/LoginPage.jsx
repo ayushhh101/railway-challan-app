@@ -102,7 +102,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-8 border border-gray-400">
-        <h2 className="text-3xl font-bold text-center text-[#1E40AF] mb-6">Railway Portal Login</h2>
+        <h2 className="text-2xl font-bold text-center text-[#1E40AF] mb-6" 
+        style={{ fontFamily: "'Noto Sans', 'Noto Sans Hans', sans-serif" }}>Railway Portal Login</h2>
 
         <form onSubmit={handleSubmit} >
           <div className='p-4'>

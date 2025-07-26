@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -71,7 +71,6 @@ export default function PassengerOnboardingPage() {
       toast.success(res.data.message || 'Password set successfully!');
       setSuccess(true);
 
-      // Optionally redirect to login after a short delay
       setTimeout(() => {
         navigate('/passenger/login');
       }, 3000);
@@ -93,7 +92,6 @@ export default function PassengerOnboardingPage() {
       <div className="max-w-md mx-auto p-8 mt-20 bg-white border border-red-200 rounded shadow text-red-700 text-center">
         <h2 className="text-xl font-bold mb-4">Onboarding Error</h2>
         <p>{error}</p>
-        {/* Optionally add instructions or link to request a new onboarding link */}
       </div>
     );
   }

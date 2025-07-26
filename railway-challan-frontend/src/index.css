@@ -1,1 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Hans:wght@400;600;700&display=swap');
 @import "tailwindcss";
+
+.notosans {
+  font-family: 'Noto Sans', 'Noto Sans Hans', sans-serif;
+}
