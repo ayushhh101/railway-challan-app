@@ -15,6 +15,7 @@ import ManageUsersPage from './pages/ManageUsersPage';
 import TTEProfilePage from './pages/TTEProfilePage';
 import PassengerLoginPage from './pages/PassengerLoginPage';
 import PassengerDashboard from './pages/PassengerDashboard';
+import PassengerOnboardingPage from './pages/PassengerOnBoardingPage';
 
 function App() {
   return (
@@ -102,6 +103,8 @@ function App() {
           </PrivateRoute>
         } />
 
+        <Route path="/passenger/onboard" element={<PassengerOnboardingPage/>}
+        />
 
         <Route path="/verify/:id" element={<VerifyChallan/>}
         />
