@@ -1,5 +1,6 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
+const bcrypt = require('bcrypt')
 
 exports.getDashboardStats = async (req,res)=>{
   try {
@@ -173,3 +174,26 @@ exports.getTTEAnalytics = async (req,res) =>{
     res.status(500).json({ message: "Failed to fetch analytics", error: error.toString() });
   }
 }
+
+exports.adminResetPassword = async (req, res) => {
+  try {
+    const { employeeId, newPassword } = req.body;
+    if (!employeeId || !newPassword) {
+      return res.status(400).json({ message: "User and new password required." });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters." });
+    }
+    const user = await User.findOne({employeeId});
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    // TODO:Optional: user.passwordChangedAt = new Date();
+    await user.save();
+    // TODO:Log action here for audit if desired
+
+    res.status(200).json({ message: 'Password updated successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};

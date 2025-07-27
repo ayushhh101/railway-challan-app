@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDashboardStats, getMonthlyReport, getTTEAnalytics } = require('../controllers/adminController');
+const { getDashboardStats, getMonthlyReport, getTTEAnalytics, adminResetPassword } = require('../controllers/adminController');
 const { verifyToken } = require('../middleware/authMiddleware');
 const isAdmin = require('../middleware/isAdmin');
 const Anomaly = require('../models/anomalyModel');
@@ -21,5 +21,8 @@ router.get('/getAllAudits', verifyToken, isAdmin ,getAllAudits);
 router.get('/monthly-report', verifyToken, isAdmin ,getMonthlyReport);
 
 router.get('/getTTEAnalytics', verifyToken, isAdmin , getTTEAnalytics);
+
+router.post('/reset-password', verifyToken, isAdmin, adminResetPassword);
+
 
 module.exports = router;
