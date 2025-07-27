@@ -21,7 +21,10 @@ exports.register = async (req, res) => {
     }
 
     const { name, employeeId, password, role, zone } = req.body;
-
+    
+    if (!['tte', 'admin'].includes(role)) {
+      return res.status(400).json({ message: 'Role must be tte or admin' });
+    }
     // checks if user already exists
     const existingUser = await User.findOne({ employeeId });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });

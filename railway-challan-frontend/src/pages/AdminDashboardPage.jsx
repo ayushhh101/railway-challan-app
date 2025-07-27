@@ -17,6 +17,7 @@ import MonthlyTrendChart from '../components/MonthlyTrendChart';
 import ChallanHeatmap from '../components/ChallanHeatmap';
 import ChallanList from '../components/ChallanList';
 import { Link } from 'react-router-dom';
+import AddUserModal from '../components/AddUserModal';
 
 
 const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
@@ -42,6 +43,8 @@ const AdminDashboardPage = () => {
   const [reportMonth, setReportMonth] = useState('');
   const [reportYear, setReportYear] = useState('');
   const [monthlyReport, setMonthlyReport] = useState(null);
+
+  const [showAddUser, setShowAddUser] = useState(false);
 
   const toggleChallanSelection = (id) => {
     setSelectedChallans(prev =>
@@ -191,6 +194,21 @@ const AdminDashboardPage = () => {
           </Link>
         </div>
       </div>
+
+      <button
+      className="bg-blue-600 text-white px-3 py-1 rounded"
+      onClick={() => setShowAddUser(true)}
+    >
+      Add Admin/TTE
+    </button>
+
+    <AddUserModal
+      isOpen={showAddUser}
+      onClose={() => setShowAddUser(false)}
+      onUserAdded={() => {
+        // Optionally, trigger a reload of users list here
+      }}
+    />
 
       <ChallanFilters
         filters={filters}
