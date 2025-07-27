@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ResetPasswordModal from "../components/ResetPasswordModal";
 
 export default function ManageUsersPage() {
   const [tteStats, setTteStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+   // For reset password modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeUser, setActiveUser] = useState(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -14,7 +19,9 @@ export default function ManageUsersPage() {
           `${import.meta.env.VITE_API_URL}/api/admin/getTTEAnalytics`,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
+        console.log(res.data.tteStats)
         setTteStats(res.data.tteStats || []);
+        
       } catch (err) {
         setError("Failed to load TTE analytics.");
       } finally {
@@ -23,6 +30,20 @@ export default function ManageUsersPage() {
     };
     fetchAnalytics();
   }, []);
+
+  const handleOpenResetModal = (tte) => {
+    setActiveUser(tte);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setActiveUser(null);
+    setModalOpen(false);
+  };
+
+  const handleResetSuccess = () => {
+    //TODO: Optional: Show a toast/message or refetch users
+  };
 
   return (
     <main role="main" className="max-w-5xl mx-auto p-8 bg-white rounded-lg shadow-lg">
@@ -44,6 +65,7 @@ export default function ManageUsersPage() {
                 <th className="px-4 py-3 text-center text-xs font-bold text-blue-700 uppercase tracking-wider">Unpaid</th>
                 <th className="px-4 py-3 text-center text-xs font-bold text-blue-700 uppercase tracking-wider">Recovery %</th>
                 <th className="px-4 py-3 text-center text-xs font-bold text-blue-700 uppercase tracking-wider">Last Login</th>
+                <th className="px-4 py-3 text-center text-xs font-bold text-blue-700 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -61,6 +83,14 @@ export default function ManageUsersPage() {
                   <td className="px-4 py-2 text-center text-xs text-slate-500">
                     {tte.lastLogin ? new Date(tte.lastLogin).toLocaleString() : '—'}
                   </td>
+                  <td className="px-4 py-2 text-center">
+                    <button
+                      onClick={() => handleOpenResetModal(tte)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded shadow font-semibold"
+                    >
+                      Reset Password
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -70,6 +100,12 @@ export default function ManageUsersPage() {
           )}
         </div>
       )}
+      <ResetPasswordModal
+        user={activeUser}
+        isOpen={modalOpen}
+        onClose={handleCloseModal}
+        onSuccess={handleResetSuccess}
+      />
     </main>
   );
 }

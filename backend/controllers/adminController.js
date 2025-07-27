@@ -177,14 +177,14 @@ exports.getTTEAnalytics = async (req,res) =>{
 
 exports.adminResetPassword = async (req, res) => {
   try {
-    const { employeeId, newPassword } = req.body;
-    if (!employeeId || !newPassword) {
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword) {
       return res.status(400).json({ message: "User and new password required." });
     }
     if (newPassword.length < 8) {
       return res.status(400).json({ message: "Password must be at least 8 characters." });
     }
-    const user = await User.findOne({employeeId});
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found.' });
 
     user.password = await bcrypt.hash(newPassword, 10);
