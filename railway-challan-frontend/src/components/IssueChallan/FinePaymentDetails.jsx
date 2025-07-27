@@ -3,9 +3,9 @@ import TextInput from '../TextInput';
 
 export default function FinePaymentDetails({ form, handleChange }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div>
-        <p className='pl-2 pt-0 font-normal text-sm text-gray-500'>Select Fine Amount :</p>
+        <p className='font-normal text-sm text-gray-500'>Select Fine Amount :</p>
         <TextInput
           name="fineAmount"
           placeholder="Fine Amount"

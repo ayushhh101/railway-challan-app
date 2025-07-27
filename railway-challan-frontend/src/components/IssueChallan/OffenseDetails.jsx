@@ -39,7 +39,7 @@ export default function OffenseDetails({
 
       {form.reason === "Nuisance and Littering" && (
         <>
-          <p className='pl-3 font-normal text-sm text-gray-500'>No. of Prior Offenses</p>
+          <p className='font-normal text-sm text-gray-500'>No. of Prior Offenses</p>
           <TextInput
             name="priorOffenses"
             placeholder="No. of prior offences (1 for first time)"

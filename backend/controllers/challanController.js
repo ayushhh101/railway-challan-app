@@ -27,6 +27,7 @@ exports.issueChallan = async (req, res) => {
   try {
     const {
       trainNumber,
+      coachNumber,
       passengerName,
       passengerAadharLast4, // last 4 digits only
       mobileNumber,
@@ -45,6 +46,8 @@ exports.issueChallan = async (req, res) => {
     if (passengerAadharLast4 && passengerAadharLast4.length !== 4) {
       return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
     }
+
+    const normalizedCoachNumber = coachNumber && coachNumber.trim() !== '' ? coachNumber.trim() : null; 
 
     const proofFiles = req.files?.map(f => f.path) || [];
 
@@ -91,6 +94,7 @@ exports.issueChallan = async (req, res) => {
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
       trainNumber,
+      coachNumber :normalizedCoachNumber,
       passengerName,
       passengerAadharLast4,
       mobileNumber,

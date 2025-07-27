@@ -8,7 +8,9 @@ export default function DigitalSignature({ sigCanvasRef }) {
 
   return (
     <div>
+      <div className='pb-0.5'>
       <label className="text-sm font-medium">Digital Signature</label>
+      </div>
       <div className="border rounded-md p-2 bg-gray-50">
         <SignatureCanvas
           penColor="black"
@@ -23,7 +25,7 @@ export default function DigitalSignature({ sigCanvasRef }) {
       <button
         type="button"
         onClick={clearSignature}
-        className="text-sm text-red-600 mt-2 underline"
+        className="text-sm text-red-600 mt-2"
       >
         Clear Signature
       </button>

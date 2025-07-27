@@ -10,7 +10,6 @@ export default function TextInput ({ name, value, onChange, placeholder, type = 
         onChange={onChange}
         placeholder={placeholder}
         maxLength={maxLength}
-        required
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#1E40AF] focus:outline-none text-sm"
       />
     </>

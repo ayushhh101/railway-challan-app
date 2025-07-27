@@ -18,6 +18,7 @@ export default function useIssueChallan(user, token, sendNotification) {
 
   const [form, setForm] = useState({
     trainNumber: '',
+    coachNumber: '',
     passengerName: '',
     passengerAadharLast4: '',
     mobileNumber: '',
@@ -260,6 +261,7 @@ export default function useIssueChallan(user, token, sendNotification) {
       setForm({
         trainNumber: '',
         passengerName: '',
+        coachNumber:'',
         passengerAadharLast4: '',
         mobileNumber: '',
         reason: '',

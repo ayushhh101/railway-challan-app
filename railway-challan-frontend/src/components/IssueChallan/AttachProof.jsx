@@ -7,7 +7,7 @@ export default function AttachProof({ proofs, setProofs, isOffline }) {
 
   return (
     <div>
-      <label className="text-sm font-medium">
+      <label className="text-black text-sm font-semibold mb-2 border-b border-gray-200 pb-1">
         Attach Proof (Photo/PDF, optional, up to 4)
       </label>
       <input
@@ -17,7 +17,7 @@ export default function AttachProof({ proofs, setProofs, isOffline }) {
         multiple
         disabled={isOffline}
         onChange={handleFilesChange}
-        className="block mt-1"
+        className="block w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md p-2 file:py-2 file:px-4 file:roundedfile:border-0 file:text-sm file:text-blackdisabled:opacity-60"
       />
       <div className="flex flex-wrap gap-2 mt-2">
         {proofs.map((file, idx) => (

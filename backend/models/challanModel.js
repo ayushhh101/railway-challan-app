@@ -23,6 +23,10 @@ const challanSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  coachNumber: { 
+    type: String, 
+    required: false 
+  },
   passengerName: {
     type: String,
     required: true,
