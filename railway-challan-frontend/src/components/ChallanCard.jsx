@@ -4,11 +4,12 @@ import { useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import EditChallanModal from "./EditChallanModal";
+import { Link } from "react-router-dom";
 
 const ChallanCard = ({ challan }) => {
   const { user } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const isOwner = user?._id == challan.issuedBy?._id;
+  const isOwner = user?.employeeId == challan.issuedBy.employeeId;
 
   const handleDownload = async () => {
     try {
@@ -17,7 +18,7 @@ const ChallanCard = ({ challan }) => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challan._id}/pdf`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -79,14 +80,21 @@ const ChallanCard = ({ challan }) => {
           >
             Download PDF
           </button>
-          {isOwner && (
+
+          <Link
+            to={`/challans/${challan._id}`}
+            className="block bg-[#1E40AF] text-white px-3 py-1 mt-2 rounded text-center hover:bg-blue-800 transition"
+          >
+            View Details
+          </Link>
+          {/* {isOwner && (
             <button
               onClick={() => setIsEditOpen(true)}
               className="bg-[#1E40AF] text-white text-sm px-4 py-1.5 rounded-md hover:bg-blue-800 transition duration-200"
             >
               Edit Challan
             </button>
-          )}
+          )} */}
         </div>
 
       </div>

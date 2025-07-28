@@ -19,6 +19,7 @@ import TTEProfilePage from './pages/TTEProfilePage';
 import PassengerLoginPage from './pages/PassengerLoginPage';
 import PassengerDashboard from './pages/PassengerDashboard';
 import PassengerOnboardingPage from './pages/PassengerOnBoardingPage';
+import ChallanDetailPage from './pages/ChallanDetailPage';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -151,6 +152,12 @@ function App() {
         <Route path="/passenger/dashboard" element={
           <PrivateRoute allowedRoles={['passenger']}>
             <PassengerDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/challans/:id" element={
+          <PrivateRoute allowedRoles={['tte','admin']}>
+            <ChallanDetailPage />
           </PrivateRoute>
         } />
 

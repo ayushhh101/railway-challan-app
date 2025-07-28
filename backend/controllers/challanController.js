@@ -362,7 +362,7 @@ exports.updateAnomaly = async (req, res) => {
 
 exports.getChallan = async (req, res) => {
   try {
-    const challan = await Challan.findById(req.params.id).populate('issuedBy', 'name');
+    const challan = await Challan.findById(req.params.id).populate('issuedBy', 'name employeeId role zone');
     if (!challan) return res.status(404).json({ message: 'Challan not found' });
     res.json({ challan });
   } catch (err) {
