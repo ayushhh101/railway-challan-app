@@ -10,10 +10,19 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  email :{
+    type: String, 
+    unique: true, 
+  },
   password: {
     type: String,
     required: true,
   },
+  phone: {
+    type: String, 
+    unique: true,
+  },
+  profilePic: String,
   role: {
     type: String,
     enum: ['tte', 'admin'],
@@ -22,6 +31,9 @@ const userSchema = new mongoose.Schema({
   zone: {
     type: String, // Central, Western, etc.
   },
+  currentStation: { type: String },
+  designation: { type: String },
+  dateOfJoining: { type: Date },
   lastLogin: Date,
 }, { timestamps: true });
 

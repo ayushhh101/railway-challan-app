@@ -20,7 +20,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const { name, employeeId, password, role, zone } = req.body;
+    const { name, employeeId, email, password, phone, profilePic, role, zone ,currentStation ,designation ,dateOfJoining} = req.body;
     
     if (!['tte', 'admin'].includes(role)) {
       return res.status(400).json({ message: 'Role must be tte or admin' });
@@ -34,9 +34,15 @@ exports.register = async (req, res) => {
     const newUser = new User({
       name,
       employeeId,
+      email,
       password: hashedPassword,
+      phone,
+      profilePic,
       role,
-      zone
+      zone,
+      currentStation,
+      designation,
+      dateOfJoining
     });
 
     await newUser.save();
