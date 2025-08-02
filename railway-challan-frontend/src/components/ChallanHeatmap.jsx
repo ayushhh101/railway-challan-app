@@ -28,7 +28,7 @@ const ChallanHeatmap = ({ challansByLocation }) => {
       <MapContainer
         center={[19.076, 72.8777]}
         zoom={11}
-        style={{ height: 400, width: '100%' }}
+        style={{ height: 300, width: '100%' }}
         minZoom={6}
         maxBounds={[[8, 68], [37, 98]]} // Rough bounds covering India
         maxBoundsViscosity={1.0} // Prevent panning outside

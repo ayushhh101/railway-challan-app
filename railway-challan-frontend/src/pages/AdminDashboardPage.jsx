@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveCo
 import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
+import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 
 //for bulk download
 import * as XLSX from 'xlsx';
@@ -180,35 +181,20 @@ const AdminDashboardPage = () => {
   if (!stats) return <div className="text-center mt-10">Loading dashboard...</div>;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-10">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-        <h1 className="text-2xl pl-0 sm:pl-5 font-bold text-gray-800 text-center sm:text-left">
+    <div className=" max-w-7xl mx-auto  px-4 pt-8 pb-12 space-y-10 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
+        <h1 className="text-3xl pl-0 sm:pl-5 font-bold text-gray-800 text-center sm:text-left">
           Admin Dashboard
         </h1>
-        <div className='flex gap-2 justify-center sm:justify-end'>
-          <Link to="/anomalies">
-            <h1 className="text-base font-bold text-red-800 border border-red-800 bg-red-100 rounded-2xl px-2 py-1 sm:p-2">Anomalies</h1>
-          </Link>
-          <Link to="/audit-log">
-            <h1 className="text-base font-bold text-[#1E40AF] border border-blue-800 bg-blue-100 rounded-2xl px-2 py-1 sm:p-2">Audit Log</h1>
-          </Link>
-        </div>
       </div>
 
-      <button
-      className="bg-blue-600 text-white px-3 py-1 rounded"
-      onClick={() => setShowAddUser(true)}
-    >
-      Add Admin/TTE
-    </button>
-
-    <AddUserModal
-      isOpen={showAddUser}
-      onClose={() => setShowAddUser(false)}
-      onUserAdded={() => {
-       //TODO:
-      }}
-    />
+      <AddUserModal
+        isOpen={showAddUser}
+        onClose={() => setShowAddUser(false)}
+        onUserAdded={() => {
+          //TODO:
+        }}
+      />
 
       <ChallanFilters
         filters={filters}
@@ -235,19 +221,74 @@ const AdminDashboardPage = () => {
 
       <SummaryCard stats={stats} />
 
-      <Link to='/monthly-report'>
-        <button className="bg-[#1E40AF] text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded hover:bg-blue-900 transition">
-          📅 View Monthly Report
+      <div className="flex flex-wrap gap-2 mb-6 justify-start">
+        <Link to="/anomalies">
+          <button
+            className="rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-2 font-semibold text-sm hover:bg-red-100 transition shadow-sm"
+          >
+            <BugAntIcon className="w-5 h-5 mr-2 inline" />
+            Anomalies
+          </button>
+        </Link>
+        <Link to="/audit-log">
+          <button
+            className="rounded-lg bg-blue-50 text-blue-800 border border-blue-200 px-4 py-2 font-semibold text-sm hover:bg-blue-100 transition shadow-sm"
+          >
+            <ClipboardDocumentListIcon className="w-5 h-5 mr-2 inline" />
+            Audit Log
+          </button>
+        </Link>
+        <button
+          className="rounded-lg bg-blue-600 text-white font-semibold px-4 py-2 text-sm hover:bg-blue-800 transition shadow-sm"
+          onClick={() => setShowAddUser(true)}
+        >
+          <UserPlusIcon className="w-5 h-5 mr-2 inline" />
+          Add Admin/TTE
         </button>
-      </Link>
+      </div>
 
-      <ChallansByReasonChart data={stats.challansByReason} stats={stats} />
 
-      <TopTTEBarChart stats={stats} />
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-100 px-4 sm:px-10 py-7 my-8">
+        {/* Title row */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Data Visualization</h2>
+          <button
+            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-800 transition text-sm w-fit"
+            onClick={() => {
+              // TODO: Add your export handler here, e.g. exportAnalyticsData()
+            }}
+          >
+            Export Data
+          </button>
+        </div>
 
-      <MonthlyTrendChart trend={stats.monthlyTrend} />
+        {/* Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+            <div className="w-full h-full">
+              <ChallansByReasonChart data={stats?.challansByReason} stats={stats} />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+            <div className="w-full h-full">
+              <MonthlyTrendChart trend={stats?.monthlyTrend} />
+            </div>
+          </div>
+        </div>
 
-      <ChallanHeatmap challansByLocation={challansByLocation} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+            <div className="w-full h-full">
+              <TopTTEBarChart stats={stats} />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+            <div className="w-full h-full">
+              <ChallanHeatmap challansByLocation={challansByLocation} />
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   );
