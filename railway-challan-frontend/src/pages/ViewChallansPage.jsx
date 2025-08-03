@@ -125,69 +125,80 @@ const ViewChallansPage = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto bg-[#F8FAFC] min-h-screen">
-      <h1 className="text-2xl sm:text-3xl font-bold text-[#1E40AF] mb-3 text-center">
+      <h1 className="text-2xl sm:text-3xl font-bold text-[#1E40AF] mb-3">
         {searchMode
           ? `History for ${nameQuery} (****${aadharQuery})`
           : 'Challan History'}
       </h1>
 
       {searchMode && (
-        <p className="text-center text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Showing all challans issued to this passenger.
         </p>
       )}
 
-      <form onSubmit={handleSearch} className="mb-6 flex flex-col sm:flex-row sm:gap-2 gap-2 justify-center items-center">
-        <input
-          type="text"
-          placeholder="Passenger Name"
-          value={nameQuery}
-          onChange={(e) => setNameQuery(e.target.value)}
-          className="border px-4 py-2 rounded-md w-full sm:w-1/3"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Aadhar Last 4"
-          value={aadharQuery}
-          onChange={(e) => setAadharQuery(e.target.value)}
-          className="border px-4 py-2 rounded-md w-full sm:w-1/4"
-          maxLength={4}
-          required
-        />
-        <button
-          type="submit"
-          className="bg-[#1E40AF] text-sm text-white px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-blue-900 transition text-nowrap"
-        >
-          Search History
-        </button>
-        {searchMode && (
-          <button
-            type="button"
-            onClick={resetSearch}
-            className="text-sm bg-gray-500 rounded-md text-white mt-1 sm:mt-0 px-2 py-1 sm:px-3 sm:py-2 text-nowrap"
-          >
-            Clear Search
-          </button>
-        )}
-
-        <div className=" flex justify-center gap-4">
-          <label className="flex items-center gap-2 text-sm font-normal text-[#1E40AF]">
-            Sort by date:
-            <select
-              value={sortOrder}
-              onChange={e => setSortOrder(e.target.value)}
-              className="border rounded p-0.5 sm:p-2 text-sm"
-            >
-              <option value="desc">Newest First</option>
-              <option value="asc">Oldest First</option>
-            </select>
+      <form
+        onSubmit={handleSearch}
+        className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 bg-white p-4 rounded-xl shadow-sm w-full"
+      >
+        {/* Name */}
+        <div className="flex flex-col flex-1">
+          <label htmlFor="passengerName" className="mb-1 text-xs font-medium text-gray-600">
+            Enter Passenger Name
           </label>
+          <input
+            type="text"
+            placeholder="Passenger Name"
+            value={nameQuery}
+            onChange={e => setNameQuery(e.target.value)}
+            className="border px-4 py-2 rounded-md text-sm w-full "
+            required
+          />
         </div>
 
+        {/* Aadhaar Last 4 */}
+        <div className="flex flex-col flex-1">
+          <label htmlFor="aadhar" className="mb-1 text-xs font-medium text-gray-600">
+            Enter Aadhar
+          </label>
+          <input
+            type="text"
+            placeholder="Aadhaar Last 4"
+            value={aadharQuery}
+            onChange={e => setAadharQuery(e.target.value)}
+            className="border px-4 py-2 rounded-md text-sm w-full"
+            maxLength={4}
+            required
+          />
+        </div>
+
+        {/* Sort By */}
+        <div className="flex flex-col flex-1 min-w-[160px] max-w-xs">
+          <label htmlFor="sortBy" className="mb-1 text-xs font-medium text-gray-600">
+            Sort By
+          </label>
+          <select
+            value={sortOrder}
+            onChange={e => setSortOrder(e.target.value)}
+            className="border rounded-md px-4 py-2 text-sm w-full"
+          >
+            <option value="desc">Date (Newest First)</option>
+            <option value="asc">Date (Oldest First)</option>
+          </select>
+        </div>
+
+        {/* Search Button */}
+        <button
+          type="submit"
+          className="bg-[#1E40AF] mt-1 text-white text-sm sm:mt-4.5 px-2 py-1 sm:px-3 sm:py-2 text-nowrap rounded-md hover:bg-blue-800 transition"
+        >
+          Search
+        </button>
+        {searchMode && (<button type="button" onClick={resetSearch} className="text-sm mt-1 bg-gray-500 rounded-md text-white sm:mt-4.5 px-2 py-1 sm:px-3 sm:py-2 text-nowrap" > Clear Search </button>)}
       </form>
 
-      <h2 className="text-md font-semibold text-[#1E40AF] mb-2 text-left">Recent Issued Challans</h2>
+
+      <h2 className="text-md font-semibold text-[#1E40AF] mt-3 mb-2 text-left">Recently Issued Challans</h2>
 
       {loading ? (
         <div className="text-center text-md text-slate-800 py-8">Loading challans...</div>
