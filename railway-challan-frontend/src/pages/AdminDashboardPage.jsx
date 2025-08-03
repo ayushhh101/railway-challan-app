@@ -28,7 +28,7 @@ const AdminDashboardPage = () => {
   const [challansByLocation, setChallansByLocation] = useState([]);
   const [filters, setFilters] = useState({ passenger: '', train: '', reason: '', date: '', status: '' });
   const [filteredChallans, setFilteredChallans] = useState([]);
-  const [viewType, setViewType] = useState('card');
+  const [viewType, setViewType] = useState('table');
 
   // pagination state
   const [currentPage, setCurrentPage] = useState(1);

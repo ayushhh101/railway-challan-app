@@ -119,7 +119,7 @@ export default function PassengerHistoryPage() {
   }, [results, currentPage, totalPages]);
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-lg">
+    <div className="max-w-7xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-6">
       <h2 className="text-2xl font-bold mb-6 text-blue-800 border-b pb-3">
         Passenger Challan History
       </h2>
@@ -229,12 +229,12 @@ export default function PassengerHistoryPage() {
           </div>
         </div>
       )}
-
+      
       {results.length > 0 ? (
         <ChallanList
           filteredChallans={results}
           selectedChallans={selectedChallans}
-          viewType="card"
+          viewType="table"
           paginatedChallans={paginatedChallans}
           totalPages={totalPages}
           currentPage={currentPage}
