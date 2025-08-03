@@ -10,8 +10,9 @@ const { default: mongoose } = require('mongoose');
 const logAudit = require('../utils/auditLogger');
 const Passenger = require('../models/passengerModel');
 const jwt = require('jsonwebtoken');
+const validator = require('validator')
 
-const PASSENGER_ONBOARD_SECRET = process.env.PASSENGER_ONBOARD_SECRET ;
+const PASSENGER_ONBOARD_SECRET = process.env.PASSENGER_ONBOARD_SECRET;
 
 function generateOnboardingToken(passengerId) {
   return jwt.sign({ passengerId }, PASSENGER_ONBOARD_SECRET, { expiresIn: '24h' });
@@ -25,38 +26,70 @@ async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
 
 exports.issueChallan = async (req, res) => {
   try {
-    const {
-      trainNumber,
-      coachNumber,
-      passengerName,
-      passengerAadharLast4, // last 4 digits only
-      mobileNumber,
-      reason,
+    let {
+      trainNumber = '',
+      coachNumber = '',
+      passengerName = '',
+      passengerAadharLast4 = '', // last 4 digits only
+      mobileNumber = '',
+      reason = '',
       fineAmount,
-      location,
-      paymentMode,
+      location = '',
+      paymentMode = '',
       paid = false, // default to false if not provided
-      signature, // base64 encoded image
+      signature = '', // base64 encoded image
     } = req.body;
 
-    if (!trainNumber || !passengerName || !reason || !fineAmount) {
+    trainNumber = trainNumber.trim();
+    coachNumber = coachNumber?.trim();
+    passengerName = passengerName.trim();
+    location = location.trim();
+
+    if (!trainNumber || !passengerName || !reason || !fineAmount || !location || !paymentMode) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-
+    if (!/^[A-Za-z0-9\s-]+$/.test(trainNumber)) {
+      return res.status(400).json({ message: "Invalid train number." });
+    }
+    if (!/^[A-Za-z\s]+$/.test(passengerName)) {
+      return res.status(400).json({ message: "Passenger name can only contain letters and spaces." });
+    }
     if (passengerAadharLast4 && passengerAadharLast4.length !== 4) {
       return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
     }
+    if (mobileNumber && !validator.isMobilePhone(mobileNumber.toString(), 'en-IN')) {
+      return res.status(400).json({ message: "Mobile number must be a valid 10 digit Indian number." });
+    }
+    fineAmount = Number(fineAmount);
+    if (isNaN(fineAmount) || fineAmount <= 0) {
+      return res.status(400).json({ message: "Fine amount must be a positive number." });
+    }
+    if (signature && typeof signature !== 'string') {
+      return res.status(400).json({ message: "Signature must be a base64 image string." });
+    }
+    paymentMode = paymentMode.toLowerCase();
+    if (!['online', 'offline'].includes(paymentMode)) {
+      return res.status(400).json({ message: "Payment mode must be 'online' or 'offline'." });
+    }
 
-    const normalizedCoachNumber = coachNumber && coachNumber.trim() !== '' ? coachNumber.trim() : null; 
+    const normalizedCoachNumber = coachNumber && coachNumber.trim() !== '' ? coachNumber.trim() : null;
 
     const proofFiles = req.files?.map(f => f.path) || [];
-
+    if (proofFiles.length > 4) {
+      return res.status(400).json({ message: "You can upload up to 4 proof files only." });
+    }
     // lookup station lat/lng
-    const station = await Station.findOne({ name: location });
+    const station = await Station.findOne({ name: { $regex: `^${location}$`, $options: 'i' } });
     if (!station) {
       return res.status(404).json({ message: "Station not found in records" });
     }
 
+    const existingUser = await Challan.findOne({ passengerAadharLast4 });
+    if( existingUser.passengerName.trim().toLowerCase() !== passengerName.trim().toLowerCase() ){
+      return res.status(404).json({ message: "Different name for the same aadhar number" });
+    }
+
+    console.log('Searching for passenger user with mob:', mobileNumber, 'aad:', passengerAadharLast4);
     let passengerUser = null;
     if (mobileNumber && passengerAadharLast4) {
       passengerUser = await Passenger.findOne({
@@ -67,21 +100,37 @@ exports.issueChallan = async (req, res) => {
       passengerUser = await Passenger.findOne({ mobileNumber: mobileNumber.toString() });
     }
 
-    let justCreatedPassenger = false;
-    if (!passengerUser) {
-      // Create passenger user
+    if (passengerUser) {
+      // Existing passenger
+      if (!passengerUser.passwordHash) {
+        // Resend onboarding instructions if passenger has not set a password yet
+        const onboardingToken = generateOnboardingToken(passengerUser._id);
+        const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
+        await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
+
+        // Respond to frontend with clear message and stop challan issuing
+        return res.status(409).json({
+          message: "Passenger already exists. Onboarding instructions have been resent if required."
+        });
+      }
+      // Otherwise, continue as usual to create the challan...
+    } else {
+      // No existing passenger -- create and save new
       passengerUser = new Passenger({
         name: passengerName,
-        aadharLast4: passengerAadharLast4 || '', // store empty string if not provided
-        mobileNumber: mobileNumber ? mobileNumber.toString() : '', // string to store uniformly
+        aadharLast4: passengerAadharLast4 || '',
+        mobileNumber: mobileNumber ? mobileNumber.toString() : '',
       });
 
       try {
         await passengerUser.save();
         console.log(`Created new passenger user for ${passengerName}, mobile ${mobileNumber}`);
-        justCreatedPassenger=true;
+        const onboardingToken = generateOnboardingToken(passengerUser._id);
+        const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
+        await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
+
       } catch (e) {
-        // Handle duplicate or validation errors gracefully (might have race conditions)
+        // Race condition safety: try to find user again
         console.warn(`Passenger user creation failed: ${e.message}`);
         passengerUser = await Passenger.findOne({
           mobileNumber: mobileNumber.toString(),
@@ -89,12 +138,11 @@ exports.issueChallan = async (req, res) => {
         });
       }
     }
-
     //creates challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
       trainNumber,
-      coachNumber :normalizedCoachNumber,
+      coachNumber: normalizedCoachNumber,
       passengerName,
       passengerAadharLast4,
       mobileNumber,
