@@ -22,6 +22,7 @@ const AdminAudit = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         setLogs(res.data.audits);
+        //TODO: only fetch page-wise audits 
       } catch (err) {
         console.error('Error fetching audit logs:', err);
       } finally {
@@ -35,7 +36,7 @@ const AdminAudit = () => {
   if (loading) return <p className="text-center mt-6">Loading audit logs...</p>;
 
   return (
-    <div className="p-3 sm:p-6 max-w-6xl mx-auto">
+    <div className="p-3 sm:p-6 max-w-6xl mx-auto mt-4">
       <h1 className="text-xl sm:text-3xl font-bold mb-6 text-[#1E40AF]">Audit Logs</h1>
 
       {/* Mobile: cards view. Desktop: table */}

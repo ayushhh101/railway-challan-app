@@ -26,7 +26,7 @@ const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [challansByLocation, setChallansByLocation] = useState([]);
-  const [filters, setFilters] = useState({ name: '', train: '', reason: '', date: '', status: '' });
+  const [filters, setFilters] = useState({ passenger: '', train: '', reason: '', date: '', status: '' });
   const [filteredChallans, setFilteredChallans] = useState([]);
   const [viewType, setViewType] = useState('card');
 
@@ -98,6 +98,7 @@ const AdminDashboardPage = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/search?${params.toString()}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
+      console.log(res.data)
       setFilteredChallans(res.data);
       setCurrentPage(1);
     } catch (error) {

@@ -12,7 +12,7 @@ export default function ChallanFilters({ filters, setFilters, handleFilter, clea
           <div className="text-xs mb-1">
             Passenger Name
           </div>
-          <input type="text" placeholder="Enter Passenger Name" value={filters.name} onChange={e => setFilters({ ...filters, name: e.target.value })} className="flex-1 border border-slate-300 rounded-lg px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-blue-200 transition outline-none text-sm w-full" />
+          <input type="text" placeholder="Enter Passenger Name" value={filters.passenger} onChange={e => setFilters({ ...filters, passenger: e.target.value })} className="flex-1 border border-slate-300 rounded-lg px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-blue-200 transition outline-none text-sm w-full" />
         </div>
 
 
@@ -56,14 +56,14 @@ export default function ChallanFilters({ filters, setFilters, handleFilter, clea
           <MagnifyingGlassIcon className="h-3 text-white " /> Search
           </button>
         <button onClick={clearFilters} className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-slate-300 transition flex items-center gap-1">
-          <ArrowPathIcon class="h-3 text-black" />Clear
+          <ArrowPathIcon className="h-3 text-black" />Clear
           </button>
         <button onClick={() => setViewType(viewType === 'card' ? 'table' : 'card')} className="bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition">
           Switch to {viewType === 'card' ? 'Table' : 'Card'} View
         </button>
         <Link to='/monthly-report'>
         <button className="bg-[#1E40AF] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition flex items-center gap-1">
-          <CalendarIcon class="h-4 text-white" />Monthly Report
+          <CalendarIcon className="h-4 text-white" />Monthly Report
         </button>
       </Link>
       </div>

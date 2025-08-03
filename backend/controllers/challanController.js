@@ -281,7 +281,7 @@ exports.getChallanLocations = async (req, res) => {
 
 // Search challans by various criteria
 exports.searchChallans = async (req, res) => {
-  const { passenger, train, reason, date, status } = req.query;
+  const { passenger , train, reason, date, status } = req.query;
 
   const filter = {};
   if (passenger) filter.passengerName = { $regex: passenger, $options: 'i' };
