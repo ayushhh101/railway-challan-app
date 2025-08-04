@@ -2,8 +2,13 @@ const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt')
 
-exports.getDashboardStats = async (req,res)=>{
+exports.getDashboardStats = async (req, res) => {
   try {
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
     // total challans
     const totalChallans = await Challan.countDocuments();
 
@@ -18,7 +23,7 @@ exports.getDashboardStats = async (req,res)=>{
       }
     ]);
 
-     // Paid vs Unpaid challans count
+    // Paid vs Unpaid challans count
     const paidUnpaidStats = await Challan.aggregate([
       {
         $group: {
@@ -28,7 +33,7 @@ exports.getDashboardStats = async (req,res)=>{
       }
     ]);
 
-    // Challans per TTE (Top 5)
+    //(Top 5)
     const challansPerTTE = await Challan.aggregate([
       {
         $group: {
@@ -57,7 +62,7 @@ exports.getDashboardStats = async (req,res)=>{
       { $limit: 5 }
     ]);
 
-    // Challans per train (Top 5)
+    //(Top 5)
     const challansPerTrain = await Challan.aggregate([
       {
         $group: {
@@ -69,7 +74,6 @@ exports.getDashboardStats = async (req,res)=>{
       { $limit: 5 }
     ]);
 
-    // Challans by reason
     const challansByReason = await Challan.aggregate([
       {
         $group: {
@@ -79,7 +83,7 @@ exports.getDashboardStats = async (req,res)=>{
       }
     ]);
 
-     // Monthly trend of challans issued (last 6 months)
+    //(last 6 months)
     const monthlyTrend = await Challan.aggregate([
       {
         $group: {
@@ -93,10 +97,55 @@ exports.getDashboardStats = async (req,res)=>{
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
 
+
+    const challansThisMonth = await Challan.countDocuments({
+      issuedAt: { $gte: startOfThisMonth }
+    });
+    const challansLastMonth = await Challan.countDocuments({
+      issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
+    });
+    const totalChallansChange = challansLastMonth === 0 ? 100 : ((challansThisMonth - challansLastMonth) / Math.max(challansLastMonth, 1)) * 100;
+
+
+
+    const fineThisMonthAgg = await Challan.aggregate([
+      { $match: { paid: true, issuedAt: { $gte: startOfThisMonth } } },
+      { $group: { _id: null, total: { $sum: "$fineAmount" } } }
+    ]);
+    const fineLastMonthAgg = await Challan.aggregate([
+      { $match: { paid: true, issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } } },
+      { $group: { _id: null, total: { $sum: "$fineAmount" } } }
+    ]);
+    const fineThisMonth = fineThisMonthAgg[0]?.total || 0;
+    const fineLastMonth = fineLastMonthAgg[0]?.total || 0;
+    const totalFineCollectedChange = fineLastMonth === 0 ? (fineThisMonth ? 100 : 0) : ((fineThisMonth - fineLastMonth) / Math.max(fineLastMonth, 1)) * 100;
+
+
+    const paidUnpaidThisMonth = await Challan.aggregate([
+      { $match: { issuedAt: { $gte: startOfThisMonth } } },
+      { $group: { _id: "$paid", count: { $sum: 1 } } }
+    ]);
+    const paidUnpaidLastMonth = await Challan.aggregate([
+      { $match: { issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } } },
+      { $group: { _id: "$paid", count: { $sum: 1 } } }
+    ]);
+    const findCount = (arr, paid) => arr.find(x => x._id === paid)?.count || 0;
+    const paidChallansThis = findCount(paidUnpaidThisMonth, true);
+    const paidChallansLast = findCount(paidUnpaidLastMonth, true);
+    const unpaidChallansThis = findCount(paidUnpaidThisMonth, false);
+    const unpaidChallansLast = findCount(paidUnpaidLastMonth, false);
+    const paidChallansChange = paidChallansLast === 0 ? (paidChallansThis ? 100 : 0) : ((paidChallansThis - paidChallansLast) / Math.max(paidChallansLast, 1)) * 100;
+    const unpaidChallansChange = unpaidChallansLast === 0 ? (unpaidChallansThis ? 100 : 0) : ((unpaidChallansThis - unpaidChallansLast) / Math.max(unpaidChallansLast, 1)) * 100;
+
+
     res.json({
       totalChallans,
+      totalChallansChange: Number(totalChallansChange.toFixed(2)),
       totalFineCollected: totalFineCollected[0]?.total || 0,
+      totalFineCollectedChange: Number(totalFineCollectedChange.toFixed(2)),
       paidUnpaidStats,
+      paidChallansChange: Number(paidChallansChange.toFixed(2)),
+      unpaidChallansChange: Number(unpaidChallansChange.toFixed(2)),
       challansPerTTE,
       challansPerTrain,
       challansByReason,
@@ -140,7 +189,7 @@ exports.getMonthlyReport = async (req, res) => {
   }
 };
 
-exports.getTTEAnalytics = async (req,res) =>{
+exports.getTTEAnalytics = async (req, res) => {
   try {
     // Get all TTE users
     const ttes = await User.find({ role: 'tte' });
@@ -153,7 +202,7 @@ exports.getTTEAnalytics = async (req,res) =>{
         const issued = challans.length;
         const paid = challans.filter(c => c.paid).length;
         const unpaid = issued - paid;
-        const recovery = issued === 0 ? 0 : Math.round((paid/issued)*100);
+        const recovery = issued === 0 ? 0 : Math.round((paid / issued) * 100);
         return {
           id: tte._id,
           name: tte.name,

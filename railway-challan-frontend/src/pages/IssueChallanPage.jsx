@@ -37,7 +37,7 @@ export default function IssueChallanPage() {
 
   return (
    <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center px-2 sm:px-0 font-notosans pt-5">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 p-7">
+      <div className="w-full max-w-full sm:max-w-[90vw] md:max-w-[600px] lg:max-w-[50vw]  bg-white rounded-2xl shadow-2xl border border-gray-200 p-7">
         <h2 className="text-2xl font-bold text-blue-800 text-center mb-5  border-b border-gray-200">
           Issue Challan
         </h2>

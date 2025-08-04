@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     setAuth({ token,  user });
+    //TODO: automatically logout after token expires
   };
 
   // function to logout user, clear token and user info from state and localStorage
