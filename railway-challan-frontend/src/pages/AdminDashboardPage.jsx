@@ -237,7 +237,7 @@ const AdminDashboardPage = () => {
         error={error}
       />
 
-      <SummaryCard stats={stats} loading={loading} error={error} onRetry={fetchStats} />
+      <SummaryCard stats={stats} loading={loading} error={error}/>
 
       <div className="flex flex-wrap gap-2 mb-6 justify-start">
         <Link to="/anomalies">

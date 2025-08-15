@@ -159,6 +159,14 @@ exports.getDashboardStats = async (req, res) => {
 exports.getMonthlyReport = async (req, res) => {
   const { month, year } = req.query;
 
+  if (
+    !month || !year ||
+    !/^(0[1-9]|1[0-2])$/.test(month) ||
+    !/^\d{4}$/.test(year)
+  ) {
+    return res.status(400).json({ error: true, message: "Invalid month or year." });
+  }
+
   try {
     const start = new Date(`${year}-${month}-01`);
     const end = new Date(start);
@@ -184,7 +192,8 @@ exports.getMonthlyReport = async (req, res) => {
 
     res.json({ challans, stats });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+     console.error("Monthly report error:", err);
+    res.status(500).json({ message: 'Unable to fetch monthly report. Please try again later.', error: err.message });
   }
 };
 

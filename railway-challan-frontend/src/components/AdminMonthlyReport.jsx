@@ -13,9 +13,12 @@ export default function AdminMonthlyReport() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchReport = async () => {
     setLoading(true);
+    setError(null);
+    setReport(null)
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
@@ -24,7 +27,8 @@ export default function AdminMonthlyReport() {
       );
       setReport(res.data);
     } catch (err) {
-      console.error('Failed to fetch report', err);
+      setError(err.message || "Failed to fetch report. Please try again.");
+      setReport(null);
     } finally {
       setLoading(false);
     }
@@ -49,6 +53,18 @@ export default function AdminMonthlyReport() {
       setDownloading(false);
     }
   };
+
+  const isEmpty = (
+    !report ||
+    !report.stats ||
+    (Array.isArray(report.challans) && report.challans.length === 0 &&
+      report.stats.totalChallans === 0 &&
+      report.stats.totalRevenue === 0 &&
+      Object.keys(report.stats.paymentModeBreakdown || {}).length === 0 &&
+      Object.keys(report.stats.reasonBreakdown || {}).length === 0 &&
+      Object.keys(report.stats.stationBreakdown || {}).length === 0
+    )
+  );
 
   return (
     <div className="bg-white shadow-md rounded-xl px-2 py-5 mt-4 sm:p-6 sm:mt-6">
@@ -80,7 +96,19 @@ export default function AdminMonthlyReport() {
 
       {loading && <p className="text-center text-gray-600">Loading...</p>}
 
-      {report && (
+      {error && (
+        <div className="bg-white p-8 rounded-xl text-center text-red-700 font-semibold mb-6">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && isEmpty && (
+        <div className="text-center text-gray-400 mb-3 italic">
+          No report data to display. Choose a month and year and generate a report.
+        </div>
+      )}
+
+      {report && !isEmpty &&  (
         <>
           <div className="mb-4 text-center space-y-1">
             <p className="font-semibold text-lg text-gray-800">

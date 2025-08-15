@@ -20,7 +20,11 @@ export default function TTEProfilePage() {
         setStats(res.data.stats);
         setRecentChallans(res.data.recentChallans);
       } catch (err) {
-        setError("Could not load your profile.");
+        setError(
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          "Could not load your profile."
+        );
       } finally {
         setLoading(false);
       }
