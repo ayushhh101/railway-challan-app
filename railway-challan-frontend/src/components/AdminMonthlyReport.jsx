@@ -87,6 +87,7 @@ export default function AdminMonthlyReport() {
           className="border px-3 py-2 rounded w-24"
         />
         <button
+          aria-label="Gemerate Monthly Report"
           onClick={fetchReport}
           className="bg-[#1E40AF] text-white px-5 py-2 rounded hover:bg-blue-900"
         >
@@ -108,7 +109,7 @@ export default function AdminMonthlyReport() {
         </div>
       )}
 
-      {report && !isEmpty &&  (
+      {report && !isEmpty && (
         <>
           <div className="mb-4 text-center space-y-1">
             <p className="font-semibold text-lg text-gray-800">
@@ -118,6 +119,7 @@ export default function AdminMonthlyReport() {
               Total Revenue: ₹<span className="text-green-600">{report.stats.totalRevenue}</span>
             </p>
             <button
+              aria-label="Download Monthly CSV Report"
               onClick={downloadXLSX}
               className="mt-2 text-sm text-blue-700 underline hover:text-blue-900"
               disabled={downloading}

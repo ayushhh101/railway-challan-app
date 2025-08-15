@@ -154,6 +154,7 @@ export default function PassengerOnboardingPage() {
           type="submit"
           disabled={loading}
           className="w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800 transition"
+           aria-label="Set Password"
         >
           {loading ? 'Setting password...' : 'Set Password'}
         </button>

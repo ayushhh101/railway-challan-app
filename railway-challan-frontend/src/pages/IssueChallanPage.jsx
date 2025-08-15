@@ -59,6 +59,7 @@ export default function IssueChallanPage() {
             onClick={async () => { await syncOfflineChallans(); }}
             disabled={!pendingChallans.length || loading}
             type="button"
+            aria-label="Sync offline challans"
           >
             Sync Offline
           </button>
@@ -98,6 +99,7 @@ export default function IssueChallanPage() {
             disabled={loading}
             className="w-full text-md font-medium rounded-xl
               py-3 mt-2 shadow-sm transition bg-[#1E40AF] text-white hover:bg-blue-900 disabled:opacity-60"
+              aria-label="Issue challan"
           >
             {loading ? "Issuing Challan..." : "Issue Challan"}
           </button>

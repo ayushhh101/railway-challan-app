@@ -68,6 +68,7 @@ const EditChallanModal = ({ challan, onClose }) => {
               type="button"
               onClick={onClose}
               className="px-4 py-2 bg-gray-200 rounded-md text-sm hover:bg-gray-300"
+              aria-label="Cancel Changes"
             >
               Cancel
             </button>
@@ -75,6 +76,7 @@ const EditChallanModal = ({ challan, onClose }) => {
               type="submit"
               disabled={loading}
               className="px-4 py-2 bg-[#1E40AF] text-white rounded-md text-sm hover:bg-blue-900"
+              aria-label="Save Changes"
             >
               {loading ? 'Saving...' : 'Save Changes'}
             </button>

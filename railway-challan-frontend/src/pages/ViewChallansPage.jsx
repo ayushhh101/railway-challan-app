@@ -219,6 +219,7 @@ const ViewChallansPage = () => {
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
             className={`px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+             aria-label="Previous Page"
           >
             Previous
           </button>
@@ -229,6 +230,7 @@ const ViewChallansPage = () => {
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
             className={`px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+            aria-label="Next Page"
           >
             Next
           </button>

@@ -130,6 +130,7 @@ const AdminAudit = () => {
             onClick={() => setcurrentPage(p => Math.max(p - 1, 1))}
             className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
             disabled={currentPage === 1}
+            aria-label="Previous Page"
           >
             Previous
           </button>
@@ -140,6 +141,7 @@ const AdminAudit = () => {
             onClick={() => setcurrentPage(p => Math.min(p + 1, totalPages))}
             className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
             disabled={currentPage === totalPages}
+            aria-label="Next Page"
           >
             Next
           </button>

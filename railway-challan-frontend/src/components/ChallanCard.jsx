@@ -89,6 +89,7 @@ const ChallanCard = ({ challan }) => {
 
       <div className="mt-2 flex flex-row items-center gap-3 py-2">
         <button
+          aria-label="Download as PDF"
           onClick={handleDownload}
           className="bg-[#16A34A] text-white text-sm px-4 py-1 rounded-md hover:bg-green-700 transition-shadow duration-200 shadow"
         >

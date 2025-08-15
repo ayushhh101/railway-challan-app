@@ -30,6 +30,7 @@ const ChallanList = ({
       <div className="bg-white p-10 rounded-xl text-center">
         <div className="mb-3 text-red-700 font-semibold">{error}</div>
         <button
+          aria-label="Refresh Page"
           onClick={() => window.location.reload()}
           className="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700"
         >
@@ -52,6 +53,7 @@ const ChallanList = ({
         {selectedChallans.length > 0 && (
           <div className="flex gap-4">
             <button
+              aria-label="Download Selected as CSV"
               onClick={handleSelectedExport}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
             >
@@ -197,9 +199,11 @@ const ChallanList = ({
                     </td>
 
                     <td className="px-3 py-2 whitespace-nowrap">{new Date(challan.createdAt).toLocaleDateString()}</td>
-                    <td className="px-3 py-2 whitespace-nowrap"><button
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <button
                       className="bg-blue-600 text-white px-3 py-1 rounded hover:cursor-pointer"
                       onClick={() => handleAdminDownload(challan._id)}
+                      aria-label="Download Receipt PDF"
                     >
                       Receipt PDF
                     </button>
@@ -225,6 +229,7 @@ const ChallanList = ({
               onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
               className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
               disabled={currentPage === 1}
+              aria-label="Go to Previous Page"
             >
               Previous
             </button>
@@ -235,6 +240,7 @@ const ChallanList = ({
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
               className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
               disabled={currentPage === totalPages}
+              aria-label="Go to Next Page"
             >
               Next
             </button>

@@ -206,6 +206,7 @@ export default function PassengerHistoryPage() {
           type="submit"
           disabled={loading}
           className="bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold rounded px-6 py-2 ml-auto transition"
+          aria-label="Search Passenger"
         >
           {loading ? "Searching..." : "Search"}
         </button>

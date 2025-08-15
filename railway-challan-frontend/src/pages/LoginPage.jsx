@@ -142,6 +142,7 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             className="w-1/2 block mx-auto bg-[#1E40AF] hover:bg-blue-950 text-white py-3 mt-3 rounded-lg font-semibold transition-colors duration-200"
+            aria-label="Login"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>

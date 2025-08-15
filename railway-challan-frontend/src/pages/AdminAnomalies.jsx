@@ -164,6 +164,7 @@ const AdminAnomalies = () => {
                     type="button"
                     className="bg-[#1E40AF] text-white rounded-md px-4 py-1 text-sm font-medium shadow hover:bg-blue-800 transition"
                     onClick={() => handleUpdateAnomaly(anomal._id, "resolved")}
+                    aria-label="Resolve Anomaly"
                   >
                     Resolve
                   </button>
@@ -171,6 +172,7 @@ const AdminAnomalies = () => {
                     type="button"
                     className="bg-red-50 text-red-500 rounded-md px-4 py-1 text-sm font-medium border border-red-100 shadow hover:bg-red-100 transition"
                     onClick={() => handleUpdateAnomaly(anomal._id, "dismissed")}
+                    aria-label="Dismiss Anomaly"
                   >
                     Dismiss
                   </button>

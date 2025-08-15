@@ -105,6 +105,7 @@ export default function VerifyChallan() {
             onClick={handlePayment}
             disabled={paying}
             className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition"
+             aria-label="Pay Amount Online"
           >
             {paying ? 'Processing Payment...' : `Pay ₹${challan.fineAmount} Online`}
           </button>

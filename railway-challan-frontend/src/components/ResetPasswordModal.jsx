@@ -75,7 +75,7 @@ export default function ResetPasswordModal({ user, isOpen, onClose, onSuccess })
         {error && <div className="text-red-600 text-xs mb-2">{error}</div>}
         <div className="flex gap-2 mt-4 justify-end">
           <button type="button" onClick={onClose} className="bg-gray-200 px-3 py-1 rounded">Cancel</button>
-          <button type="submit" disabled={loading} className="bg-blue-600 text-white px-3 py-1 rounded">
+          <button type="submit" disabled={loading} className="bg-blue-600 text-white px-3 py-1 rounded" aria-label="Reset password">
             {loading ? 'Resetting...' : 'Reset'}
           </button>
         </div>

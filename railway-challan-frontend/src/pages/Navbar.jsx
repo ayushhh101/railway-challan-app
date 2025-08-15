@@ -14,13 +14,14 @@ export default function Navbar() {
   };
 
   return (
-     <nav className="bg-[#F8FAFC] border-b border-gray-200 shadow-sm px-4 py-3">
+    <nav className="bg-[#F8FAFC] border-b border-gray-200 shadow-sm px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <h1 className="text-lg sm:text-xl font-bold text-[#1E40AF]">Railway Challan Portal</h1>
-        
+
         <button
           className="sm:hidden focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
         >
           {menuOpen ? (
             <XMarkIcon className="h-6 w-6 text-[#1E40AF]" />
@@ -48,12 +49,12 @@ export default function Navbar() {
             </>
           )}
           {user &&
-          <button
-            onClick={handleLogout}
-            className="bg-[#DC2626] text-white px-4 py-1.5 rounded-md hover:bg-red-700 transition"
-          >
-            Logout
-          </button>
+            <button
+              onClick={handleLogout}
+              className="bg-[#DC2626] text-white px-4 py-1.5 rounded-md hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
           }
         </div>
       </div>
@@ -75,31 +76,31 @@ export default function Navbar() {
               <Link to="/manage-users" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Manage Users</Link>
               <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>All Challans</Link>
               <Link to="/passenger-history" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>History</Link>
-              
+
             </>
           )}
 
           {user ?
-          <button
-            onClick={() => {
-              handleLogout();
-              setMenuOpen(false);
-            }}
-            className="bg-[#DC2626] text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
-          >
-            Logout
-          </button>:
-          <button
-            onClick={() => {
-              handleLogout();
-              setMenuOpen(false);
-            }}
-            className=" disabled: bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
-          >
-            Logout
-          </button>
-           }
-          
+            <button
+              onClick={() => {
+                handleLogout();
+                setMenuOpen(false);
+              }}
+              className="bg-[#DC2626] text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
+            >
+              Logout
+            </button> :
+            <button
+              onClick={() => {
+                handleLogout();
+                setMenuOpen(false);
+              }}
+              className=" disabled: bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
+            >
+              Logout
+            </button>
+          }
+
         </div>
       )}
     </nav>

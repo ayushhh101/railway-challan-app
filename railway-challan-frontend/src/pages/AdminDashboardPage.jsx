@@ -243,6 +243,7 @@ const AdminDashboardPage = () => {
         <Link to="/anomalies">
           <button
             className="rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-2 font-semibold text-sm hover:bg-red-100 transition shadow-sm"
+            aria-label="View anomalies"
           >
             <BugAntIcon className="w-5 h-5 mr-2 inline" />
             Anomalies
@@ -251,6 +252,7 @@ const AdminDashboardPage = () => {
         <Link to="/audit-log">
           <button
             className="rounded-lg bg-blue-50 text-blue-800 border border-blue-200 px-4 py-2 font-semibold text-sm hover:bg-blue-100 transition shadow-sm"
+            aria-label="View audit log"
           >
             <ClipboardDocumentListIcon className="w-5 h-5 mr-2 inline" />
             Audit Log
@@ -259,6 +261,7 @@ const AdminDashboardPage = () => {
         <button
           className="rounded-lg bg-blue-600 text-white font-semibold px-4 py-2 text-sm hover:bg-blue-800 transition shadow-sm"
           onClick={() => setShowAddUser(true)}
+          aria-label="Add Admin or TTE"
         >
           <UserPlusIcon className="w-5 h-5 mr-2 inline" />
           Add Admin/TTE

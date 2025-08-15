@@ -114,6 +114,7 @@ export default function PassengerDashboard() {
                   onClick={() => handleDownloadPDF(c._id)}
                   disabled={downloading === c._id}
                   className="bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800 transition"
+                  aria-label="Download as PDF"
                 >
                   {downloading === c._id ? "Downloading..." : "Download PDF"}
                 </button>
@@ -121,6 +122,7 @@ export default function PassengerDashboard() {
                   <button
                     onClick={() => handlePayClick(c)}
                     className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-800 transition"
+                    aria-label="Pay Amount"
                   >
                     Pay ₹{c.fineAmount}
                   </button>

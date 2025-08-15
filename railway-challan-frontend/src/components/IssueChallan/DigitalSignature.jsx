@@ -26,6 +26,7 @@ export default function DigitalSignature({ sigCanvasRef }) {
         type="button"
         onClick={clearSignature}
         className="text-sm text-red-600 mt-2"
+        aria-label="Clear Signature"
       >
         Clear Signature
       </button>

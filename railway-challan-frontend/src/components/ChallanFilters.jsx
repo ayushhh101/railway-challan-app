@@ -52,17 +52,17 @@ export default function ChallanFilters({ filters, setFilters, handleFilter, clea
       </div>
 
       <div className="flex items-center gap-4">
-        <button onClick={handleFilter} className="bg-[#1E40AF] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-blue-900 transition flex items-center gap-1" >
+        <button aria-label="Search" onClick={handleFilter} className="bg-[#1E40AF] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-blue-900 transition flex items-center gap-1" >
           <MagnifyingGlassIcon className="h-3 text-white " /> Search
           </button>
-        <button onClick={clearFilters} className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-slate-300 transition flex items-center gap-1">
+        <button aria-label="Clear Filter" onClick={clearFilters} className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-slate-300 transition flex items-center gap-1">
           <ArrowPathIcon className="h-3 text-black" />Clear
           </button>
-        <button onClick={() => setViewType(viewType === 'card' ? 'table' : 'card')} className="bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition">
+        <button aria-label="Toggle View" onClick={() => setViewType(viewType === 'card' ? 'table' : 'card')} className="bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition">
           Switch to {viewType === 'card' ? 'Table' : 'Card'} View
         </button>
         <Link to='/monthly-report'>
-        <button className="bg-[#1E40AF] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition flex items-center gap-1">
+        <button aria-label="Monthly Report Page" className="bg-[#1E40AF] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition flex items-center gap-1">
           <CalendarIcon className="h-4 text-white" />Monthly Report
         </button>
       </Link>
