@@ -21,7 +21,17 @@ const Heatmap = ({ points }) => {
   return null;
 };
 
-const ChallanHeatmap = ({ challansByLocation }) => {
+const ChallanHeatmap = ({ challansByLocation ,loading , error }) => {
+  if (loading)
+    return (
+      <div className="bg-white p-8 rounded-xl text-blue-700 text-center font-semibold min-h-[120px]">Loading map...</div>
+    );
+
+  if (error)
+    return (
+      <div className="bg-white p-8 rounded-xl text-red-700 text-center font-semibold min-h-[120px]">{error}</div>
+    );
+    
   return (
     <div className="bg-white p-4 shadow rounded-xl">
       <h2 className="text-xl font-semibold mb-4">Challan Heatmap (by Location)</h2>

@@ -2,7 +2,18 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const TopTTEBarChart = ({stats}) => {
+const TopTTEBarChart = ({stats , loading , error}) => {
+
+  if (loading)
+    return (
+      <div className="bg-white p-8 rounded-xl text-blue-700 text-center font-semibold min-h-[120px]">Loading chart...</div>
+    );
+
+  if (error)
+    return (
+      <div className="bg-white p-8 rounded-xl text-red-700 text-center font-semibold min-h-[120px]">{error}</div>
+    );
+
   return (
     <>
       <div className="bg-white p-4 shadow rounded-xl">

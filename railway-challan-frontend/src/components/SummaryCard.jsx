@@ -18,7 +18,32 @@ const borderColors = [
   "border-l-4 border-l-red-400"      // red for Unpaid Challans
 ];
 
-const SummaryCard = ({ stats }) => {
+const SummaryCard = ({ stats , loading , error, onRetry }) => {
+   if (loading) {
+    return (
+      <div className="bg-white p-10 rounded-xl text-center text-blue-700 text-base font-semibold">
+        Loading summary...
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-white p-10 rounded-xl text-center">
+        <div className="mb-3 text-red-700 font-semibold">{error}</div>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700"
+          >
+            Retry
+          </button>
+        )}
+      </div>
+    );
+  }
+
   const summary = [
     {
       title: "Total Challans",

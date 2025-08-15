@@ -237,7 +237,7 @@ const AdminDashboardPage = () => {
         error={error}
       />
 
-      <SummaryCard stats={stats} />
+      <SummaryCard stats={stats} loading={loading} error={error} onRetry={fetchStats} />
 
       <div className="flex flex-wrap gap-2 mb-6 justify-start">
         <Link to="/anomalies">
@@ -297,12 +297,12 @@ const AdminDashboardPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
             <div className="w-full h-full">
-              <TopTTEBarChart stats={stats} />
+              <TopTTEBarChart stats={stats} loading={loading} error={error}  />
             </div>
           </div>
           <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
             <div className="w-full h-full">
-              <ChallanHeatmap challansByLocation={challansByLocation} />
+              <ChallanHeatmap challansByLocation={challansByLocation} loading={loading} error={error} />
             </div>
           </div>
         </div>
