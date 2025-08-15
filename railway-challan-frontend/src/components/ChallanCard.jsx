@@ -1,15 +1,16 @@
-import jsPDF from "jspdf";
-import domtoimage from 'dom-to-image';
-import { useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import EditChallanModal from "./EditChallanModal";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const ChallanCard = ({ challan }) => {
   const { user } = useAuth();
+  const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
+    setDownloading(true);
+    const toastId = toast.loading("Preparing PDF...");
     try {
       const token = localStorage.getItem('token');
 
@@ -31,9 +32,14 @@ const ChallanCard = ({ challan }) => {
       link.download = `challan-${challan._id}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
+      toast.success("Download started!", { id: toastId });
     } catch (err) {
       console.error("Download error:", err);
-      alert("Could not download PDF. Make sure you're logged in.");
+      toast.error("Could not download PDF. Make sure you're logged in.", {
+        id: toastId,
+      });
+    } finally {
+      setDownloading(false);
     }
   };
 

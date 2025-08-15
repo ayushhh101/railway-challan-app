@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 //for bulk download
 import * as XLSX from 'xlsx';
@@ -46,6 +47,8 @@ const AdminDashboardPage = () => {
   const [monthlyReport, setMonthlyReport] = useState(null);
 
   const [showAddUser, setShowAddUser] = useState(false);
+
+  const [downloadingId, setDownloadingId] = useState(null);
 
   const toggleChallanSelection = (id) => {
     setSelectedChallans(prev =>
@@ -114,6 +117,8 @@ const AdminDashboardPage = () => {
 
   // admin download challan pdf
   const handleAdminDownload = async (challanId) => {
+    setDownloadingId(challanId);
+    const toastId = toast.loading("Preparing PDF...");
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challanId}/pdf`, {
@@ -134,9 +139,12 @@ const AdminDashboardPage = () => {
       link.download = `challan-${challanId}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
+      toast.success("Download started!", { id: toastId });
     } catch (err) {
       console.error('Admin Download error:', err);
-      alert('Download failed');
+      toast.error("Could not download PDF. Try again.", { id: toastId });
+    } finally {
+      setDownloadingId(null);
     }
   };
 
