@@ -3,6 +3,20 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logAudit = require('../utils/auditLogger');
 
+const generateOnboardingToken = (passengerId) => {
+  return jwt.sign(
+    { passengerId },
+    process.env.PASSENGER_ONBOARD_SECRET,
+    { expiresIn: '1d' }
+  );
+};
+
+async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
+  // Integration with SMS/email provider here
+  console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
+  console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
+}
+
 const generateAccessToken = (passenger) => {
   return jwt.sign({ id: passenger._id, role: 'passenger' }, process.env.PASSENGER_ACCESS_SECRET, { expiresIn: '15m' });
 };
@@ -66,11 +80,45 @@ exports.login = async (req, res) => {
     if (!passenger) { return res.status(400).json({ message: 'Passenger not found' }); }
 
     if (!passenger.passwordHash) {
-      return res.status(400).json({ message: 'Passenger must complete onboarding before login' });
+      const now = Date.now();
+      const cooldownMinutes = 5;
+      let onboardingToken = passenger.lastOnboardingToken;
+      let shouldSend = false;
+
+      if (
+        !passenger.lastOnboardingTokenSent ||
+        now - new Date(passenger.lastOnboardingTokenSent).getTime() > cooldownMinutes * 60 * 1000
+      ) {
+        // generate a new onboarding token and update timestamp
+        onboardingToken = generateOnboardingToken(passenger._id);
+        passenger.lastOnboardingTokenSent = new Date(now);
+        passenger.lastOnboardingToken = onboardingToken;
+        shouldSend = true;
+
+        // Optionally, save async but don't block
+        passenger.save().catch(console.error);
+      }
+
+      const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
+      
+      if (shouldSend) {
+        await sendOnboardingNotification(passenger.mobileNumber, passenger.name, onboardingUrl);
+      }
+      return res.status(400).json({
+        message: shouldSend
+          ? 'Passenger must complete onboarding before login. Onboarding link has been sent.'
+          : `Please wait ${cooldownMinutes} minutes before resending onboarding link.`,
+        onboardingToken,
+        onboardingUrl,
+        cooldownActive: !shouldSend,
+        nextAllowed: shouldSend
+          ? null
+          : new Date(new Date(passenger.lastOnboardingTokenSent).getTime() + cooldownMinutes * 60 * 1000),
+      });
     }
 
     const isMatch = await bcrypt.compare(password, passenger.passwordHash);
-    if (!isMatch) return res.status(400).json({ message: 'Passenger must complete onboarding before login' });
+    if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });
 
     const accessToken = generateAccessToken(passenger);
     const refreshToken = generateRefreshToken(passenger);
