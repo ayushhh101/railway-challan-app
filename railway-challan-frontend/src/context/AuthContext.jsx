@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import {jwtDecode} from 'jwt-decode';
 
 const AuthContext = createContext();
 
@@ -11,14 +12,47 @@ export const AuthProvider = ({ children }) => {
     user: JSON.parse(localStorage.getItem('user')),
   });
 
-  // set default axios headers when token is available
+  // Helper to decode JWT and get expiry
+  const getTokenExpiry = (token) => {
+    try {
+      if (!token) return null;
+      const decoded = jwtDecode(token);
+      return decoded.exp * 1000; // in ms
+    } catch {
+      return null;
+    }
+  };
+
+  // Axios global header for token
   useEffect(() => {
-    if (auth?.token) {
+    if (auth.token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${auth.token}`;
     } else {
       delete axios.defaults.headers.common['Authorization'];
     }
+  }, [auth.token]);
+    
+  // Auto-logout timer on client side (proactive)
+  useEffect(() => {
+    let logoutTimer = null;
+    if (auth.token) {
+      const expiry = getTokenExpiry(auth.token);
+      if (expiry) {
+        const now = Date.now();
+        const buffer = 30 * 1000; // 30 seconds before expiry
+        const timeoutMs = Math.max(expiry - now - buffer, 1000);
+        logoutTimer = setTimeout(() => {
+          // Optionally could try a silent refresh here first
+          logout();
+        }, timeoutMs);
+      }
+    }
+    return () => logoutTimer && clearTimeout(logoutTimer);
+    // eslint-disable-next-line
+  }, [auth.token]);
 
+  // set default axios headers when token is available
+  useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       res => res,
       async err => {
@@ -27,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         if (err.response?.status === 401 && !originalRequest._retry && auth.refreshToken) {
           originalRequest._retry = true;
           try {
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}}/api/auth/refresh`, { withCredentials :true }
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}}/api/auth/refresh`, { withCredentials: true }
             );
 
             const newToken = res.data.token;
@@ -48,18 +82,17 @@ export const AuthProvider = ({ children }) => {
   }, [auth.token, auth.refreshToken]);
 
   // function to login user and set token and user info in state and localStorage
-  const login = (token, refreshToken ,user) => {
+  const login = (token, refreshToken, user) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
-    setAuth({ token,  user });
-    //TODO: automatically logout after token expires
+    setAuth({ token, user });
   };
 
   // function to logout user, clear token and user info from state and localStorage
-  const logout = async() => {
+  const logout = async () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setAuth({ token: null,  user: null });
+    setAuth({ token: null, user: null });
 
     await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
   };

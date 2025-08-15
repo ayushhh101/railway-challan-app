@@ -69,11 +69,6 @@ exports.login = async (req, res) => {
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-    // generates JWT token with user ID and role
-    // this data gets "decoded" in the middleware
-    // const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, {
-    //   expiresIn: '15m'
-    // });
 
      res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
