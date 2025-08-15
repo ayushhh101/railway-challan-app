@@ -65,6 +65,10 @@ exports.login = async (req, res) => {
     const passenger = await Passenger.findOne({ mobileNumber });
     if (!passenger) { return res.status(400).json({ message: 'Passenger not found' }); }
 
+    if (!passenger.passwordHash) {
+      return res.status(400).json({ message: 'Passenger must complete onboarding before login' });
+    }
+
     const isMatch = await bcrypt.compare(password, passenger.passwordHash);
     if (!isMatch) return res.status(400).json({ message: 'Passenger must complete onboarding before login' });
 
@@ -78,7 +82,7 @@ exports.login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-     try {
+    try {
       await logAudit({
         action: 'PASSENGER_LOGIN',
         performedBy: passenger._id,
@@ -104,9 +108,9 @@ exports.login = async (req, res) => {
       },
     });
 
-   
+
   } catch (err) {
-    console.error("Passenger login error:", err); 
+    console.error("Passenger login error:", err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

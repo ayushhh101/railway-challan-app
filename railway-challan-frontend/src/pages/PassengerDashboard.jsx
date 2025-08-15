@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
-// You should replace this with your own method of getting the passenger token
 function getPassengerToken() {
   return localStorage.getItem("token");
 }
@@ -30,16 +30,18 @@ export default function PassengerDashboard() {
         setChallans(res.data.challans || []);
       } catch (err) {
         setError("Failed to load challans");
+        toast.error("Failed to load challans from server.");
       } finally {
         setLoading(false);
       }
     };
     fetchChallans();
-  }, []); // Removed successId since payment handled on Verify page
+  }, []);
 
   // Download PDF for challan
   const handleDownloadPDF = async (challanId) => {
     setDownloading(challanId);
+    const toastId = toast.loading("Preparing PDF...");
     try {
       const token = getPassengerToken();
       const res = await fetch(
@@ -59,8 +61,9 @@ export default function PassengerDashboard() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      toast.success("Download started!", { id: toastId });
     } catch (err) {
-      alert("Failed to download challan PDF.");
+      toast.error("Failed to download challan PDF.", { id: toastId });
     } finally {
       setDownloading(null);
     }

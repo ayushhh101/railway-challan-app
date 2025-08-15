@@ -3,6 +3,7 @@ import axios from 'axios';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import toast from 'react-hot-toast';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00C49F'];
 
@@ -11,6 +12,7 @@ export default function AdminMonthlyReport() {
   const [year, setYear] = useState('2025');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const fetchReport = async () => {
     setLoading(true);
@@ -30,13 +32,22 @@ export default function AdminMonthlyReport() {
 
   const downloadXLSX = () => {
     if (!report?.challans) return;
-    const worksheet = XLSX.utils.json_to_sheet(report.challans);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Challans');
-    const blob = new Blob([XLSX.write(workbook, { type: 'array', bookType: 'xlsx' })], {
-      type: 'application/octet-stream',
-    });
-    saveAs(blob, `challan-report-${month}-${year}.xlsx`);
+    setDownloading(true);
+    const toastId = toast.loading('Preparing CSV...');
+    try {
+      const worksheet = XLSX.utils.json_to_sheet(report.challans);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Challans');
+      const blob = new Blob([XLSX.write(workbook, { type: 'array', bookType: 'xlsx' })], {
+        type: 'application/octet-stream',
+      });
+      saveAs(blob, `challan-report-${month}-${year}.xlsx`);
+      toast.success('Download started!', { id: toastId });
+    } catch (err) {
+      toast.error('Failed to generate CSV. Try again.', { id: toastId });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -81,8 +92,9 @@ export default function AdminMonthlyReport() {
             <button
               onClick={downloadXLSX}
               className="mt-2 text-sm text-blue-700 underline hover:text-blue-900"
+              disabled={downloading}
             >
-              Download CSV Report
+              {downloading ? "Downloading..." : "Download CSV Report"}
             </button>
           </div>
 
@@ -111,18 +123,18 @@ export default function AdminMonthlyReport() {
             <div className="border rounded-lg p-3 shadow-sm bg-[#F1F5F9] w-full overflow-x-auto">
               <h3 className="font-bold mb-2">Challans per Station</h3>
               <div style={{ minWidth: Math.max(400, Object.keys(report.stats.stationBreakdown).length * 75) }}>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart
-                  data={Object.entries(report.stats.stationBreakdown).map(([name, value]) => ({ name, value }))}
-                  margin={{ left: 10, right: 10 }}
-                >
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-20} height={55} interval={0} />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#1E40AF" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart
+                    data={Object.entries(report.stats.stationBreakdown).map(([name, value]) => ({ name, value }))}
+                    margin={{ left: 10, right: 10 }}
+                  >
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-20} height={55} interval={0} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" fill="#1E40AF" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
