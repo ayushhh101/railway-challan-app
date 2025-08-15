@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
@@ -283,12 +284,12 @@ const AdminDashboardPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
             <div className="w-full h-full">
-              <ChallansByReasonChart data={stats?.challansByReason} stats={stats} />
+              <ChallansByReasonChart data={stats?.challansByReason} stats={stats} loading={loading} error={error}/>
             </div>
           </div>
           <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
             <div className="w-full h-full">
-              <MonthlyTrendChart trend={stats?.monthlyTrend} />
+              <MonthlyTrendChart trend={stats?.monthlyTrend} loading={loading} error={error} />
             </div>
           </div>
         </div>

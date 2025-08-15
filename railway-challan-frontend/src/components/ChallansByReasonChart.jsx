@@ -1,9 +1,26 @@
 import React from "react";
-import {  Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
 
-const ChallansByReasonChart = ({data , stats}) => {
+const ChallansByReasonChart = ({data , stats, error, loading}) => {
+
+   if (error) {
+    return (
+      <div className="bg-white p-8 rounded-xl shadow text-center min-h-[150px] flex flex-col items-center justify-center">
+        <div className="text-red-700 font-semibold mb-1">{error}</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white p-8 rounded-xl shadow text-center min-h-[150px] flex items-center justify-center">
+        <span className="text-blue-600 font-semibold">Loading chart...</span>
+      </div>
+    );
+  }
+  
   return (
     <>
     <div className="bg-white p-4 shadow rounded-xl">

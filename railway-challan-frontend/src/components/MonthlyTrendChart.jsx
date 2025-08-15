@@ -1,11 +1,28 @@
 import React from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-const MonthlyTrendChart = ({ trend }) => {
+
+const MonthlyTrendChart = ({ trend , error, loading}) => {
 
   const formattedData = trend.map(d => ({
     month: `${d._id.month}/${d._id.year}`,
     count: d.count,
   }));
+
+  if (error) {
+    return (
+      <div className="bg-white p-8 rounded-xl shadow text-center min-h-[150px] flex flex-col items-center justify-center">
+        <div className="text-red-700 font-semibold mb-1">{error}</div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white p-8 rounded-xl shadow text-center min-h-[150px] flex items-center justify-center">
+        <span className="text-blue-600 font-semibold">Loading chart...</span>
+      </div>
+    );
+  }
 
   return (
     <>

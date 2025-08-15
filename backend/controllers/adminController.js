@@ -9,7 +9,6 @@ exports.getDashboardStats = async (req, res) => {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    // total challans
     const totalChallans = await Challan.countDocuments();
 
     // total fine collected (only paid challans)
@@ -23,7 +22,7 @@ exports.getDashboardStats = async (req, res) => {
       }
     ]);
 
-    // Paid vs Unpaid challans count
+    // paid vs unpaid challans count
     const paidUnpaidStats = await Challan.aggregate([
       {
         $group: {
@@ -153,7 +152,7 @@ exports.getDashboardStats = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin dashboard error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Unable to fetch dashboard stats. Please try again later." });
   }
 }
 
