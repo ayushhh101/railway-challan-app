@@ -38,7 +38,6 @@ export default function PassengerDashboard() {
     fetchChallans();
   }, []);
 
-  // Download PDF for challan
   const handleDownloadPDF = async (challanId) => {
     setDownloading(challanId);
     const toastId = toast.loading("Preparing PDF...");
@@ -69,7 +68,6 @@ export default function PassengerDashboard() {
     }
   };
 
-  // Redirect to Verify page on "Pay" button click
   const handlePayClick = (challan) => {
     navigate(`/verify/${challan._id}`);
   };

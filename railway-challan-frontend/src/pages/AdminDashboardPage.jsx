@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { MapContainer, TileLayer, useMap, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
 import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
@@ -21,15 +19,14 @@ import ChallanList from '../components/ChallanList';
 import { Link } from 'react-router-dom';
 import AddUserModal from '../components/AddUserModal';
 
-
-const COLORS = ['#0ea5e9', '#ef4444', '#10b981', '#facc15', '#6366f1'];
-
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
   const [challansByLocation, setChallansByLocation] = useState([]);
   const [filters, setFilters] = useState({ passenger: '', train: '', reason: '', date: '', status: '' });
   const [filteredChallans, setFilteredChallans] = useState([]);
   const [viewType, setViewType] = useState('table');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,9 +66,10 @@ const AdminDashboardPage = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchStats = async () => {
+      setError(null);
+      setLoading(true);
       try {
         // fetch admin stats
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
@@ -88,14 +86,19 @@ const AdminDashboardPage = () => {
         });
         setChallansByLocation(locationRes.data);
 
-      } catch (err) {
-        console.error('Error fetching admin stats:', err);
+      } catch (error) {
+        console.log(error)
+        setError('Failed to fetch stats');
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
   }, []);
 
   const handleFilter = async () => {
+    setError(null);
+    setLoading(true);
     try {
       const params = new URLSearchParams(filters);
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/search?${params.toString()}`, {
@@ -105,7 +108,10 @@ const AdminDashboardPage = () => {
       setFilteredChallans(res.data);
       setCurrentPage(1);
     } catch (error) {
-      console.error('Filter error:', error);
+      setError('Failed to fetch challans. Please try again.');
+      setFilteredChallans([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,7 +207,7 @@ const AdminDashboardPage = () => {
         isOpen={showAddUser}
         onClose={() => setShowAddUser(false)}
         onUserAdded={() => {
-          //TODO:
+          toast.success("User added successfully")
         }}
       />
 
@@ -226,6 +232,8 @@ const AdminDashboardPage = () => {
         toggleChallanSelection={toggleChallanSelection}
         handleAdminDownload={handleAdminDownload}
         setCurrentPage={setCurrentPage}
+        loading={loading}
+        error={error}
       />
 
       <SummaryCard stats={stats} />

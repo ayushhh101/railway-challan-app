@@ -279,7 +279,7 @@ exports.getChallanLocations = async (req, res) => {
   }
 }
 
-// Search challans by various criteria
+// search challans by various criteria
 exports.searchChallans = async (req, res) => {
   const { passenger , train, reason, date, status } = req.query;
 
@@ -298,7 +298,7 @@ exports.searchChallans = async (req, res) => {
   res.json(challans);
 };
 
-// Get details of a specific challan by ID
+// get details of a specific challan by ID
 exports.getChallanDetails = async (req, res) => {
   try {
     const challan = await Challan.findById(req.params.id).populate('issuedBy'); // assuming 'issuedBy' references TTE
@@ -326,7 +326,7 @@ exports.getChallanDetails = async (req, res) => {
   }
 };
 
-// Download bulk challan PDFs as a zip file
+// download bulk challan PDFs as a zip file
 exports.downloadBulkChallanPDF = async (req, res) => {
   const { challanIds } = req.body;
 
@@ -458,7 +458,6 @@ exports.getPassengerHistory = async (req, res) => {
     const dateTo = req.query.dateTo;
     const paymentStatus = req.query.paymentStatus;
 
-
     const query = {};
     if (name) {
       query.passengerName = { $regex: new RegExp(`^${name}$`, 'i') };
@@ -477,19 +476,15 @@ exports.getPassengerHistory = async (req, res) => {
       query.paid = false;
     }
 
-
-    // Find challans matching query
     const challans = await Challan.find(query)
       .sort({ createdAt: -1 })
       .populate('issuedBy');
 
-
-    // Aggregate stats for passenger
+    // passenger aggregate stats
     const totalChallans = challans.length;
     const paidCount = challans.filter(c => c.paid).length;
     const unpaidCount = totalChallans - paidCount;
     const totalFine = challans.reduce((acc, c) => acc + (c.fineAmount || 0), 0);
-
 
     res.status(200).json({
       challans,

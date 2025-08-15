@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 export default function PassengerHistoryPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
+  const [error, setError] = useState(null);
 
   const [query, setQuery] = useState({
     name: params.get("name") || "",
@@ -74,7 +75,7 @@ export default function PassengerHistoryPage() {
   const handleSearch = async (e) => {
     if (e?.preventDefault) e.preventDefault();
     setLoading(true);
-
+    setError(null);
     try {
       let searchParams = [];
       if (query.name.trim())
@@ -100,7 +101,8 @@ export default function PassengerHistoryPage() {
     } catch (error) {
       setResults([]);
       setPassengerStats(null);
-      console.error("Search failed:", error);
+      setError("There was an error fetching challan history. Please try again.");
+      console.log(error)
     } finally {
       setLoading(false);
     }
@@ -108,7 +110,7 @@ export default function PassengerHistoryPage() {
 
   useEffect(() => {
     if (query.name || query.aadhar) {
-      handleSearch({ preventDefault: () => {} });
+      handleSearch({ preventDefault: () => { } });
     }
   }, []);
 
@@ -229,7 +231,7 @@ export default function PassengerHistoryPage() {
           </div>
         </div>
       )}
-      
+
       {results.length > 0 ? (
         <ChallanList
           filteredChallans={results}

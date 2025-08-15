@@ -25,7 +25,6 @@ function HomeRedirect() {
   const { user } = useAuth();
 
   if (!user) {
-    // Not logged in → redirect to choose login
     return <Navigate to="/choose-login" replace />;
   }
 
@@ -37,8 +36,7 @@ function HomeRedirect() {
     case 'passenger':
       return <Navigate to="/passenger/dashboard" replace />;
     default:
-      // Unknown role → fallback to main login page
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/" replace />;
   }
 }
 
