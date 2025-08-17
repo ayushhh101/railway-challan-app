@@ -124,8 +124,8 @@ const ViewChallansPage = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl mx-auto bg-[#F8FAFC] min-h-screen">
-      <h1 className="text-2xl sm:text-3xl font-bold text-[#1E40AF] mb-3">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto bg-neutral-gray50 min-h-screen font-sans">
+      <h1 className="text-2xl sm:text-3xl font-bold text-primary-blue mb-3">
         {searchMode
           ? `History for ${nameQuery} (****${aadharQuery})`
           : 'Challan History'}
@@ -141,9 +141,9 @@ const ViewChallansPage = () => {
         onSubmit={handleSearch}
         className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 bg-white p-4 rounded-xl shadow-sm w-full"
       >
-        {/* Name */}
-        <div className="flex flex-col flex-1">
-          <label htmlFor="passengerName" className="mb-1 text-xs font-medium text-gray-600">
+
+        <div className="w-full flex flex-col flex-1">
+          <label htmlFor="passengerName" className="mb-1 text-xs font-medium text-gray-700">
             Enter Passenger Name
           </label>
           <input
@@ -151,14 +151,13 @@ const ViewChallansPage = () => {
             placeholder="Passenger Name"
             value={nameQuery}
             onChange={e => setNameQuery(e.target.value)}
-            className="border px-4 py-2 rounded-md text-sm w-full "
+            className="border border-neutral-gray300 px-4 py-2 rounded-2xl text-sm w-full"
             required
           />
         </div>
 
-        {/* Aadhaar Last 4 */}
-        <div className="flex flex-col flex-1">
-          <label htmlFor="aadhar" className="mb-1 text-xs font-medium text-gray-600">
+        <div className="w-full flex flex-col flex-1 ">
+          <label htmlFor="aadhar" className="mb-1 text-xs font-medium text-gray-700">
             Enter Aadhar
           </label>
           <input
@@ -166,13 +165,12 @@ const ViewChallansPage = () => {
             placeholder="Aadhaar Last 4"
             value={aadharQuery}
             onChange={e => setAadharQuery(e.target.value)}
-            className="border px-4 py-2 rounded-md text-sm w-full"
+            className="border border-neutral-gray300 px-4 py-2 rounded-2xl text-sm w-full"
             maxLength={4}
             required
           />
         </div>
 
-        {/* Sort By */}
         <div className="flex flex-col flex-1 min-w-[160px] max-w-xs">
           <label htmlFor="sortBy" className="mb-1 text-xs font-medium text-gray-600">
             Sort By
@@ -180,7 +178,7 @@ const ViewChallansPage = () => {
           <select
             value={sortOrder}
             onChange={e => setSortOrder(e.target.value)}
-            className="border rounded-md px-4 py-2 text-sm w-full"
+            className="border border-neutral-gray300 rounded-2xl px-4 py-2 text-sm w-full"
           >
             <option value="desc">Date (Newest First)</option>
             <option value="asc">Date (Oldest First)</option>
@@ -190,20 +188,19 @@ const ViewChallansPage = () => {
         {/* Search Button */}
         <button
           type="submit"
-          className="bg-[#1E40AF] mt-1 text-white text-sm sm:mt-4.5 px-2 py-1 sm:px-3 sm:py-2 text-nowrap rounded-md hover:bg-blue-800 transition"
+          className=" bg-primary-blue mt-1 text-white text-sm sm:mt-4 px-3 py-2 rounded-2xl hover:bg-primary-dark transition"
         >
           Search
         </button>
         {searchMode && (<button type="button" onClick={resetSearch} className="text-sm mt-1 bg-gray-500 rounded-md text-white sm:mt-4.5 px-2 py-1 sm:px-3 sm:py-2 text-nowrap" > Clear Search </button>)}
       </form>
 
-
-      <h2 className="text-md font-semibold text-[#1E40AF] mt-3 mb-2 text-left">Recently Issued Challans</h2>
+      <h2 className="text-md font-semibold text-primary-blue mt-3 mb-2 text-left">Recently Issued Challans</h2>
 
       {loading ? (
         <div className="text-center text-md text-slate-800 py-8">Loading challans...</div>
       ) : error ? (
-        <div className="text-center text-[#DC2626] bg-red-50 border border-red-200 rounded p-4 text-sm">{error}</div>
+        <div className="text-center text-secondary-danger-red bg-secondary-danger-light border border-secondary-danger-red rounded-2xl p-4 text-sm">{error}</div>
       ) : challans.length === 0 ? (
         <p className="text-center text-slate-500 text-md">No challans found.</p>
       ) : (
@@ -218,7 +215,7 @@ const ViewChallansPage = () => {
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`px-4 py-2 rounded-2xl border border-neutral-gray300 text-neutral-gray700 hover:bg-neutral-gray100 disabled:opacity-50 disabled:cursor-not-allowed`}
              aria-label="Previous Page"
           >
             Previous
@@ -229,7 +226,7 @@ const ViewChallansPage = () => {
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`px-4 py-2 rounded-2xl border border-neutral-gray300 text-neutral-gray700 hover:bg-neutral-gray100 disabled:opacity-50 disabled:cursor-not-allowed`}
             aria-label="Next Page"
           >
             Next
