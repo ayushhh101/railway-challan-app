@@ -41,7 +41,6 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
 
   const handleChange = e => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-    // Optionally clear error for the current field, but don't show until submit
     setErrors(prev => ({ ...prev, [e.target.name]: undefined }));
   };
 
@@ -61,7 +60,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/register`, // Update if using protected route
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
         form,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -86,7 +85,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
       tabIndex={-1}
     >
       <form
-        className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 relative"
+        className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 relative"
         onSubmit={handleSubmit}
         aria-modal="true"
         role="dialog"
@@ -100,7 +99,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           name="name"
           value={form.name}
           onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.name ? 'border-secondary-danger-red' : 'border-neutral-gray300'} `}
           autoComplete="off"
         />
         {errors.name && <div className="text-red-600 text-xs mb-2">{errors.name}</div>}
@@ -111,7 +110,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           name="employeeId"
           value={form.employeeId}
           onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded focus:outline-none focus:ring-2 ${errors.employeeId ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.employeeId ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
           autoComplete="off"
         />
         {errors.employeeId && <div className="text-red-600 text-xs mb-2">{errors.employeeId}</div>}
@@ -123,7 +122,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           name="password"
           value={form.password}
           onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded focus:outline-none focus:ring-2 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.password ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
         />
         {errors.password && (
           <div className="text-red-600 text-xs mb-2">{errors.password}</div>
@@ -135,7 +134,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           name="role"
           value={form.role}
           onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded focus:outline-none ${errors.role ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none ${errors.role ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
         >
           <option value="tte">TTE</option>
           <option value="admin">Admin</option>
@@ -148,7 +147,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           name="zone"
           value={form.zone}
           onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded focus:outline-none focus:ring-2 ${errors.zone ? 'border-red-500' : 'border-gray-300'}`}
+          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.zone ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
         />
         {errors.zone && <div className="text-red-600 text-xs mb-2">{errors.zone}</div>}
 
@@ -158,7 +157,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+            className="px-4 py-2 rounded-2xl bg-neutral-gray200 hover:bg-neutral-gray300 text-neutral-gray900"
             disabled={loading}
           >
             Cancel
@@ -166,7 +165,7 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
           <button
             type="submit"
             aria-label='Add User'
-            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
+            className="px-4 py-2 rounded-2xl bg-primary-blue hover:bg-primary-dark text-white font-medium"
             disabled={loading}
           >
             {loading ? (

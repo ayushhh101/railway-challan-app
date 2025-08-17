@@ -14,9 +14,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-[#F8FAFC] border-b border-gray-200 shadow-sm px-4 py-3">
+    <nav className="bg-neutral-gray50 border-b border-gray-200 shadow-sm px-4 py-3 font-sans">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 className="text-lg sm:text-xl font-bold text-[#1E40AF]">Railway Challan Portal</h1>
+        <h1 className="text-lg sm:text-xl font-bold text-primary-blue">Railway Challan Portal</h1>
 
         <button
           className="sm:hidden focus:outline-none"
@@ -24,34 +24,34 @@ export default function Navbar() {
           aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
         >
           {menuOpen ? (
-            <XMarkIcon className="h-6 w-6 text-[#1E40AF]" />
+            <XMarkIcon className="h-6 w-6 text-primary-blue" />
           ) : (
-            <Bars3Icon className="h-6 w-6 text-[#1E40AF]" />
+            <Bars3Icon className="h-6 w-6 text-primary-blue" />
           )}
         </button>
 
         {/* Desktop Links */}
-        <div className="hidden sm:flex gap-4 items-center text-sm text-[#0F172A]">
+        <div className="hidden sm:flex gap-4 items-center text-sm text-neutral-gray900">
           {user?.role === 'tte' && (
             <>
-              <Link to="/issue-challan" className="hover:text-[#F97316] font-medium">Issue Challan</Link>
-              <Link to="/view-challans" className="hover:text-[#F97316] font-medium">My Challans</Link>
-              <Link to="/tte-profile" className="hover:text-[#F97316] font-medium">Profile</Link>
+              <Link to="/issue-challan" className="hover:text-accent-orange  font-medium">Issue Challan</Link>
+              <Link to="/view-challans" className="hover:text-accent-orange font-medium">My Challans</Link>
+              <Link to="/tte-profile" className="hover:text-accent-orange  font-medium">Profile</Link>
             </>
           )}
 
           {user?.role === 'admin' && (
             <>
-              <Link to="/admin-dashboard" className="hover:text-[#F97316] font-medium">Dashboard</Link>
-              <Link to="/manage-users" className="hover:text-[#F97316] font-medium">Manage Users</Link>
-              <Link to="/view-challans" className="hover:text-[#F97316] font-medium">All Challans</Link>
-              <Link to="/passenger-history" className="hover:text-[#F97316] font-medium">History</Link>
+              <Link to="/admin-dashboard" className="hover:text-accent-orange  font-medium">Dashboard</Link>
+              <Link to="/manage-users" className="hover:text-accent-orange  font-medium">Manage Users</Link>
+              <Link to="/view-challans" className="hover:text-accent-orange  font-medium">All Challans</Link>
+              <Link to="/passenger-history" className="hover:text-accent-orange  font-medium">History</Link>
             </>
           )}
           {user &&
             <button
               onClick={handleLogout}
-              className="bg-[#DC2626] text-white px-4 py-1.5 rounded-md hover:bg-red-700 transition"
+              className="bg-secondary-danger-red text-white px-4 py-1.5 rounded-md hover:bg-secondary-danger-light transition font-medium"
             >
               Logout
             </button>
@@ -59,24 +59,23 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* mobile */}
       {menuOpen && (
         <div className="sm:hidden mt-3 flex flex-col gap-3 text-sm text-[#0F172A]">
           {user?.role === 'tte' && (
             <>
-              <Link to="/issue-challan" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Issue Challan</Link>
-              <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>My Challans</Link>
-              <Link to="/tte-profile" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Profile</Link>
+              <Link to="/issue-challan" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Issue Challan</Link>
+              <Link to="/view-challans" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>My Challans</Link>
+              <Link to="/tte-profile" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Profile</Link>
             </>
           )}
 
           {user?.role === 'admin' && (
             <>
-              <Link to="/admin-dashboard" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-              <Link to="/manage-users" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>Manage Users</Link>
-              <Link to="/view-challans" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>All Challans</Link>
-              <Link to="/passenger-history" className="hover:text-[#F97316]" onClick={() => setMenuOpen(false)}>History</Link>
-
+              <Link to="/admin-dashboard" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <Link to="/manage-users" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Manage Users</Link>
+              <Link to="/view-challans" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>All Challans</Link>
+              <Link to="/passenger-history" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>History</Link>
             </>
           )}
 
@@ -86,7 +85,7 @@ export default function Navbar() {
                 handleLogout();
                 setMenuOpen(false);
               }}
-              className="bg-[#DC2626] text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
+              className="bg-secondary-danger-red text-white px-4 py-2 rounded-md transition w-full text-left font-medium"
             >
               Logout
             </button> :

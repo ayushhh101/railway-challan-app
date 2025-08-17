@@ -18,8 +18,8 @@ const borderColors = [
   "border-l-4 border-l-red-400"      // red for Unpaid Challans
 ];
 
-const SummaryCard = ({ stats , loading , error }) => {
-   if (loading) {
+const SummaryCard = ({ stats, loading, error }) => {
+  if (loading) {
     return (
       <div className="bg-white p-10 rounded-xl text-center text-blue-700 text-base font-semibold">
         Loading summary...
@@ -72,32 +72,34 @@ const SummaryCard = ({ stats , loading , error }) => {
         {summary.map((s, idx) => (
           <div
             key={s.title}
-            className={`relative rounded-xl bg-white flex flex-row items-center justify-between p-6 border border-slate-100 shadow ${borderColors[idx]}`}
+            className={
+              `relative rounded-xl bg-white flex flex-row items-center justify-between p-4 sm:p-6 border border-neutral-gray200 shadow ${borderColors[idx]}`
+            }
           >
             {/* Content */}
             <div className="flex flex-col justify-between">
-              <div className="text-sm font-semibold text-slate-400 mb-1">{s.title}</div>
-              <div className="text-2xl font-bold text-[#262B43]">
+              <div className="text-xs sm:text-sm font-semibold text-neutral-gray500 mb-1">{s.title}</div>
+              <div className="text-xl sm:text-2xl font-bold text-neutral-gray900">
                 {s.value}
               </div>
               <div className="flex items-center mt-1">
                 {typeof s.change === "number" ? (
                   <span
                     className={`inline-flex items-center gap-1 text-xs font-semibold
-                    ${s.changePos ? 'text-green-600' : 'text-red-500'}`}
+                    ${s.changePos ? 'text-secondary-success-green' : 'text-secondary-danger-red'}`}
                   >
                     {s.changePos
                       ? <ArrowUpIcon className="w-4 h-4" />
                       : <ArrowDownIcon className="w-4 h-4" />}
                     {Math.abs(s.change)}%
-                    <span className="ml-1 font-normal text-slate-400">
+                    <span className="ml-1 font-normal text-neutral-gray400">
                       since last month
                     </span>
                   </span>
                 ) : null}
               </div>
             </div>
-            <div className="absolute right-5 top-5">
+            <div className="absolute right-3 top-3 sm:right-5 sm:top-5">
               {s.icon}
             </div>
           </div>

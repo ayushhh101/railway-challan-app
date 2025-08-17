@@ -197,7 +197,7 @@ const AdminDashboardPage = () => {
   if (!stats) return <div className="text-center mt-10">Loading dashboard...</div>;
 
   return (
-    <div className=" max-w-7xl mx-auto  px-4 pt-8 pb-12 space-y-10 min-h-screen">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-6 sm:pt-8 pb-10 sm:pb-12 space-y-8 sm:space-y-10 min-h-screen font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
         <h1 className="text-3xl pl-0 sm:pl-5 font-bold text-gray-800 text-center sm:text-left">
           Admin Dashboard
@@ -237,12 +237,12 @@ const AdminDashboardPage = () => {
         error={error}
       />
 
-      <SummaryCard stats={stats} loading={loading} error={error}/>
+      <SummaryCard stats={stats} loading={loading} error={error} />
 
       <div className="flex flex-wrap gap-2 mb-6 justify-start">
         <Link to="/anomalies">
           <button
-            className="rounded-lg bg-red-50 text-red-800 border border-red-200 px-4 py-2 font-semibold text-sm hover:bg-red-100 transition shadow-sm"
+            className="rounded-2xl bg-secondary-danger-red text-white border border-secondary-danger-red px-1 sm:px-3 md:px-4 py-2 font-semibold text-sm hover:bg-secondary-danger-light transition shadow-sm"
             aria-label="View anomalies"
           >
             <BugAntIcon className="w-5 h-5 mr-2 inline" />
@@ -251,7 +251,7 @@ const AdminDashboardPage = () => {
         </Link>
         <Link to="/audit-log">
           <button
-            className="rounded-lg bg-blue-50 text-blue-800 border border-blue-200 px-4 py-2 font-semibold text-sm hover:bg-blue-100 transition shadow-sm"
+            className="rounded-2xl bg-primary-dark text-white border border-primary-light px-1 sm:px-3 md:px-4 py-2 font-semibold text-sm hover:bg-primary-light hover:text-white transition shadow-sm"
             aria-label="View audit log"
           >
             <ClipboardDocumentListIcon className="w-5 h-5 mr-2 inline" />
@@ -259,7 +259,7 @@ const AdminDashboardPage = () => {
           </button>
         </Link>
         <button
-          className="rounded-lg bg-blue-600 text-white font-semibold px-4 py-2 text-sm hover:bg-blue-800 transition shadow-sm"
+          className="rounded-2xl bg-primary-light text-white font-semibold px-1 py-2 sm:px-3 md:px-4 text-sm hover:bg-primary-dark transition shadow-sm"
           onClick={() => setShowAddUser(true)}
           aria-label="Add Admin or TTE"
         >
@@ -269,12 +269,12 @@ const AdminDashboardPage = () => {
       </div>
 
 
-      <div className="bg-white rounded-2xl shadow-lg border border-slate-100 px-4 sm:px-10 py-7 my-8">
+      <div className="bg-white rounded-2xl shadow-lg border border-neutral-gray200 px-2 sm:px-10 py-5 sm:py-7 my-6">
         {/* Title row */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Data Visualization</h2>
+          <h2 className="text-xl font-bold text-neutral-gray900">Data Visualization</h2>
           <button
-            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-blue-800 transition text-sm w-fit"
+            className="bg-primary-blue text-white font-semibold px-4 py-2 rounded-2xl shadow hover:bg-primary-dark transition text-sm w-fit"
             onClick={() => {
               // TODO: Add your export handler here, e.g. exportAnalyticsData()
             }}
@@ -285,12 +285,12 @@ const AdminDashboardPage = () => {
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
             <div className="w-full h-full">
-              <ChallansByReasonChart data={stats?.challansByReason} stats={stats} loading={loading} error={error}/>
+              <ChallansByReasonChart data={stats?.challansByReason} stats={stats} loading={loading} error={error} />
             </div>
           </div>
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
             <div className="w-full h-full">
               <MonthlyTrendChart trend={stats?.monthlyTrend} loading={loading} error={error} />
             </div>
@@ -298,12 +298,12 @@ const AdminDashboardPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
             <div className="w-full h-full">
-              <TopTTEBarChart stats={stats} loading={loading} error={error}  />
+              <TopTTEBarChart stats={stats} loading={loading} error={error} />
             </div>
           </div>
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-slate-100 shadow-sm flex flex-col">
+          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
             <div className="w-full h-full">
               <ChallanHeatmap challansByLocation={challansByLocation} loading={loading} error={error} />
             </div>
