@@ -96,37 +96,36 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-8">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-8 border border-gray-400">
-        <h2 className="text-2xl font-bold text-center text-[#1E40AF] mb-6"
+  return ( 
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 md:px-8 py-8 md:py-12  font-sans">
+      <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-6 border border-neutral-gray400">
+        <h2 className="text-3xl font-bold text-center text-primary-blue mb-4 md:mb-6"
         >Railway Portal Login</h2>
 
 
         <form onSubmit={handleSubmit} >
-          <div className='p-4'>
-            <label className="block text-sm font-medium text-black mb-1">Employee ID</label>
+          <div className='p-2 md:p-4'>
+            <label className="block text-sm md:text-base font-medium text-neutral-gray900 mb-1">Employee ID</label>
             <input
               name="employeeId"
               type="text"
               value={formData.employeeId}
               onChange={handleChange}
               placeholder="Enter your ID"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#1E40AF] focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-3 md:px-4 md:py-4 text-sm md:text-base font-normal focus:ring-2 focus:ring-[#1E40AF] focus:outline-none"
               required
             />
           </div>
 
-          <div className='p-4'>
-            <label className="block text-sm font-medium text-black mb-1">Password</label>
+          <div className='p-2 md:p-4'>
+            <label className="block text-sm font-medium md:text-base  text-neutral-gray900 mb-1">Password</label>
             <input
               name="password"
               type="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-[#1E40AF] focus:outline-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-3 md:px-4 md:py-4 text-sm md:text-base font-normal focus:ring-1 focus:ring-[#1E40AF] focus:outline-none"
               required
             />
           </div>
@@ -134,7 +133,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-1/2 block mx-auto bg-[#1E40AF] hover:bg-blue-950 text-white py-3 mt-3 rounded-lg font-semibold transition-colors duration-200"
+            className="w-full md:w-1/2 block mx-auto bg-primary-blue hover:bg-primary-dark text-white py-3 md:py-4 mt-3 md:mt-4 rounded-2xl font-medium text-base transition-colors duration-200 font-sans"
             aria-label="Login"
           >
             {loading ? 'Logging in...' : 'Login'}

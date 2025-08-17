@@ -22,5 +22,10 @@
   --color-neutral-gray700: #374151;
   --color-neutral-gray800: #1F2937;
   --color-neutral-gray900: #111827;
+  
+  
 }
 
+body {
+  font-family: 'Noto Sans Hans', sans-serif;
+}
