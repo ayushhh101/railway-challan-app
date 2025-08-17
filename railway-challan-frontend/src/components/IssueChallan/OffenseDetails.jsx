@@ -17,7 +17,7 @@ export default function OffenseDetails({
         value={form.reason}
         onChange={handleReasonChange}
         required
-        className="w-full border p-3 rounded-md text-sm"
+        className="w-full border border-neutral-gray300 p-3 rounded-2xl text-sm"
       >
         <option value="">Select Offense</option>
         {FINE_RULES.map(r =>

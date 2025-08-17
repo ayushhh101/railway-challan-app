@@ -36,9 +36,9 @@ export default function IssueChallanPage() {
   } = useIssueChallan(user, token, sendNotification);
 
   return (
-   <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center px-2 sm:px-0 font-notosans pt-5">
-      <div className="w-full max-w-full sm:max-w-[90vw] md:max-w-[600px] lg:max-w-[50vw]  bg-white rounded-2xl shadow-2xl border border-gray-200 p-7">
-        <h2 className="text-2xl font-bold text-blue-800 text-center mb-5  border-b border-gray-200">
+   <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center px-2 sm:px-4 md:px-6 font-sans pt-5">
+      <div className="w-full max-w-full sm:max-w-[90vw] md:max-w-[600px] lg:max-w-[50vw] bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 sm:p-7">
+        <h2 className="text-2xl font-bold text-blue-800 text-center mb-4 sm:mb-5 border-b border-gray-200">
           Issue Challan
         </h2>
         {isOffline && (
@@ -80,7 +80,7 @@ export default function IssueChallanPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5 w-full">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 w-full">
           <PassengerDetails form={form} handleChange={handleChange} />
           <OffenseDetails
             form={form}

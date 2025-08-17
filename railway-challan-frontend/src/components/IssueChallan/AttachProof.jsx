@@ -7,7 +7,7 @@ export default function AttachProof({ proofs, setProofs, isOffline }) {
 
   return (
     <div>
-      <label className="text-black text-sm font-semibold mb-2 border-b border-gray-200 pb-1">
+      <label className="text-neutral-gray900 text-sm font-semibold mb-2 border-b border-neutral-gray200 pb-1">
         Attach Proof (Photo/PDF, optional, up to 4)
       </label>
       <input
@@ -17,7 +17,7 @@ export default function AttachProof({ proofs, setProofs, isOffline }) {
         multiple
         disabled={isOffline}
         onChange={handleFilesChange}
-        className="block w-full text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md p-2 file:py-2 file:px-4 file:roundedfile:border-0 file:text-sm file:text-blackdisabled:opacity-60"
+        className="block w-full text-sm text-neutral-gray700 bg-neutral-gray50 border border-neutral-gray300 rounded-2xl p-2 file:py-2 file:px-4 file:rounded-2xl file:border-0 file:text-sm file:text-neutral-gray900 disabled:opacity-60"
       />
       <div className="flex flex-wrap gap-2 mt-2">
         {proofs.map((file, idx) => (
@@ -27,7 +27,7 @@ export default function AttachProof({ proofs, setProofs, isOffline }) {
         ))}
       </div>
       {isOffline && (
-        <p className="text-xs text-orange-600 mt-1">
+        <p className="text-xs text-accent-orange mt-1">
           Proof/photo uploads available only when online.
         </p>
       )}

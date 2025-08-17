@@ -25,7 +25,7 @@ export default function FinePaymentDetails({ form, handleChange }) {
         value={form.paymentMode}
         onChange={handleChange}
         required
-        className="w-full border p-3 rounded-md text-sm"
+        className="w-full border border-neutral-gray300 p-3 rounded-2xl text-sm"
       >
         <option value="">Select Payment Mode</option>
         <option value="online">Online</option>

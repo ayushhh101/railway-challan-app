@@ -85,8 +85,10 @@ exports.issueChallan = async (req, res) => {
     }
 
     const existingUser = await Challan.findOne({ passengerAadharLast4 });
-    if( existingUser.passengerName.trim().toLowerCase() !== passengerName.trim().toLowerCase() ){
-      return res.status(404).json({ message: "Different name for the same aadhar number" });
+    if (existingUser) {
+      if (existingUser.passengerName.trim().toLowerCase() !== passengerName.trim().toLowerCase()) {
+        return res.status(404).json({ message: "Different name for the same aadhar number" });
+      }
     }
 
     console.log('Searching for passenger user with mob:', mobileNumber, 'aad:', passengerAadharLast4);
@@ -281,7 +283,7 @@ exports.getChallanLocations = async (req, res) => {
 
 // search challans by various criteria
 exports.searchChallans = async (req, res) => {
-  const { passenger , train, reason, date, status } = req.query;
+  const { passenger, train, reason, date, status } = req.query;
 
   const filter = {};
   if (passenger) filter.passengerName = { $regex: passenger, $options: 'i' };

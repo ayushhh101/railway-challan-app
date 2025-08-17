@@ -4,7 +4,7 @@ export default function PassengerDetails({ form, handleChange }) {
   return (
     <>
    <div>
-      <h3 className="text-blue-800 text-lg font-semibold mb-3 border-b border-gray-300 pb-1">
+      <h3 className="text-primary-blue text-lg font-semibold mb-3 border-b border-gray-300 pb-1">
         Passenger Details
       </h3>
       <div className="flex flex-col sm:flex-row gap-3 mb-3">

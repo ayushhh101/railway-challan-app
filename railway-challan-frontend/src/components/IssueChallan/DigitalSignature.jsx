@@ -11,21 +11,21 @@ export default function DigitalSignature({ sigCanvasRef }) {
       <div className='pb-0.5'>
       <label className="text-sm font-medium">Digital Signature</label>
       </div>
-      <div className="border rounded-md p-2 bg-gray-50">
+      <div className="border rounded-2xl p-2 bg-gray-50">
         <SignatureCanvas
           penColor="black"
           ref={sigCanvasRef}
           canvasProps={{
             width: 450,
             height: 150,
-            className: 'bg-white rounded border w-full',
+            className: 'bg-white rounded-2xl border w-full',
           }}
         />
       </div>
       <button
         type="button"
         onClick={clearSignature}
-        className="text-sm text-red-600 mt-2"
+        className="text-sm text-secondary-danger-red mt-2"
         aria-label="Clear Signature"
       >
         Clear Signature
