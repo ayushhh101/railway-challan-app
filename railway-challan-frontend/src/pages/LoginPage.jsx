@@ -10,7 +10,6 @@ export default function LoginPage() {
 
   const [formData, setFormData] = useState({ employeeId: '', password: '' });
   const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState('');
 
   useEffect(() => {
     // if offline and credentials exist, allow instant access
@@ -34,7 +33,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setError('');
     setLoading(true);
 
     const hashedPassword = SHA256(formData.password).toString();
@@ -84,15 +82,14 @@ export default function LoginPage() {
       sessionStorage.setItem('auth', JSON.stringify({ token: data.token, user: data.user }))
 
       toast.success(`Welcome, ${data.user.name || data.user.employeeId || 'User'}!`)
-      // redirect
-      setTimeout(()=>{
+
+      setTimeout(() => {
         if (data.user.role === 'admin') navigate('/admin-dashboard');
-      else if (data.user.role === 'tte') navigate('/issue-challan');
-      else navigate('/');
-      },600);
-      
+        else if (data.user.role === 'tte') navigate('/issue-challan');
+        else navigate('/');
+      }, 600);
+
     } catch (err) {
-      // setError(err.message);
       toast.error(err.message || 'Login error. Try again.')
     } finally {
       setLoading(false);
@@ -100,10 +97,12 @@ export default function LoginPage() {
   };
 
   return (
+    
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-8">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-8 border border-gray-400">
-        <h2 className="text-2xl font-bold text-center text-[#1E40AF] mb-6" 
-        style={{ fontFamily: "'Noto Sans', 'Noto Sans Hans', sans-serif" }}>Railway Portal Login</h2>
+        <h2 className="text-2xl font-bold text-center text-[#1E40AF] mb-6"
+        >Railway Portal Login</h2>
+
 
         <form onSubmit={handleSubmit} >
           <div className='p-4'>
@@ -131,12 +130,6 @@ export default function LoginPage() {
               required
             />
           </div>
-{/* 
-          {error && (
-            <p className="text-[#DC2626] text-sm text-center bg-red-50 border border-[#FCA5A5] p-2 rounded-md">
-              {error}
-            </p>
-          )} */}
 
           <button
             type="submit"
@@ -149,6 +142,5 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
-
   );
 }

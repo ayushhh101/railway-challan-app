@@ -1,6 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Hans:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
-.notosans {
-  font-family: 'Noto Sans', 'Noto Sans Hans', sans-serif;
+@theme{
+  --color-mint-500: oklch(0.72 0.11 178);
+  --color-primary-blue: #1E40AF;
+  --color-primary-light: #3B82F6;
+  --color-primary-dark: #1E3A8A;
+  --color-secondary-success-green: #10B981;
+  --color-secondary-success-light: #34D399;
+  --color-secondary-danger-red: #EF4444;
+  --color-secondary-danger-light: #FB7181;
+  --color-accent-orange: #F97316;
+  --color-accent-light: #FB923C;
+  --color-neutral-gray50: #F9FAFB;
+  --color-neutral-gray100: #F3F4F6;
+  --color-neutral-gray200: #E5E7EB;
+  --color-neutral-gray300: #D1D5DB;
+  --color-neutral-gray400: #9CA3AF;
+  --color-neutral-gray500: #6B7280;
+  --color-neutral-gray600: #4B5563;
+  --color-neutral-gray700: #374151;
+  --color-neutral-gray800: #1F2937;
+  --color-neutral-gray900: #111827;
 }
+

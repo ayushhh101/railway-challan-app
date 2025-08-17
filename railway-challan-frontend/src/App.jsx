@@ -1,7 +1,7 @@
+import './index.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';  // Adjust path if needed
 import { useEffect } from 'react';
-
 import LoginPage from './pages/LoginPage';
 import Navbar from './pages/Navbar';
 import PrivateRoute from './routes/PrivateRoute';
