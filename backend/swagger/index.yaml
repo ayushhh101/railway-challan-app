@@ -1,0 +1,866 @@
+openapi: 3.0.0
+info:
+  title: Railway Challan API
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  # Auth Routes
+  /register:
+    post:
+      summary: Register a new user (Admin only)
+      description: Allows an admin to register a new user. Requires JWT authentication and admin privileges.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - role
+                - zone
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+                role:
+                  type: string
+                  enum: [admin, tte, passenger]
+                  example: "admin"
+                zone:
+                  type: string
+                  example: "North"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /login:
+    post:
+      summary: Login user
+      description: Authenticates a user and returns JWT tokens.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "admin or tte"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "<jwt-access-token>"
+                  refreshToken:
+                    type: string
+                    example: "<jwt-refresh-token>"
+        '400':
+          description: Bad request
+        '401':
+          description: Invalid credentials
+
+  /refresh:
+    post:
+      summary: Refresh authentication token
+      description: Returns a new access token using a valid refresh token.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "<jwt-refresh-token>"
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "<new-jwt-access-token>"
+        '400':
+          description: Bad request
+        '401':
+          description: Invalid or expired refresh token
+
+  /logout:
+    post:
+      summary: Logout user
+      description: Logs out the user and invalidates the refresh token.
+      tags: [Auth]
+      requestBody:
+        required: false
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        '401':
+          description: Unauthorized
+
+# Admin Routes
+  /admin/dashboard:
+    get:
+      summary: Get admin dashboard statistics
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard stats
+          content:
+            application/json:
+              example:
+                stats: { totalChallans: 1200, totalUsers: 300 }
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/anomalies:
+    get:
+      summary: List all anomalies
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of anomalies
+          content:
+            application/json:
+              example:
+                anomalies: [ { _id: "abc123", user: { name: "TTE Ram" }, challan: { reason: "No ticket" } } ]
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/anomalies/{anomalyId}/{status}:
+    put:
+      summary: Update anomaly status
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: anomalyId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              example:
+                message: "Anomaly updated"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/getAllAudits:
+    get:
+      summary: Get audit logs
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Audit log array
+          content:
+            application/json:
+              example:
+                audits: [ { action: "reset-password", user: "admin" } ]
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/monthly-report:
+    get:
+      summary: Get monthly report
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Monthly report data
+          content:
+            application/json:
+              example:
+                report: { month: "September", totalChallans: 100 }
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/getTTEAnalytics:
+    get:
+      summary: Get TTE analytics
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: TTE analytics data
+          content:
+            application/json:
+              example:
+                analytics: [ { tte: "Ram", challans: 50 } ]
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/reset-password:
+    post:
+      summary: Admin resets user password
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              userId: "tte1"
+              newPassword: "newSecurePassword"
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              example:
+                message: "Password reset successful"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          
+# Challan Routes
+  /challan/admin/all:
+    get:
+      summary: View all challans (Admin only)
+      description: Retrieve all challans in the system. Requires JWT authentication and admin privileges.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of all challans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/my:
+    get:
+      summary: View my challans (TTE only)
+      description: Retrieve challans issued by the logged-in TTE. Requires JWT authentication and TTE role.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of TTE's challans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/issue:
+    post:
+      summary: Issue a new challan (TTE only)
+      description: Allows a TTE to issue a new challan. Requires JWT authentication, TTE role, and proof file upload.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                passengerId:
+                  type: string
+                offense:
+                  type: string
+                amount:
+                  type: number
+                proofs:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Challan issued successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challan'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/locations:
+    get:
+      summary: Get challan locations (Admin only)
+      description: Retrieve locations where challans have been issued. Requires JWT authentication and admin privileges.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/search:
+    get:
+      summary: Search challans (Admin only)
+      description: Search for challans based on query parameters. Requires JWT authentication and admin privileges.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: passengerId
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: status
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Array of matching challans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/details/{id}:
+    get:
+      summary: Get challan details by ID (Admin only)
+      description: Retrieve details of a specific challan by its ID. Requires JWT authentication and admin privileges.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Challan details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/bulk-pdf:
+    post:
+      summary: Download bulk challan PDF (Admin only)
+      description: Download PDFs for multiple challans. Requires JWT authentication and admin privileges.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                challanIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: PDF file (binary)
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/passenger-history:
+    get:
+      summary: Get passenger history
+      description: Retrieve the history of challans for a passenger. Requires JWT authentication.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of passenger's challans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challan'
+        '401':
+          description: Unauthorized
+
+  /challan/{id}:
+    get:
+      summary: Get challan by ID
+      description: Retrieve a challan by its ID.
+      tags: [Challan]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Challan details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challan'
+        '404':
+          description: Challan not found
+
+    put:
+      summary: Update challan (TTE only)
+      description: Update details of a challan. Requires JWT authentication and TTE role.
+      tags: [Challan]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Challan'
+      responses:
+        '200':
+          description: Challan updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challan'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /challan/history:
+    get:
+      summary: Get user history
+      description: Retrieve the history of challans for all user.
+      tags: [Challan]
+      responses:
+        '200':
+          description: Array of user's challans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challan'
+
+  /challan/pay/{id}:
+    put:
+      summary: Mark challan as paid
+      description: Mark a challan as paid by its ID.
+      tags: [Challan]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Challan marked as paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Challan'
+        '400':
+          description: Bad request
+        '404':
+          description: Challan not found
+
+# Passenger Routes
+  /passenger/onboard-verify:
+    get:
+      summary: Verify onboarding token
+      description: Returns passenger info if onboarding token is valid.
+      tags: [Passenger]
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Passenger info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  passengerId:
+                    type: string
+                  name:
+                    type: string
+                  email:
+                    type: string
+        '400':
+          description: Invalid or expired token
+
+  /passenger/onboard-setpassword:
+    post:
+      summary: Set password and complete onboarding
+      description: Sets password and completes onboarding for a passenger.
+      tags: [Passenger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Onboarding completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Onboarding completed"
+        '400':
+          description: Invalid token or password
+
+  /passenger/login:
+    post:
+      summary: Passenger login
+      description: Authenticates a passenger and returns JWT tokens.
+      tags: [Passenger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '400':
+          description: Bad request
+        '401':
+          description: Invalid credentials
+
+  /passenger/refresh:
+    post:
+      summary: Refresh passenger authentication token
+      description: Returns a new access token using a valid refresh token for passenger.
+      tags: [Passenger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '400':
+          description: Bad request
+        '401':
+          description: Invalid or expired refresh token
+
+  /passenger/logout:
+    post:
+      summary: Passenger logout
+      description: Logs out the passenger and invalidates the refresh token.
+      tags: [Passenger]
+      requestBody:
+        required: false
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        '401':
+          description: Unauthorized
+
+  /passenger/mychallans:
+    get:
+      summary: Get my challans (Passenger)
+      description: Retrieve challans for the logged-in passenger. Requires JWT authentication.
+      tags: [Passenger]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of passenger's challans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Challan'
+        '401':
+          description: Unauthorized
+        # PDF Routes
+    /pdf/challan/{id}/pdf:
+      get:
+        summary: Download challan PDF
+        description: Download the PDF for a specific challan by its ID. Requires JWT authentication.
+        tags: [PDF]
+        security:
+          - bearerAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+            description: Challan ID
+        responses:
+          '200':
+            description: PDF file (binary)
+            content:
+              application/pdf:
+                schema:
+                  type: string
+                  format: binary
+          '401':
+            description: Unauthorized
+          '404':
+            description: Challan not found
+
+# Proof Routes
+  /proof/upload-proof:
+      post:
+        summary: Upload proof file ( TTE only )
+        description: Upload a proof image or document. Requires JWT authentication.
+        tags: [Proof]
+        security:
+          - bearerAuth: []
+        requestBody:
+          required: true
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  proof:
+                    type: string
+                    format: binary
+        responses:
+          '200':
+            description: Proof uploaded successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Uploaded successfully"
+                    fileUrl:
+                      type: string
+                      example: "/proofs/filename.jpg"
+          '400':
+            description: No file uploaded
+          '401':
+            description: Unauthorized
+
+ # TTE Routes
+  /tte/tteProfile:
+      get:
+        summary: Get TTE profile information
+        description: Retrieve the profile information for the logged-in TTE. Requires JWT authentication and TTE role.
+        tags: [TTE]
+        security:
+          - bearerAuth: []
+        responses:
+          '200':
+            description: TTE profile information
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    tteId:
+                      type: string
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    stats:
+                      type: object
+                      description: TTE statistics (optional)
+          '401':
+            description: Unauthorized
+          '403':
+            description: Forbidden
+            
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

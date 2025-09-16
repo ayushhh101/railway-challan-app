@@ -121,28 +121,26 @@ export default function PassengerHistoryPage() {
   }, [results, currentPage, totalPages]);
 
   return (
-    <div className="max-w-7xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-6">
-      <h2 className="text-2xl font-bold mb-6 text-blue-800 border-b pb-3">
-        Passenger Challan History
-      </h2>
+    <div className="max-w-7xl mx-auto p-3 sm:p-8 bg-white rounded-2xl shadow-lg mt-3 sm:mt-6 font-sans">
+      <h2 className="text-lg sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-blue border-b pb-2 sm:pb-3">Passenger Challan History</h2>
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-4 mb-8 items-end">
-        <div className="flex flex-col">
-          <label className="text-sm font-semibold mb-1" htmlFor="name">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 mb-6 sm:mb-8 items-end">
+        <div className="flex flex-col w-full sm:w-auto">
+          <label className="text-xs sm:text-sm font-semibold mb-1" htmlFor="name">
             Passenger Name
           </label>
           <input
             id="name"
             type="text"
             placeholder="Passenger Name"
-            className="border border-gray-300 rounded px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-neutral-gray300 rounded-2xl px-3 py-2 text-sm w-full sm:w-60 focus:outline-none focus:ring-2 focus:ring-primary-blue"
             value={query.name}
             onChange={(e) => setQuery((q) => ({ ...q, name: e.target.value }))}
           />
         </div>
 
-        <div className="flex flex-col">
-          <label className="text-sm font-semibold mb-1" htmlFor="aadhar">
+        <div className="flex flex-col w-full sm:w-auto">
+          <label className="text-xs sm:text-sm font-semibold mb-1" htmlFor="aadhar">
             Aadhar Last 4
           </label>
           <input
@@ -150,7 +148,7 @@ export default function PassengerHistoryPage() {
             type="text"
             maxLength={4}
             placeholder="Aadhar Last 4"
-            className="border border-gray-300 rounded px-3 py-2 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-neutral-gray300 rounded-2xl px-3 py-2 text-sm w-full sm:w-36 focus:outline-none focus:ring-2 focus:ring-primary-blue"
             value={query.aadhar}
             onChange={(e) =>
               setQuery((q) => ({ ...q, aadhar: e.target.value.replace(/\D/, "") }))
@@ -158,41 +156,41 @@ export default function PassengerHistoryPage() {
           />
         </div>
 
-        <div className="flex flex-col">
-          <label className="text-sm font-semibold mb-1" htmlFor="dateFrom">
+        <div className="flex flex-col w-full sm:w-auto">
+          <label className="text-xs sm:text-sm font-semibold mb-1" htmlFor="dateFrom">
             From Date
           </label>
           <input
             id="dateFrom"
             type="date"
-            className="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-neutral-gray300 rounded-2xl px-3 py-2 text-sm w-full sm:w-40 focus:outline-none focus:ring-2 focus:ring-primary-blue"
             value={query.dateFrom}
             onChange={(e) => setQuery((q) => ({ ...q, dateFrom: e.target.value }))}
             max={query.dateTo || undefined}
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full sm:w-auto">
           <label className="text-sm font-semibold mb-1" htmlFor="dateTo">
             To Date
           </label>
           <input
             id="dateTo"
             type="date"
-            className="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-neutral-gray300 rounded-2xl px-3 py-2 text-sm w-full sm:w-40 focus:outline-none focus:ring-2 focus:ring-primary-blue"
             value={query.dateTo}
             onChange={(e) => setQuery((q) => ({ ...q, dateTo: e.target.value }))}
             min={query.dateFrom || undefined}
           />
         </div>
 
-        <div className="flex flex-col">
-          <label className="text-sm font-semibold mb-1" htmlFor="paymentStatus">
+        <div className="flex flex-col w-full sm:w-auto">
+          <label className="text-xs sm:text-sm font-semibold mb-1" htmlFor="paymentStatus">
             Payment Status
           </label>
           <select
             id="paymentStatus"
-            className="border border-gray-300 rounded px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-neutral-gray300 rounded-2xl px-3 py-2 text-sm w-full sm:w-40 focus:outline-none focus:ring-2 focus:ring-primary-blue"
             value={query.paymentStatus}
             onChange={(e) => setQuery((q) => ({ ...q, paymentStatus: e.target.value }))}
           >
@@ -205,7 +203,7 @@ export default function PassengerHistoryPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold rounded px-6 py-2 ml-auto transition"
+          className="w-full sm:w-fit bg-primary-blue hover:bg-primary-dark disabled:bg-primary-light disabled:cursor-not-allowed text-white font-semibold rounded-2xl px-6 py-2 transition mt-2 sm:mt-0"
           aria-label="Search Passenger"
         >
           {loading ? "Searching..." : "Search"}
@@ -213,22 +211,22 @@ export default function PassengerHistoryPage() {
       </form>
 
       {passengerStats && (
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <div className="p-4 bg-blue-100 rounded shadow text-center">
-            <p className="text-xl font-semibold text-blue-700">{passengerStats.totalChallans}</p>
-            <p className="text-gray-700 text-sm mt-1">Total Challans</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="p-3 sm:p-4 bg-primary-light/25 rounded-2xl shadow text-center">
+            <p className="text-lg sm:text-xl font-semibold text-primary-blue">{passengerStats.totalChallans}</p>
+            <p className="text-neutral-gray700 text-xs sm:text-sm mt-1">Total Challans</p>
           </div>
-          <div className="p-4 bg-green-100 rounded shadow text-center">
-            <p className="text-xl font-semibold text-green-700">{passengerStats.paidCount}</p>
-            <p className="text-gray-700 text-sm mt-1">Paid</p>
+          <div className="p-3 sm:p-4 bg-secondary-success-light/30 rounded-2xl shadow text-center">
+            <p className="text-lg sm:text-xl font-semibold text-secondary-success-green">{passengerStats.paidCount}</p>
+            <p className="text-neutral-gray700 text-xs sm:text-sm mt-1">Paid</p>
           </div>
-          <div className="p-4 bg-red-100 rounded shadow text-center">
-            <p className="text-xl font-semibold text-red-700">{passengerStats.unpaidCount}</p>
-            <p className="text-gray-700 text-sm mt-1">Unpaid</p>
+          <div className="p-3 sm:p-4 bg-secondary-danger-light/25 rounded-2xl shadow text-center">
+            <p className="text-lg sm:text-xl font-semibold text-secondary-danger-red">{passengerStats.unpaidCount}</p>
+            <p className="text-neutral-gray700 text-xs sm:text-sm mt-1">Unpaid</p>
           </div>
-          <div className="p-4 bg-yellow-100 rounded shadow text-center">
-            <p className="text-xl font-semibold text-yellow-700">₹{passengerStats.totalFine.toLocaleString()}</p>
-            <p className="text-gray-700 text-sm mt-1">Total Fine Amount</p>
+          <div className="p-3 sm:p-4 bg-accent-light/30 rounded-2xl shadow text-center">
+            <p className="text-lg sm:text-xl font-semibold text-accent-orange">₹{passengerStats.totalFine.toLocaleString()}</p>
+            <p className="text-neutral-gray700 text-xs sm:text-sm mt-1">Total Fine Amount</p>
           </div>
         </div>
       )}

@@ -32,6 +32,15 @@ router.put('/:id', verifyToken, isTTE , updateChallan)
 
 router.get('/history',  userHistory )
 
+/**
+ * @swagger
+ * /challan:
+ *   get:
+ *     summary: Get challan by ID
+ *     responses:
+ *       200:
+ *         description: Challan details
+ */
 router.get('/:id', getChallan)
 
 router.put('/pay/:id', markChallanAsPaid)
