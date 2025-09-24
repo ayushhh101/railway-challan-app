@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import SHA256 from 'crypto-js/sha256'
 import toast from 'react-hot-toast';
+import { handleApiError } from '../utils/errorHandler';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -51,7 +52,7 @@ export default function LoginPage() {
         login(savedToken, savedCreds.refreshToken, savedUser);
         return navigate('/issue-challan');
       } else {
-        setError('Offline login failed. Try logging in online once.');
+        handleApiError(null, 'Offline login failed. Please connect to internet and login once.');
         return setLoading(false);
       }
     }
@@ -65,7 +66,10 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Login failed');
+      if (!response.ok) {
+        handleApiError({ response: { data } });
+        return;
+      }
 
       login(data.token, data.refreshToken, data.user);
 
@@ -90,13 +94,13 @@ export default function LoginPage() {
       }, 600);
 
     } catch (err) {
-      toast.error(err.message || 'Login error. Try again.')
+      handleApiError(err, 'Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
-  return ( 
+  return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 md:px-8 py-8 md:py-12  font-sans">
       <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-6 border border-neutral-gray400">
         <h2 className="text-3xl font-bold text-center text-primary-blue mb-4 md:mb-6"

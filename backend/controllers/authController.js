@@ -1,7 +1,8 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const logAudit = require('../utils/auditLogger')
+const logAudit = require('../utils/auditLogger');
+const { ErrorResponses } = require('../utils/errorResponses');
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -20,8 +21,8 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const { name, employeeId, email, password, phone, profilePic, role, zone ,currentStation ,designation ,dateOfJoining} = req.body;
-    
+    const { name, employeeId, email, password, phone, profilePic, role, zone, currentStation, designation, dateOfJoining } = req.body;
+
     if (!['tte', 'admin'].includes(role)) {
       return res.status(400).json({ message: 'Role must be tte or admin' });
     }
@@ -58,10 +59,16 @@ exports.login = async (req, res) => {
     const { employeeId, password } = req.body;
 
     const user = await User.findOne({ employeeId });
-    if (!user) return res.status(400).json({ message: 'User not found' });
+    if (!user) {
+      const error = ErrorResponses.userNotFound();
+      return res.status(error.statusCode).json(error);
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      const error = ErrorResponses.invalidCredentials();
+      return res.status(error.statusCode).json(error);
+    }
 
     // updates last login time
     user.lastLogin = new Date();
@@ -70,7 +77,7 @@ exports.login = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-     res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true, // Use HTTPS
       sameSite: 'Strict',
@@ -98,11 +105,13 @@ exports.login = async (req, res) => {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
       status: 'SUCCESS',
-      severity: 'low' 
+      severity: 'low'
     });
 
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Login error:', error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
@@ -116,7 +125,7 @@ exports.refreshToken = async (req, res) => {
     const newAccessToken = generateAccessToken(payload);
     const newRefreshToken = generateRefreshToken(payload);
 
-     res.cookie('refreshToken', newRefreshToken, {
+    res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'Strict',

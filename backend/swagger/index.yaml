@@ -858,9 +858,364 @@ paths:
           '403':
             description: Forbidden
             
+# ...existing code...
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      required:
+        - name
+        - employeeId
+        - password
+        - role
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          example: "Amit Kumar"
+        employeeId:
+          type: string
+          example: "TTE12345"
+        email:
+          type: string
+          format: email
+          example: "amit.kumar@railway.gov.in"
+        password:
+          type: string
+          format: password
+        phone:
+          type: string
+          example: "+919876543210"
+        profilePic:
+          type: string
+          example: "/uploads/profilepic.jpg"
+        role:
+          type: string
+          enum: [tte, admin]
+          example: "tte"
+        zone:
+          type: string
+          example: "Central"
+        currentStation:
+          type: string
+          example: "Mumbai CST"
+        designation:
+          type: string
+          example: "Senior TTE"
+        dateOfJoining:
+          type: string
+          format: date
+          example: "2020-01-15"
+        lastLogin:
+          type: string
+          format: date-time
+          example: "2023-09-24T10:30:00Z"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Passenger:
+      type: object
+      required:
+        - name
+        - aadharLast4
+        - mobileNumber
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439013"
+        name:
+          type: string
+          example: "Ravi Sharma"
+        aadharLast4:
+          type: string
+          pattern: "^[0-9]{4}$"
+          example: "1234"
+          description: "Last 4 digits of Aadhar number"
+        mobileNumber:
+          type: string
+          example: "+919812345678"
+        passwordHash:
+          type: string
+          description: "Hashed password"
+        lastOnboardingTokenSent:
+          type: string
+          format: date-time
+          description: "Timestamp when onboarding token was last sent"
+        lastOnboardingToken:
+          type: string
+          description: "Last onboarding token sent to passenger"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    
+      type: object
+      required:
+        - passengerId
+        - tteId
+        - offense
+        - amount
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+        passengerId:
+          type: string
+          example: "PASS123456"
+        tteId:
+          type: string
+        offense:
+          type: string
+          example: "Traveling without valid ticket"
+        amount:
+          type: number
+          minimum: 0
+          example: 500
+        status:
+          type: string
+          enum: [pending, paid, disputed]
+          default: pending
+        location:
+          type: string
+        proofs:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Challan:
+      type: object
+      required:
+        - issuedBy
+        - trainNumber
+        - passengerName
+        - reason
+        - fineAmount
+        - location
+        - paymentMode
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+        issuedBy:
+          type: string
+          description: "User ID of the TTE who issued the challan"
+          example: "507f1f77bcf86cd799439011"
+        trainNumber:
+          type: string
+          example: "12345"
+        coachNumber:
+          type: string
+          example: "S2"
+        passengerName:
+          type: string
+          example: "Ravi Sharma"
+        passengerAadharLast4:
+          type: string
+          pattern: "^[0-9]{4}$"
+          example: "1234"
+        mobileNumber:
+          type: string
+          example: "+919812345678"
+        passenger:
+          type: string
+          description: "Passenger ID (reference)"
+          example: "507f1f77bcf86cd799439013"
+        reason:
+          type: string
+          enum:
+            - Travelling without proper pass/ticket
+            - Travelling Fraudulently
+            - Alarm Chain Pulling
+            - Coach Reserved for Handicapped
+            - Travelling on Roof Top
+            - Trespassing
+            - Nuisance and Littering
+            - Bill Pasting
+            - Touting
+            - Unauthorised Hawking
+          example: "Travelling without proper pass/ticket"
+        fineAmount:
+          type: number
+          example: 500
+        location:
+          type: string
+          example: "New Delhi Railway Station"
+        latitude:
+          type: number
+          format: double
+          example: 28.6139
+        longitude:
+          type: number
+          format: double
+          example: 77.2090
+        paymentMode:
+          type: string
+          enum: [online, offline]
+          example: "online"
+        paid:
+          type: boolean
+          default: false
+          example: false
+        signature:
+          type: string
+          example: "/uploads/signature.png"
+        proofFiles:
+          type: array
+          items:
+            type: string
+            example: "/uploads/proof1.jpg"
+        issuedAt:
+          type: string
+          format: date-time
+          example: "2023-09-24T10:30:00Z"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Anomaly:
+      type: object
+      required:
+        - message
+        - status
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439015"
+        message:
+          type: string
+          example: "Suspicious high amount for minor offense"
+        user:
+          type: string
+          description: "Reference to User (TTE) who created the anomaly"
+          example: "507f1f77bcf86cd799439011"
+        challan:
+          type: string
+          description: "Reference to the challan that has anomaly"
+          example: "507f1f77bcf86cd799439012"
+        status:
+          type: string
+          enum: [pending, resolved, dismissed]
+          default: pending
+          example: "pending"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Audit:
+      type: object
+      required:
+        - action
+        - performedBy
+        - role
+        - status
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439016"
+        action:
+          type: string
+          example: "CHALLAN_ISSUED"
+        performedBy:
+          type: string
+          description: "Reference to User who performed the action"
+          example: "507f1f77bcf86cd799439011"
+        role:
+          type: string
+          enum: [tte, admin, passenger]
+          example: "tte"
+        metadata:
+          type: object
+          additionalProperties: true
+          description: "Additional details about the action"
+        ipAddress:
+          type: string
+          example: "192.168.1.100"
+        userAgent:
+          type: string
+          example: "Mozilla/5.0"
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          default: low
+          example: "low"
+        status:
+          type: string
+          enum: [SUCCESS, FAILURE, PARTIAL]
+          default: SUCCESS
+          example: "SUCCESS"
+        createdAt:
+          type: string
+          format: date-time
+
+    Station:
+      type: object
+      required:
+        - name
+        - zone
+        - latitude
+        - longitude
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439017"
+        name:
+          type: string
+          example: "New Delhi Railway Station"
+        zone:
+          type: string
+          example: "Northern Railway"
+        latitude:
+          type: number
+          format: double
+          example: 28.6139
+        longitude:
+          type: number
+          format: double
+          example: 77.2090
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "Invalid input data"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+  
+    
