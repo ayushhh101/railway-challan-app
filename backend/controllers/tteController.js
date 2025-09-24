@@ -1,14 +1,12 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 
-exports.getTTEProfile = async(req,res) =>{
-   try {
-    const tteId = req.user.id; // Assumes auth middleware sets req.user
+exports.getTTEProfile = async (req, res) => {
+  try {
+    const tteId = req.user.id; 
 
-    // Personal info
     const tte = await User.findById(tteId).lean();
 
-    // Challan stats
     const challans = await Challan.find({ issuedBy: tteId }).sort({ issuedAt: -1 });
     const total = challans.length;
     const paid = challans.filter(c => c.paid).length;
@@ -20,20 +18,22 @@ exports.getTTEProfile = async(req,res) =>{
       profile: {
         name: tte.name,
         employeeId: tte.employeeId,
-        email : tte.email || "",
-        phone: tte.phone ||"",
-        profilePic : tte.profilePic || null,
+        email: tte.email || "",
+        phone: tte.phone || "",
+        profilePic: tte.profilePic || null,
         role: tte.role,
         zone: tte.zone || "N/A",
-        currentStation : tte.currentStation ||"",
-        designation : tte.designation ||"",
-        dateOfJoining : tte.dateOfJoining ||"",
+        currentStation: tte.currentStation || "",
+        designation: tte.designation || "",
+        dateOfJoining: tte.dateOfJoining || "",
         lastLogin: tte.lastLogin,
       },
       stats: { total, paid, unpaid, recovery },
       recentChallans: recent,
     });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch profile", details: error.toString() });
+    console.error("Failed to fetch TTE profile:", error);
+    const errRes = ErrorResponses.serverError();
+    return res.status(errRes.statusCode).json(errRes);
   }
 }

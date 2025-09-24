@@ -1,6 +1,7 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const { ErrorResponses } = require('../utils/errorResponses');
 
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ exports.getDashboardStats = async (req, res) => {
       }
     ]);
 
-    //(Top 5)
+    //(only the latest 5)
     const challansPerTTE = await Challan.aggregate([
       {
         $group: {
@@ -61,7 +62,7 @@ exports.getDashboardStats = async (req, res) => {
       { $limit: 5 }
     ]);
 
-    //(Top 5)
+    //(only the latest 5)
     const challansPerTrain = await Challan.aggregate([
       {
         $group: {
@@ -96,7 +97,6 @@ exports.getDashboardStats = async (req, res) => {
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
 
-
     const challansThisMonth = await Challan.countDocuments({
       issuedAt: { $gte: startOfThisMonth }
     });
@@ -104,8 +104,6 @@ exports.getDashboardStats = async (req, res) => {
       issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
     });
     const totalChallansChange = challansLastMonth === 0 ? 100 : ((challansThisMonth - challansLastMonth) / Math.max(challansLastMonth, 1)) * 100;
-
-
 
     const fineThisMonthAgg = await Challan.aggregate([
       { $match: { paid: true, issuedAt: { $gte: startOfThisMonth } } },
@@ -152,7 +150,8 @@ exports.getDashboardStats = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin dashboard error:", error);
-    res.status(500).json({ message: "Unable to fetch dashboard stats. Please try again later." });
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 }
 
@@ -164,7 +163,8 @@ exports.getMonthlyReport = async (req, res) => {
     !/^(0[1-9]|1[0-2])$/.test(month) ||
     !/^\d{4}$/.test(year)
   ) {
-    return res.status(400).json({ error: true, message: "Invalid month or year." });
+    const error = ErrorResponses.validationError('Invalid month or year');
+    return res.status(error.statusCode).json(error);
   }
 
   try {
@@ -192,18 +192,17 @@ exports.getMonthlyReport = async (req, res) => {
 
     res.json({ challans, stats });
   } catch (err) {
-     console.error("Monthly report error:", err);
-    res.status(500).json({ message: 'Unable to fetch monthly report. Please try again later.', error: err.message });
+    console.error("Monthly report error:", err);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
 exports.getTTEAnalytics = async (req, res) => {
   try {
-    // Get all TTE users
     const ttes = await User.find({ role: 'tte' });
 
-    // For each TTE, aggregate challan stats
-    // This could be done efficiently with aggregate, but for clarity, here's simpler approach:
+    //each tc stats
     const stats = await Promise.all(
       ttes.map(async (tte) => {
         const challans = await Challan.find({ issuedBy: tte._id });
@@ -225,24 +224,33 @@ exports.getTTEAnalytics = async (req, res) => {
       })
     );
 
-    res.json({ tteStats: stats });
-
+    res.status(200).json({ tteStats: stats });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch analytics", error: error.toString() });
+    console.error("TTE analytics error:", error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 }
 
 exports.adminResetPassword = async (req, res) => {
   try {
     const { userId, newPassword } = req.body;
+
     if (!userId || !newPassword) {
-      return res.status(400).json({ message: "User and new password required." });
+      const error = ErrorResponses.missingFields('User ID and new password are required');
+      return res.status(error.statusCode).json(error);
     }
+
     if (newPassword.length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters." });
+      const error = ErrorResponses.validationError('Password must be at least 8 characters');
+      return res.status(error.statusCode).json(error);
     }
+
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (!user) {
+      const error = ErrorResponses.userNotFound();
+      return res.status(error.statusCode).json(error);
+    }
 
     user.password = await bcrypt.hash(newPassword, 10);
     // TODO:Optional: user.passwordChangedAt = new Date();
@@ -251,6 +259,8 @@ exports.adminResetPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Password updated successfully.' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error("Admin reset password error:", err);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };

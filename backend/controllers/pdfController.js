@@ -6,7 +6,8 @@ exports.downloadChallanPDF = async (req, res) => {
     //req.params.id is the challan ID which is extracted from the route
     const challan = await Challan.findById(req.params.id).populate('issuedBy');
     if (!challan) {
-      return res.status(404).json({ message: "Challan not found" });
+      const error = ErrorResponses.challanNotFound();
+      return res.status(error.statusCode).json(error);
     }
 
     const pdfBuffer = await generateChallanPDF(challan);
@@ -16,6 +17,7 @@ exports.downloadChallanPDF = async (req, res) => {
     res.status(200).end(pdfBuffer); // sends raw buffer
   } catch (err) {
     console.error('PDF generation error:', err);
-    res.status(500).json({ message: "Server Error", error: err.message });
+    const error = ErrorResponses.serverError();
+    return res.status(error.statusCode).json(error);
   }
 };

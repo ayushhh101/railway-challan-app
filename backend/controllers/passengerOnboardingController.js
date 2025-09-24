@@ -2,18 +2,18 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Passenger = require("../models/passengerModel");
 
-// Secrets for onboarding tokens - keep in `.env`
-const ONBOARDING_SECRET = process.env.PASSENGER_ONBOARD_SECRET ;
+const ONBOARDING_SECRET = process.env.PASSENGER_ONBOARD_SECRET;
 
-// @desc Verify the onboarding token and return passenger info for onboarding UI
-// @route GET /api/passenger/onboard-verify?token=...
-// @access Public (via token)
 exports.verifyOnboardingToken = async (req, res) => {
   const { token } = req.query;
-  if (!token) return res.status(400).json({ message: "Token is required" });
+  if (!token) {
+    const error = ErrorResponses.missingFields("Token is required");
+    return res.status(error.statusCode).json(error);
+  }
+
 
   try {
-    // Verify token (expires after configured time)
+    // verify token (expires after configured time)
     const payload = jwt.verify(token, ONBOARDING_SECRET);
 
     // Find passenger, exclude passwordHash for security
@@ -21,39 +21,48 @@ exports.verifyOnboardingToken = async (req, res) => {
       "-passwordHash -__v -createdAt -updatedAt"
     );
 
-    if (!passenger) return res.status(404).json({ message: "Passenger not found" });
+    if (!passenger) {
+      const error = ErrorResponses.passengerNotFound();
+      return res.status(error.statusCode).json(error);
+    }
 
-    // If passenger already has a password, onboarding may be complete
     if (passenger.passwordHash) {
-      return res.status(400).json({ message: "Passenger already onboarded" });
+      const error = ErrorResponses.operationNotAllowed("Passenger already onboarded");
+      return res.status(error.statusCode).json(error);
     }
 
     res.json({ passenger });
   } catch (err) {
-    // Could be token expired or malformed
-    res.status(400).json({ message: "Invalid or expired token" });
+    const error = ErrorResponses.tokenInvalid("Invalid or expired token");
+    return res.status(error.statusCode).json(error);
   }
 };
 
-// @desc Set passenger password and complete onboarding
-// @route POST /api/passenger/onboard-setpassword
-// @access Public (via token)
 exports.setPasswordAndCompleteOnboarding = async (req, res) => {
   const { token, password } = req.body;
 
-  if (!token || !password) return res.status(400).json({ message: "Token and password are required" });
-  if (password.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters" });
+  if (!token || !password) {
+    const error = ErrorResponses.missingFields("Token and password are required");
+    return res.status(error.statusCode).json(error);
+  }
+  if (password.length < 8) {
+    const error = ErrorResponses.validationError("Password must be at least 8 characters");
+    return res.status(error.statusCode).json(error);
+  }
 
   try {
-    // Verify token to get passengerId
+    // verify token to get passengerId
     const payload = jwt.verify(token, ONBOARDING_SECRET);
 
     const passenger = await Passenger.findById(payload.passengerId);
-    if (!passenger) return res.status(404).json({ message: "Passenger not found" });
+    if (!passenger) {
+      const error = ErrorResponses.passengerNotFound();
+      return res.status(error.statusCode).json(error);
+    }
 
-    // If password is already set, prevent reset via onboarding link
     if (passenger.passwordHash) {
-      return res.status(400).json({ message: "Password already set. Onboarding complete." });
+      const error = ErrorResponses.operationNotAllowed("Password already set. Onboarding complete.");
+      return res.status(error.statusCode).json(error);
     }
 
     // Hash new password securely
@@ -64,6 +73,7 @@ exports.setPasswordAndCompleteOnboarding = async (req, res) => {
 
     res.json({ message: "Password set successfully. Onboarding complete." });
   } catch (err) {
-    res.status(400).json({ message: "Invalid or expired token" });
+    const error = ErrorResponses.tokenInvalid("Invalid or expired token");
+    return res.status(error.statusCode).json(error);
   }
 };

@@ -19,7 +19,7 @@ function generateOnboardingToken(passengerId) {
 }
 
 async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
-  // Integration with SMS/email provider here
+  // TODO:integration with SMS/email provider here
   console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
   console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
 }
@@ -45,53 +45,68 @@ exports.issueChallan = async (req, res) => {
     passengerName = passengerName.trim();
     location = location.trim();
 
+    // Validation
     if (!trainNumber || !passengerName || !reason || !fineAmount || !location || !paymentMode) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      const error = ErrorResponses.missingFields('All required fields must be provided');
+      return res.status(error.statusCode).json(error);
     }
     if (!/^[A-Za-z0-9\s-]+$/.test(trainNumber)) {
-      return res.status(400).json({ message: "Invalid train number." });
+      const error = ErrorResponses.validationError('Invalid train number');
+      return res.status(error.statusCode).json(error);
     }
     if (!/^[A-Za-z\s]+$/.test(passengerName)) {
-      return res.status(400).json({ message: "Passenger name can only contain letters and spaces." });
+      const error = ErrorResponses.validationError('Passenger name can only contain letters and spaces');
+      return res.status(error.statusCode).json(error);
     }
     if (passengerAadharLast4 && passengerAadharLast4.length !== 4) {
-      return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
+      const error = ErrorResponses.validationError('Aadhar must be the last 4 digits only');
+      return res.status(error.statusCode).json(error);
     }
     if (mobileNumber && !validator.isMobilePhone(mobileNumber.toString(), 'en-IN')) {
-      return res.status(400).json({ message: "Mobile number must be a valid 10 digit Indian number." });
+      const error = ErrorResponses.validationError('Mobile number must be a valid 10-digit Indian number');
+      return res.status(error.statusCode).json(error);
     }
     fineAmount = Number(fineAmount);
     if (isNaN(fineAmount) || fineAmount <= 0) {
-      return res.status(400).json({ message: "Fine amount must be a positive number." });
+      const error = ErrorResponses.validationError('Fine amount must be a positive number');
+      return res.status(error.statusCode).json(error);
     }
     if (signature && typeof signature !== 'string') {
-      return res.status(400).json({ message: "Signature must be a base64 image string." });
+      const error = ErrorResponses.validationError('Signature must be a base64 image string');
+      return res.status(error.statusCode).json(error);
     }
     paymentMode = paymentMode.toLowerCase();
     if (!['online', 'offline'].includes(paymentMode)) {
-      return res.status(400).json({ message: "Payment mode must be 'online' or 'offline'." });
+      const error = ErrorResponses.validationError("Payment mode must be 'online' or 'offline'");
+      return res.status(error.statusCode).json(error);
     }
 
     const normalizedCoachNumber = coachNumber && coachNumber.trim() !== '' ? coachNumber.trim() : null;
 
     const proofFiles = req.files?.map(f => f.path) || [];
     if (proofFiles.length > 4) {
-      return res.status(400).json({ message: "You can upload up to 4 proof files only." });
-    }
-    // lookup station lat/lng
-    const station = await Station.findOne({ name: { $regex: `^${location}$`, $options: 'i' } });
-    if (!station) {
-      return res.status(404).json({ message: "Station not found in records" });
+      const error = ErrorResponses.validationError('You can upload up to 4 proof files only');
+      return res.status(error.statusCode).json(error);
     }
 
+    // lookup station lat/lng
+    const station = await Station.findOne({ name: { $regex: `^${location}$`, $options: 'i' } }); //TODO: options i ??
+    if (!station) {
+      const error = ErrorResponses.notFound('Station');
+      return res.status(error.statusCode).json(error);
+    }
+
+    // check if there are different name but same aadhar
     const existingUser = await Challan.findOne({ passengerAadharLast4 });
     if (existingUser) {
       if (existingUser.passengerName.trim().toLowerCase() !== passengerName.trim().toLowerCase()) {
-        return res.status(404).json({ message: "Different name for the same aadhar number" });
+        const error = ErrorResponses.validationError('Different name for the same Aadhar number');
+        return res.status(error.statusCode).json(error);
       }
     }
 
     console.log('Searching for passenger user with mob:', mobileNumber, 'aad:', passengerAadharLast4);
+
     let passengerUser = null;
     if (mobileNumber && passengerAadharLast4) {
       passengerUser = await Passenger.findOne({
@@ -103,21 +118,19 @@ exports.issueChallan = async (req, res) => {
     }
 
     if (passengerUser) {
-      // Existing passenger
       if (!passengerUser.passwordHash) {
-        // Resend onboarding instructions if passenger has not set a password yet
+        // resend onboarding instructions if passenger has not set a password yet
         const onboardingToken = generateOnboardingToken(passengerUser._id);
         const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
         await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
 
-        // Respond to frontend with clear message and stop challan issuing
         return res.status(409).json({
           message: "Passenger already exists. Onboarding instructions have been resent if required."
         });
       }
-      // Otherwise, continue as usual to create the challan...
+      // otherwise continue as usual to create the challan...
     } else {
-      // No existing passenger -- create and save new
+      // no existing passenger, create and save new
       passengerUser = new Passenger({
         name: passengerName,
         aadharLast4: passengerAadharLast4 || '',
@@ -163,7 +176,7 @@ exports.issueChallan = async (req, res) => {
     console.log("User issuing challan:", req.user);
     await newChallan.save();
 
-    // ONBOARDING: If passenger has *no* password yet (new account or never onboarded), send onboarding notification
+    // if passenger has no password yet (new account or never onboarded), send onboarding notification
     if (!passengerUser.passwordHash) {
       const onboardingToken = generateOnboardingToken(passengerUser._id);
       const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
@@ -222,11 +235,9 @@ exports.issueChallan = async (req, res) => {
     }
 
   } catch (error) {
-    console.error("Error issuing challan:", error);
-    res.status(500).json({
-      message: 'Server error',
-      error: error.message
-    });
+    console.error('Error issuing challan:', error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
@@ -239,8 +250,9 @@ exports.getAllChallans = async (req, res) => {
 
     res.status(200).json({ total: challans.length, challans });
   } catch (error) {
-    console.error('Error fetching challans:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error fetching all challans:', error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
@@ -439,16 +451,51 @@ exports.userHistory = async (req, res) => {
 
 exports.markChallanAsPaid = async (req, res) => {
   try {
-    const challan = await Challan.findById(req.params.id);
-    if (!challan) return res.status(404).json({ message: 'Challan not found' });
+    const { id } = req.params;
+
+    if (!id) {
+      const error = ErrorResponses.missingFields('Challan ID is required');
+      return res.status(error.statusCode).json(error);
+    }
+
+    const challan = await Challan.findById(id);
+    if (!challan) {
+      const error = ErrorResponses.challanNotFound();
+      return res.status(error.statusCode).json(error);
+    }
+
+    if (challan.paid) {
+      const error = ErrorResponses.challanAlreadyPaid();
+      return res.status(error.statusCode).json(error);
+    }
 
     challan.paid = true;
     await challan.save();
 
-    res.json({ message: 'Challan marked as paid', challan });
-  } catch (err) {
-    console.error('Error marking challan as paid:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(200).json({
+      message: 'Challan marked as paid successfully',
+      challan,
+    });
+
+    await logAudit({
+      action: 'MARK_CHALLAN_PAID',
+      performedBy: req.user.id,
+      role: req.user.role,
+      metadata: {
+        challanId: challan._id,
+        passengerName: challan.passengerName,
+        fineAmount: challan.fineAmount,
+      },
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      severity: 'low',
+      status: 'SUCCESS',
+    });
+
+  } catch (error) {
+    console.error('Error marking challan as paid:', error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 

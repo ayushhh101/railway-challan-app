@@ -30,15 +30,20 @@ exports.register = async (req, res) => {
     const { name, aadharLast4, mobileNumber, password } = req.body;
 
     if (!name || !aadharLast4 || !mobileNumber || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+      const error = ErrorResponses.missingFields('All fields are required');
+      return res.status(error.statusCode).json(error);
     }
 
     if (aadharLast4.length !== 4) {
-      return res.status(400).json({ message: 'Aadhar must be last 4 digits only' });
+      const error = ErrorResponses.validationError('Aadhar must be last 4 digits only');
+      return res.status(error.statusCode).json(error);
     }
 
     const existingPassenger = await Passenger.findOne({ mobileNumber });
-    if (existingPassenger) return res.status(400).json({ message: 'Passenger already exists' });
+    if (existingPassenger) {
+      const error = ErrorResponses.alreadyExists('Passenger');
+      return res.status(error.statusCode).json(error);
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -64,7 +69,9 @@ exports.register = async (req, res) => {
       severity: 'low',
     });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Passenger registration error:', err);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
@@ -73,11 +80,15 @@ exports.login = async (req, res) => {
     const { mobileNumber, password } = req.body;
 
     if (!mobileNumber || !password) {
-      return res.status(400).json({ message: 'Mobile number and password are required' });
+      const error = ErrorResponses.missingFields('Mobile number and password are required');
+      return res.status(error.statusCode).json(error);
     }
 
     const passenger = await Passenger.findOne({ mobileNumber });
-    if (!passenger) { return res.status(400).json({ message: 'Passenger not found' }); }
+    if (!passenger) {
+      const error = ErrorResponses.passengerNotFound();
+      return res.status(error.statusCode).json(error);
+    }
 
     if (!passenger.passwordHash) {
       const now = Date.now();
@@ -95,12 +106,12 @@ exports.login = async (req, res) => {
         passenger.lastOnboardingToken = onboardingToken;
         shouldSend = true;
 
-        // Optionally, save async but don't block
+        // optionally, save async but don't block
         passenger.save().catch(console.error);
       }
 
       const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
-      
+
       if (shouldSend) {
         await sendOnboardingNotification(passenger.mobileNumber, passenger.name, onboardingUrl);
       }
@@ -118,7 +129,10 @@ exports.login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, passenger.passwordHash);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });
+    if (!isMatch) {
+      const error = ErrorResponses.invalidCredentials();
+      return res.status(error.statusCode).json(error);
+    }
 
     const accessToken = generateAccessToken(passenger);
     const refreshToken = generateRefreshToken(passenger);
@@ -158,14 +172,18 @@ exports.login = async (req, res) => {
 
 
   } catch (err) {
-    console.error("Passenger login error:", err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('Passenger login error:', err);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
 exports.refreshToken = async (req, res) => {
   const token = req.cookies.refreshToken;
-  if (!token) return res.status(401).json({ message: 'Refresh token required' });
+  if (!token) {
+    const error = ErrorResponses.unauthorized('Refresh token is required');
+    return res.status(error.statusCode).json(error);
+  }
 
   try {
     const payload = jwt.verify(token, PASSENGER_REFRESH_SECRET);
@@ -181,7 +199,9 @@ exports.refreshToken = async (req, res) => {
 
     res.status(200).json({ token: newAccessToken });
   } catch (err) {
-    res.status(403).json({ message: 'Invalid or expired refresh token' });
+    console.error('Refresh token error:', err);
+    const error = ErrorResponses.tokenInvalid();
+    return res.status(error.statusCode).json(error);
   }
 };
 
@@ -192,17 +212,26 @@ exports.logout = (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   const { mobileNumber, newPassword } = req.body;
-  if (!mobileNumber || !newPassword) return res.status(400).json({ message: 'mobileNumber and newPassword required' });
 
+  if (!mobileNumber || !newPassword) {
+    const error = ErrorResponses.missingFields('Mobile number and new password are required');
+    return res.status(error.statusCode).json(error);
+  }
   try {
     const passenger = await Passenger.findOne({ mobileNumber });
-    if (!passenger) return res.status(404).json({ message: 'Passenger not found' });
+    if (!passenger) {
+      const error = ErrorResponses.passengerNotFound();
+      return res.status(error.statusCode).json(error);
+    }
+
     const hash = await bcrypt.hash(newPassword, 10);
     passenger.passwordHash = hash;
     await passenger.save();
 
     res.json({ message: 'Password reset successfully by staff.' });
   } catch (err) {
-    res.status(500).json({ message: 'Error resetting password', error: err.message });
+    console.error('Reset password error:', err);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
