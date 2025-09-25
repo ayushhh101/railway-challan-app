@@ -12,7 +12,9 @@ const app = express();
 app.use(helmet());
 // middleware
 app.use(cors({
-  origin: ['http://localhost:5173','http://localhost:4173'],
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://railwaychallan.com'] 
+    : ['http://localhost:5173','http://localhost:4173'],
   credentials: true 
 }));
 app.use(express.json());
