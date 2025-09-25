@@ -1,5 +1,21 @@
 const Challan = require('../models/challanModel');
 const generateChallanPDF = require('../utils/generateChallanPDF');
+const { ErrorResponses } = require('../utils/errorResponses');
+const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { commonValidations } = require('../middleware/commonValidations');
+const { param } = require('express-validator');
+
+const downloadChallanPDFValidation = [
+  validateFields({ 
+    query: [], 
+    body: [] 
+  }),
+  param('id')
+    .matches(/^[0-9a-fA-F]{24}$/)
+    .withMessage('Challan ID must be a valid MongoDB ObjectId'),
+  handleValidationErrors
+];
+
 
 exports.downloadChallanPDF = async (req, res) => {
   try {
@@ -21,3 +37,5 @@ exports.downloadChallanPDF = async (req, res) => {
     return res.status(error.statusCode).json(error);
   }
 };
+
+exports.downloadChallanPDFValidation = downloadChallanPDFValidation;

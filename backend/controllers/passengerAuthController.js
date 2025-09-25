@@ -1,7 +1,12 @@
-const Passenger = require('../models/passengerModel'); // Your passenger mongoose model
+const Passenger = require('../models/passengerModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logAudit = require('../utils/auditLogger');
+const { ErrorResponses } = require('../utils/errorResponses');
+const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { commonValidations } = require('../middleware/commonValidations');
+const { body } = require('express-validator');
+
 
 const generateOnboardingToken = (passengerId) => {
   return jwt.sign(
@@ -25,19 +30,76 @@ const generateRefreshToken = (passenger) => {
   return jwt.sign({ id: passenger._id, role: 'passenger' }, process.env.PASSENGER_REFRESH_SECRET, { expiresIn: '7d' });
 };
 
+const registerValidation = [
+  validateFields({
+    query: [],
+    body: ['name', 'aadharLast4', 'mobileNumber', 'password']
+  }),
+  commonValidations.requiredString('name'),
+  body('aadharLast4')
+    .isLength({ min: 4, max: 4 })
+    .withMessage('Aadhar must be exactly 4 digits')
+    .isNumeric()
+    .withMessage('Aadhar must contain only numbers'),
+  body('mobileNumber')
+    .isMobilePhone('en-IN')
+    .withMessage('Mobile number must be a valid 10-digit Indian number')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Mobile number must be exactly 10 digits'),
+  commonValidations.password('password'),
+  handleValidationErrors
+];
+
+// Validation middleware for passenger login
+const loginValidation = [
+  validateFields({
+    query: [],
+    body: ['mobileNumber', 'password']
+  }),
+  body('mobileNumber')
+    .isMobilePhone('en-IN')
+    .withMessage('Mobile number must be a valid 10-digit Indian number')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Mobile number must be exactly 10 digits'),
+  commonValidations.requiredString('password'),
+  handleValidationErrors
+];
+
+// Validation middleware for refresh token
+const refreshTokenValidation = [
+  validateFields({
+    query: [],
+    body: []
+  })
+];
+
+// Validation middleware for logout
+const logoutValidation = [
+  validateFields({
+    query: [],
+    body: []
+  })
+];
+
+// Validation middleware for reset password
+const resetPasswordValidation = [
+  validateFields({
+    query: [],
+    body: ['mobileNumber', 'newPassword']
+  }),
+  body('mobileNumber')
+    .isMobilePhone('en-IN')
+    .withMessage('Mobile number must be a valid 10-digit Indian number')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Mobile number must be exactly 10 digits'),
+  commonValidations.password('newPassword'),
+  handleValidationErrors
+];
+
+
 exports.register = async (req, res) => {
   try {
     const { name, aadharLast4, mobileNumber, password } = req.body;
-
-    if (!name || !aadharLast4 || !mobileNumber || !password) {
-      const error = ErrorResponses.missingFields('All fields are required');
-      return res.status(error.statusCode).json(error);
-    }
-
-    if (aadharLast4.length !== 4) {
-      const error = ErrorResponses.validationError('Aadhar must be last 4 digits only');
-      return res.status(error.statusCode).json(error);
-    }
 
     const existingPassenger = await Passenger.findOne({ mobileNumber });
     if (existingPassenger) {
@@ -78,11 +140,6 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { mobileNumber, password } = req.body;
-
-    if (!mobileNumber || !password) {
-      const error = ErrorResponses.missingFields('Mobile number and password are required');
-      return res.status(error.statusCode).json(error);
-    }
 
     const passenger = await Passenger.findOne({ mobileNumber });
     if (!passenger) {
@@ -213,10 +270,6 @@ exports.logout = (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { mobileNumber, newPassword } = req.body;
 
-  if (!mobileNumber || !newPassword) {
-    const error = ErrorResponses.missingFields('Mobile number and new password are required');
-    return res.status(error.statusCode).json(error);
-  }
   try {
     const passenger = await Passenger.findOne({ mobileNumber });
     if (!passenger) {
@@ -235,3 +288,9 @@ exports.resetPassword = async (req, res) => {
     return res.status(serverError.statusCode).json(serverError);
   }
 };
+
+exports.registerValidation = registerValidation;
+exports.loginValidation = loginValidation;
+exports.refreshTokenValidation = refreshTokenValidation;
+exports.logoutValidation = logoutValidation;
+exports.resetPasswordValidation = resetPasswordValidation;

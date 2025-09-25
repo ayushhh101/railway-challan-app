@@ -2,15 +2,17 @@ const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const Station = require('../models/stationModel');
 const Anomaly = require('../models/anomalyModel');
-const fs = require('fs');
 const archiver = require('archiver');
 const puppeteer = require('puppeteer');
-const path = require('path');
 const { default: mongoose } = require('mongoose');
 const logAudit = require('../utils/auditLogger');
 const Passenger = require('../models/passengerModel');
 const jwt = require('jsonwebtoken');
-const validator = require('validator')
+const validator = require('validator');
+const { ErrorResponses } = require('../utils/errorResponses');
+const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { commonValidations } = require('../middleware/commonValidations');
+const { body, query, param } = require('express-validator');
 
 const PASSENGER_ONBOARD_SECRET = process.env.PASSENGER_ONBOARD_SECRET;
 
@@ -23,6 +25,229 @@ async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
   console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
   console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
 }
+
+// Validation middleware for issue challan
+const issueChallanValidation = [
+  validateFields({
+    query: [],
+    body: ['trainNumber', 'coachNumber', 'passengerName', 'passengerAadharLast4', 'mobileNumber', 'reason', 'fineAmount', 'location', 'paymentMode', 'paid', 'signature']
+  }),
+  commonValidations.requiredString('trainNumber'),
+  body('trainNumber')
+    .matches(/^[A-Za-z0-9\s-]+$/)
+    .withMessage('Train number contains invalid characters'),
+  body('coachNumber')
+    .optional()
+    .isString()
+    .withMessage('Coach number must be a string'),
+  commonValidations.requiredString('passengerName'),
+  body('passengerName')
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage('Passenger name can only contain letters and spaces'),
+  body('passengerAadharLast4')
+    .optional()
+    .isLength({ min: 4, max: 4 })
+    .withMessage('Aadhar must be exactly 4 digits')
+    .isNumeric()
+    .withMessage('Aadhar must contain only numbers'),
+  body('mobileNumber')
+    .optional()
+    .custom((value) => {
+      if (value && !validator.isMobilePhone(value.toString(), 'en-IN')) {
+        throw new Error('Mobile number must be a valid 10-digit Indian number');
+      }
+      return true;
+    }),
+  commonValidations.requiredString('reason'),
+  body('fineAmount')
+    .isNumeric()
+    .withMessage('Fine amount must be a number')
+    .isFloat({ min: 0.01 })
+    .withMessage('Fine amount must be positive'),
+  commonValidations.requiredString('location'),
+  body('paymentMode')
+    .isIn(['online', 'offline'])
+    .withMessage("Payment mode must be 'online' or 'offline'"),
+  body('paid')
+    .optional()
+    .isBoolean()
+    .withMessage('Paid must be a boolean'),
+  body('signature')
+    .optional()
+    .isString()
+    .withMessage('Signature must be a base64 image string'),
+  handleValidationErrors
+];
+
+// Validation for get all challans
+const getAllChallansValidation = [
+  validateFields({ query: [], body: [] })
+];
+
+// Validation for get my challans
+const getMyChallansValidation = [
+  validateFields({ query: [], body: [] })
+];
+
+// Validation for get challan locations
+const getChallanLocationsValidation = [
+  validateFields({ query: [], body: [] })
+];
+
+// Validation for search challans
+const searchChallansValidation = [
+  validateFields({
+    query: ['passenger', 'train', 'reason', 'date', 'status'],
+    body: []
+  }),
+  query('passenger')
+    .optional()
+    .isString()
+    .withMessage('Passenger must be a string'),
+  query('train')
+    .optional()
+    .isString()
+    .withMessage('Train must be a string'),
+  query('reason')
+    .optional()
+    .isString()
+    .withMessage('Reason must be a string'),
+  query('date')
+    .optional()
+    .isISO8601()
+    .withMessage('Date must be a valid ISO date'),
+  query('status')
+    .optional()
+    .isIn(['paid', 'unpaid'])
+    .withMessage('Status must be either paid or unpaid'),
+  handleValidationErrors
+];
+
+// Validation for get challan details
+const getChallanDetailsValidation = [
+  validateFields({ query: [], body: [] }),
+  commonValidations.mongoId('id', 'param'),
+  handleValidationErrors
+];
+
+// Validation for download bulk PDF
+const downloadBulkPDFValidation = [
+  validateFields({ query: [], body: ['challanIds'] }),
+  body('challanIds')
+    .isArray({ min: 1 })
+    .withMessage('challanIds must be a non-empty array'),
+  body('challanIds.*')
+    .matches(/^[0-9a-fA-F]{24}$/)
+    .withMessage('Each challan ID must be a valid MongoDB ObjectId'),
+  handleValidationErrors
+];
+
+// Validation for update challan
+const updateChallanValidation = [
+  validateFields({
+    query: [],
+    body: ['trainNumber', 'passengerName', 'passengerAadhar', 'reason', 'fineAmount', 'location']
+  }),
+  commonValidations.mongoId('id', 'param'),
+  body('trainNumber')
+    .optional()
+    .isString()
+    .matches(/^[A-Za-z0-9\s-]+$/)
+    .withMessage('Train number contains invalid characters'),
+  body('passengerName')
+    .optional()
+    .isString()
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage('Passenger name can only contain letters and spaces'),
+  body('passengerAadhar')
+    .optional()
+    .isString(),
+  body('reason')
+    .optional()
+    .isString(),
+  body('fineAmount')
+    .optional()
+    .isNumeric()
+    .isFloat({ min: 0.01 })
+    .withMessage('Fine amount must be positive'),
+  body('location')
+    .optional()
+    .isString(),
+  handleValidationErrors
+];
+
+// Validation for update anomaly
+const updateAnomalyValidation = [
+  validateFields({ query: [], body: [] }),
+  param('anomalyId')
+    .matches(/^[0-9a-fA-F]{24}$/)
+    .withMessage('Anomaly ID must be a valid MongoDB ObjectId'),
+  param('status')
+    .isIn(['resolved', 'dismissed'])
+    .withMessage('Status must be either resolved or dismissed'),
+  handleValidationErrors
+];
+
+// Validation for get challan
+const getChallanValidation = [
+  validateFields({ query: [], body: [] }),
+  commonValidations.mongoId('id', 'param'),
+  handleValidationErrors
+];
+
+// Validation for user history
+const userHistoryValidation = [
+  validateFields({ query: ['name', 'aadhar'], body: [] }),
+  query('name')
+    .optional()
+    .isString()
+    .withMessage('Name must be a string'),
+  query('aadhar')
+    .optional()
+    .isLength({ min: 4, max: 4 })
+    .withMessage('Aadhar must be exactly 4 digits')
+    .isNumeric()
+    .withMessage('Aadhar must contain only numbers'),
+  handleValidationErrors
+];
+
+// Validation for mark challan as paid
+const markChallanAsPaidValidation = [
+  validateFields({ query: [], body: [] }),
+  commonValidations.mongoId('id', 'param'),
+  handleValidationErrors
+];
+
+// Validation for passenger history
+const getPassengerHistoryValidation = [
+  validateFields({
+    query: ['name', 'aadharLast4', 'dateFrom', 'dateTo', 'paymentStatus'],
+    body: []
+  }),
+  query('name')
+    .optional()
+    .isString()
+    .withMessage('Name must be a string'),
+  query('aadharLast4')
+    .optional()
+    .isLength({ min: 4, max: 4 })
+    .withMessage('Aadhar must be exactly 4 digits')
+    .isNumeric()
+    .withMessage('Aadhar must contain only numbers'),
+  query('dateFrom')
+    .optional()
+    .isISO8601()
+    .withMessage('Date from must be a valid ISO date'),
+  query('dateTo')
+    .optional()
+    .isISO8601()
+    .withMessage('Date to must be a valid ISO date'),
+  query('paymentStatus')
+    .optional()
+    .isIn(['paid', 'unpaid'])
+    .withMessage('Payment status must be either paid or unpaid'),
+  handleValidationErrors
+];
 
 exports.issueChallan = async (req, res) => {
   try {
@@ -44,42 +269,8 @@ exports.issueChallan = async (req, res) => {
     coachNumber = coachNumber?.trim();
     passengerName = passengerName.trim();
     location = location.trim();
-
-    // Validation
-    if (!trainNumber || !passengerName || !reason || !fineAmount || !location || !paymentMode) {
-      const error = ErrorResponses.missingFields('All required fields must be provided');
-      return res.status(error.statusCode).json(error);
-    }
-    if (!/^[A-Za-z0-9\s-]+$/.test(trainNumber)) {
-      const error = ErrorResponses.validationError('Invalid train number');
-      return res.status(error.statusCode).json(error);
-    }
-    if (!/^[A-Za-z\s]+$/.test(passengerName)) {
-      const error = ErrorResponses.validationError('Passenger name can only contain letters and spaces');
-      return res.status(error.statusCode).json(error);
-    }
-    if (passengerAadharLast4 && passengerAadharLast4.length !== 4) {
-      const error = ErrorResponses.validationError('Aadhar must be the last 4 digits only');
-      return res.status(error.statusCode).json(error);
-    }
-    if (mobileNumber && !validator.isMobilePhone(mobileNumber.toString(), 'en-IN')) {
-      const error = ErrorResponses.validationError('Mobile number must be a valid 10-digit Indian number');
-      return res.status(error.statusCode).json(error);
-    }
-    fineAmount = Number(fineAmount);
-    if (isNaN(fineAmount) || fineAmount <= 0) {
-      const error = ErrorResponses.validationError('Fine amount must be a positive number');
-      return res.status(error.statusCode).json(error);
-    }
-    if (signature && typeof signature !== 'string') {
-      const error = ErrorResponses.validationError('Signature must be a base64 image string');
-      return res.status(error.statusCode).json(error);
-    }
     paymentMode = paymentMode.toLowerCase();
-    if (!['online', 'offline'].includes(paymentMode)) {
-      const error = ErrorResponses.validationError("Payment mode must be 'online' or 'offline'");
-      return res.status(error.statusCode).json(error);
-    }
+    fineAmount = Number(fineAmount);
 
     const normalizedCoachNumber = coachNumber && coachNumber.trim() !== '' ? coachNumber.trim() : null;
 
@@ -286,7 +477,11 @@ exports.getChallanLocations = async (req, res) => {
       }
     ]);
 
-    res.json(result);
+    res.json({
+      success: true,
+      data: result,
+      message: 'Challan locations retrieved successfully'
+    });
   } catch (error) {
     console.error("Error fetching challan location heatmap data:", error);
     res.status(500).json({ message: "Server error" });
@@ -318,7 +513,8 @@ exports.getChallanDetails = async (req, res) => {
     const challan = await Challan.findById(req.params.id).populate('issuedBy'); // assuming 'issuedBy' references TTE
 
     if (!challan) {
-      return res.status(404).json({ message: 'Challan not found' });
+      const error = ErrorResponses.challanNotFound();
+      return res.status(error.statusCode).json(error);
     }
 
     res.status(200).json({
@@ -342,38 +538,37 @@ exports.getChallanDetails = async (req, res) => {
 
 // download bulk challan PDFs as a zip file
 exports.downloadBulkChallanPDF = async (req, res) => {
-  const { challanIds } = req.body;
+  try {
+    const { challanIds } = req.body;
 
-  if (!challanIds || !Array.isArray(challanIds)) {
-    return res.status(400).json({ message: "challanIds required" });
+    const zip = archiver('zip', { zlib: { level: 9 } });
+    res.attachment('challans.zip');
+    zip.pipe(res);
+
+    const browser = await puppeteer.launch({ headless: 'new' });
+    const page = await browser.newPage();
+
+    for (const id of challanIds) {
+      const challanUrl = `${process.env.CLIENT_URL}/challan-pdf/${id}`;
+      await page.goto(challanUrl, { waitUntil: 'networkidle0' });
+
+      const pdfBuffer = await page.pdf({ format: 'A4' });
+      zip.append(pdfBuffer, { name: `challan-${id}.pdf` });
+    }
+
+    await browser.close();
+    zip.finalize();
+  } catch (error) {
+    console.error('Error generating bulk PDF:', error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 
-  const zip = archiver('zip', { zlib: { level: 9 } });
-  res.attachment('challans.zip');
-  zip.pipe(res);
-
-  const browser = await puppeteer.launch({ headless: 'new' });
-  const page = await browser.newPage();
-
-  for (const id of challanIds) {
-    const challanUrl = `${process.env.CLIENT_URL}/challan-pdf/${id}`;
-    await page.goto(challanUrl, { waitUntil: 'networkidle0' });
-
-    const pdfBuffer = await page.pdf({ format: 'A4' });
-    zip.append(pdfBuffer, { name: `challan-${id}.pdf` });
-  }
-
-  await browser.close();
-  zip.finalize();
 };
 
 exports.updateChallan = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid challan ID' });
-    }
 
     const challan = await Challan.findById(id);
     if (!challan) {
@@ -405,15 +600,14 @@ exports.updateChallan = async (req, res) => {
 exports.updateAnomaly = async (req, res) => {
   try {
     const { status, anomalyId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(anomalyId)) {
-      return res.status(400).json({ message: 'Invalid anomaly ID' });
-    }
-    const isValidStatus = ['resolved', 'dismissed'].includes(status);
-    if (!isValidStatus) {
-      return res.status(400).json({ message: 'Invalid status value' });
-    }
 
     const updatedAnomlay = await Anomaly.findByIdAndUpdate(req.params.anomalyId, { status }, { new: true });
+
+    if (!updatedAnomaly) {
+      const error = ErrorResponses.notFound('Anomaly');
+      return res.status(error.statusCode).json(error);
+    }
+
     res.status(200).json({ message: 'Anomaly updated successfully', anomaly: updatedAnomlay });
 
   } catch (error) {
@@ -425,10 +619,15 @@ exports.updateAnomaly = async (req, res) => {
 exports.getChallan = async (req, res) => {
   try {
     const challan = await Challan.findById(req.params.id).populate('issuedBy', 'name employeeId role zone');
-    if (!challan) return res.status(404).json({ message: 'Challan not found' });
+    if (!challan) {
+      const error = ErrorResponses.challanNotFound();
+      return res.status(error.statusCode).json(error);
+    }
     res.json({ challan });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error getting challan:', err);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 }
 
@@ -445,18 +644,14 @@ exports.userHistory = async (req, res) => {
     res.status(200).json({ challans });
   } catch (err) {
     console.error('Error fetching user history:', err);
-    res.status(500).json({ message: 'Internal Server Error', error: err.stack });
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
   }
 };
 
 exports.markChallanAsPaid = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!id) {
-      const error = ErrorResponses.missingFields('Challan ID is required');
-      return res.status(error.statusCode).json(error);
-    }
 
     const challan = await Challan.findById(id);
     if (!challan) {
@@ -549,3 +744,18 @@ exports.getPassengerHistory = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: err.stack });
   }
 }
+
+// Export validation middleware for use in routes
+exports.issueChallanValidation = issueChallanValidation;
+exports.getAllChallansValidation = getAllChallansValidation;
+exports.getMyChallansValidation = getMyChallansValidation;
+exports.getChallanLocationsValidation = getChallanLocationsValidation;
+exports.searchChallansValidation = searchChallansValidation;
+exports.getChallanDetailsValidation = getChallanDetailsValidation;
+exports.downloadBulkPDFValidation = downloadBulkPDFValidation;
+exports.updateChallanValidation = updateChallanValidation;
+exports.updateAnomalyValidation = updateAnomalyValidation;
+exports.getChallanValidation = getChallanValidation;
+exports.userHistoryValidation = userHistoryValidation;
+exports.markChallanAsPaidValidation = markChallanAsPaidValidation;
+exports.getPassengerHistoryValidation = getPassengerHistoryValidation;

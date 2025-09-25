@@ -1,5 +1,15 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
+const { ErrorResponses } = require('../utils/errorResponses');
+const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { commonValidations } = require('../middleware/commonValidations');
+
+const getTTEProfileValidation = [
+  validateFields({ 
+    query: [], 
+    body: [] 
+  })
+];
 
 exports.getTTEProfile = async (req, res) => {
   try {
@@ -37,3 +47,5 @@ exports.getTTEProfile = async (req, res) => {
     return res.status(errRes.statusCode).json(errRes);
   }
 }
+
+exports.getTTEProfileValidation = getTTEProfileValidation;

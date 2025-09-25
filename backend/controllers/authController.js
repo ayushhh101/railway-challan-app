@@ -3,6 +3,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logAudit = require('../utils/auditLogger');
 const { ErrorResponses } = require('../utils/errorResponses');
+const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { commonValidations } = require('../middleware/commonValidations');
+const { body } = require('express-validator');
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -14,6 +17,73 @@ const generateRefreshToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
 };
 
+// Validation middleware for registration
+const registerValidation = [
+  validateFields({
+    query: [],
+    body: ['name', 'employeeId', 'email', 'password', 'phone', 'profilePic', 'role', 'zone', 'currentStation', 'designation', 'dateOfJoining']
+  }),
+  commonValidations.requiredString('name'),
+  commonValidations.requiredString('employeeId'),
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Email must be valid'),
+  commonValidations.password('password'),
+  body('phone')
+    .optional()
+    .isMobilePhone('any')
+    .withMessage('Phone must be a valid mobile number'),
+  body('profilePic')
+    .optional()
+    .isString()
+    .withMessage('Profile picture must be a string'),
+  body('role')
+    .isIn(['tte', 'admin'])
+    .withMessage('Role must be either tte or admin'),
+  commonValidations.requiredString('zone'),
+  body('currentStation')
+    .optional()
+    .isString()
+    .withMessage('Current station must be a string'),
+  body('designation')
+    .optional()
+    .isString()
+    .withMessage('Designation must be a string'),
+  body('dateOfJoining')
+    .optional()
+    .isISO8601()
+    .toDate()
+    .withMessage('Date of joining must be a valid date'),
+  handleValidationErrors
+];
+
+// Validation middleware for login
+const loginValidation = [
+  validateFields({
+    query: [],
+    body: ['employeeId', 'password']
+  }),
+  commonValidations.requiredString('employeeId'),
+  commonValidations.requiredString('password'),
+  handleValidationErrors
+];
+
+// Validation middleware for refresh token
+const refreshTokenValidation = [
+  validateFields({
+    query: [],
+    body: []
+  })
+];
+
+// Validation middleware for logout
+const logoutValidation = [
+  validateFields({
+    query: [],
+    body: []
+  })
+];
 
 exports.register = async (req, res) => {
   try {
@@ -142,3 +212,8 @@ exports.logout = (req, res) => {
   res.clearCookie('refreshToken');
   res.status(200).json({ message: 'Logged out successfully' });
 };
+
+exports.registerValidation = registerValidation;
+exports.loginValidation = loginValidation;
+exports.refreshTokenValidation = refreshTokenValidation;
+exports.logoutValidation = logoutValidation;
