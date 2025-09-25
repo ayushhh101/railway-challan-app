@@ -6,7 +6,7 @@ import { FINE_RULES } from '../utils/fineRules';
 export default function useIssueChallan(user, token, sendNotification) {
   const sigCanvas = useRef();
   const messageRef = useRef(null);
-  
+
   const [pendingChallans, setPendingChallans] = useState([]);
   const [priorOffenses, setPriorOffenses] = useState(1); // for nuisance & littering
   const [fareAmount, setFareAmount] = useState(""); // for ticketless travel
@@ -29,7 +29,7 @@ export default function useIssueChallan(user, token, sendNotification) {
     paid: false,
     signature: ''
   });
-  
+
   const isDuplicateChallan = (a, b) => (
     a.trainNumber === b.trainNumber &&
     a.passengerName === b.passengerName &&
@@ -100,7 +100,7 @@ export default function useIssueChallan(user, token, sendNotification) {
       const timer = setTimeout(() => {
         setError('');
         setSuccess('');
-      }, 4000); 
+      }, 4000);
       return () => clearTimeout(timer);
     }
   }, [error, success]);
@@ -195,7 +195,7 @@ export default function useIssueChallan(user, token, sendNotification) {
     const selectedReason = e.target.value;
     setForm(f => ({ ...f, reason: selectedReason }));
     const rule = FINE_RULES.find(r => r.reason === selectedReason);
-  
+
     if (rule) {
       let fine = 0;
       if (rule.reason === "Travelling without proper pass/ticket") {
@@ -242,10 +242,22 @@ export default function useIssueChallan(user, token, sendNotification) {
         refreshPendingChallans();
       } else {
         const formData = new FormData();
-        for (const [key, value] of Object.entries({ ...form, issuedBy: user?._id, date: new Date().toISOString(), signature: signatureImage })) {
+        for (const [key, value] of Object.entries({
+          trainNumber: form.trainNumber,
+          coachNumber: form.coachNumber,
+          passengerName: form.passengerName,
+          passengerAadharLast4: form.passengerAadharLast4,
+          mobileNumber: form.mobileNumber,
+          reason: form.reason,
+          fineAmount: form.fineAmount,
+          location: form.location,
+          paymentMode: form.paymentMode,
+          paid: form.paid,
+          signature: signatureImage
+        })) {
           formData.append(key, value);
         }
-        proofs.forEach(file => formData.append("proofs", file));
+        proofs.forEach(file => formData.append("proofFiles", file));
 
         await axios.post(`${import.meta.env.VITE_API_URL}/api/challan/issue`, formData, {
           headers: { Authorization: `Bearer ${token}` }
@@ -261,7 +273,7 @@ export default function useIssueChallan(user, token, sendNotification) {
       setForm({
         trainNumber: '',
         passengerName: '',
-        coachNumber:'',
+        coachNumber: '',
         passengerAadharLast4: '',
         mobileNumber: '',
         reason: '',

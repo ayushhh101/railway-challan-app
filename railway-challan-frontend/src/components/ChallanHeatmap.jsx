@@ -1,5 +1,5 @@
 import React from 'react'
-import { MapContainer, TileLayer, useMap,  } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, } from 'react-leaflet';
 import { useEffect } from 'react'
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -8,8 +8,9 @@ import 'leaflet.heat';
 const Heatmap = ({ points }) => {
   const map = useMap();
   useEffect(() => {
+    const safePoints = Array.isArray(points) ? points : [];
     const heatLayer = L.heatLayer(
-      points.map(p => [p.latitude, p.longitude, p.count || 1]),
+      safePoints.map(p => [p.latitude, p.longitude, p.count || 1]),
       { radius: 25, blur: 15, maxZoom: 17 }
     ).addTo(map);
 
@@ -21,7 +22,7 @@ const Heatmap = ({ points }) => {
   return null;
 };
 
-const ChallanHeatmap = ({ challansByLocation ,loading , error }) => {
+const ChallanHeatmap = ({ challansByLocation, loading, error }) => {
   if (loading)
     return (
       <div className="bg-white p-8 rounded-xl text-blue-700 text-center font-semibold min-h-[120px]">Loading map...</div>
@@ -31,7 +32,7 @@ const ChallanHeatmap = ({ challansByLocation ,loading , error }) => {
     return (
       <div className="bg-white p-8 rounded-xl text-red-700 text-center font-semibold min-h-[120px]">{error}</div>
     );
-    
+
   return (
     <div className="bg-white p-4 shadow rounded-xl">
       <h2 className="text-xl font-semibold mb-4">Challan Heatmap (by Location)</h2>

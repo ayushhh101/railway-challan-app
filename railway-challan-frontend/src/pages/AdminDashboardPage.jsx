@@ -85,7 +85,7 @@ const AdminDashboardPage = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        setChallansByLocation(locationRes.data);
+        setChallansByLocation(locationRes.data.data);
 
       } catch (error) {
         console.log(error)
@@ -101,7 +101,10 @@ const AdminDashboardPage = () => {
     setError(null);
     setLoading(true);
     try {
-      const params = new URLSearchParams(filters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/search?${params.toString()}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });

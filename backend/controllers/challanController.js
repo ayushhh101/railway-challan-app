@@ -30,7 +30,7 @@ async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
 const issueChallanValidation = [
   validateFields({
     query: [],
-    body: ['trainNumber', 'coachNumber', 'passengerName', 'passengerAadharLast4', 'mobileNumber', 'reason', 'fineAmount', 'location', 'paymentMode', 'paid', 'signature']
+    body: ['trainNumber', 'coachNumber', 'passengerName', 'passengerAadharLast4', 'mobileNumber', 'reason', 'fineAmount', 'location', 'paymentMode', 'paid', 'signature','proofFiles']
   }),
   commonValidations.requiredString('trainNumber'),
   body('trainNumber')
