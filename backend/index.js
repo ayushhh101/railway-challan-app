@@ -6,9 +6,10 @@ require('dotenv').config();
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger/index.yaml');
+const helmet = require('helmet');
 
 const app = express();
-
+app.use(helmet());
 // middleware
 app.use(cors({
   origin: ['http://localhost:5173','http://localhost:4173'],
