@@ -34,7 +34,7 @@ paths:
                   example: "password123"
                 role:
                   type: string
-                  enum: [admin, tte, passenger]
+                  enum: [admin, tc, passenger]
                   example: "admin"
                 zone:
                   type: string
@@ -74,7 +74,7 @@ paths:
               properties:
                 username:
                   type: string
-                  example: "admin or tte"
+                  example: "admin or TC"
                 password:
                   type: string
                   format: password
@@ -183,7 +183,7 @@ paths:
           content:
             application/json:
               example:
-                anomalies: [ { _id: "abc123", user: { name: "TTE Ram" }, challan: { reason: "No ticket" } } ]
+                anomalies: [ { _id: "abc123", user: { name: "TC Ram" }, challan: { reason: "No ticket" } } ]
         '401':
           description: Unauthorized
         '403':
@@ -254,19 +254,19 @@ paths:
         '403':
           description: Forbidden
 
-  /admin/getTTEAnalytics:
+  /admin/getTCAnalytics:
     get:
-      summary: Get TTE analytics
+      summary: Get TC analytics
       tags: [Admin]
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: TTE analytics data
+          description: TC analytics data
           content:
             application/json:
               example:
-                analytics: [ { tte: "Ram", challans: 50 } ]
+                analytics: [ { TC: "Ram", challans: 50 } ]
         '401':
           description: Unauthorized
         '403':
@@ -283,7 +283,7 @@ paths:
         content:
           application/json:
             example:
-              userId: "tte1"
+              userId: "TC1"
               newPassword: "newSecurePassword"
       responses:
         '200':
@@ -321,14 +321,14 @@ paths:
 
   /challan/my:
     get:
-      summary: View my challans (TTE only)
-      description: Retrieve challans issued by the logged-in TTE. Requires JWT authentication and TTE role.
+      summary: View my challans (TC only)
+      description: Retrieve challans issued by the logged-in TC. Requires JWT authentication and TC role.
       tags: [Challan]
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Array of TTE's challans
+          description: Array of TC's challans
           content:
             application/json:
               schema:
@@ -342,8 +342,8 @@ paths:
 
   /challan/issue:
     post:
-      summary: Issue a new challan (TTE only)
-      description: Allows a TTE to issue a new challan. Requires JWT authentication, TTE role, and proof file upload.
+      summary: Issue a new challan (TC only)
+      description: Allows a TC to issue a new challan. Requires JWT authentication, TC role, and proof file upload.
       tags: [Challan]
       security:
         - bearerAuth: []
@@ -529,8 +529,8 @@ paths:
           description: Challan not found
 
     put:
-      summary: Update challan (TTE only)
-      description: Update details of a challan. Requires JWT authentication and TTE role.
+      summary: Update challan (TC only)
+      description: Update details of a challan. Requires JWT authentication and TC role.
       tags: [Challan]
       security:
         - bearerAuth: []
@@ -794,7 +794,7 @@ paths:
 # Proof Routes
   /proof/upload-proof:
       post:
-        summary: Upload proof file ( TTE only )
+        summary: Upload proof file ( TC only )
         description: Upload a proof image or document. Requires JWT authentication.
         tags: [Proof]
         security:
@@ -828,23 +828,23 @@ paths:
           '401':
             description: Unauthorized
 
- # TTE Routes
-  /tte/tteProfile:
+ # TC Routes
+  /TC/TCProfile:
       get:
-        summary: Get TTE profile information
-        description: Retrieve the profile information for the logged-in TTE. Requires JWT authentication and TTE role.
-        tags: [TTE]
+        summary: Get TC profile information
+        description: Retrieve the profile information for the logged-in TC. Requires JWT authentication and TC role.
+        tags: [TC]
         security:
           - bearerAuth: []
         responses:
           '200':
-            description: TTE profile information
+            description: TC profile information
             content:
               application/json:
                 schema:
                   type: object
                   properties:
-                    tteId:
+                    TCId:
                       type: string
                     name:
                       type: string
@@ -852,7 +852,7 @@ paths:
                       type: string
                     stats:
                       type: object
-                      description: TTE statistics (optional)
+                      description: TC statistics (optional)
           '401':
             description: Unauthorized
           '403':
@@ -882,7 +882,7 @@ components:
           example: "Amit Kumar"
         employeeId:
           type: string
-          example: "TTE12345"
+          example: "TC12345"
         email:
           type: string
           format: email
@@ -898,8 +898,8 @@ components:
           example: "/uploads/profilepic.jpg"
         role:
           type: string
-          enum: [tte, admin]
-          example: "tte"
+          enum: [TC, admin]
+          example: "TC"
         zone:
           type: string
           example: "Central"
@@ -908,7 +908,7 @@ components:
           example: "Mumbai CST"
         designation:
           type: string
-          example: "Senior TTE"
+          example: "Senior TC"
         dateOfJoining:
           type: string
           format: date
@@ -939,7 +939,7 @@ components:
           example: "Ravi Sharma"
         aadharLast4:
           type: string
-          pattern: "^[0-9]{4}$"
+          paTCrn: "^[0-9]{4}$"
           example: "1234"
           description: "Last 4 digits of Aadhar number"
         mobileNumber:
@@ -966,7 +966,7 @@ components:
       type: object
       required:
         - passengerId
-        - tteId
+        - TCId
         - offense
         - amount
       properties:
@@ -976,7 +976,7 @@ components:
         passengerId:
           type: string
           example: "PASS123456"
-        tteId:
+        TCId:
           type: string
         offense:
           type: string
@@ -1018,7 +1018,7 @@ components:
           example: "507f1f77bcf86cd799439012"
         issuedBy:
           type: string
-          description: "User ID of the TTE who issued the challan"
+          description: "User ID of the TC who issued the challan"
           example: "507f1f77bcf86cd799439011"
         trainNumber:
           type: string
@@ -1031,7 +1031,7 @@ components:
           example: "Ravi Sharma"
         passengerAadharLast4:
           type: string
-          pattern: "^[0-9]{4}$"
+          paTCrn: "^[0-9]{4}$"
           example: "1234"
         mobileNumber:
           type: string
@@ -1049,7 +1049,7 @@ components:
             - Coach Reserved for Handicapped
             - Travelling on Roof Top
             - Trespassing
-            - Nuisance and Littering
+            - Nuisance and LiTCring
             - Bill Pasting
             - Touting
             - Unauthorised Hawking
@@ -1109,7 +1109,7 @@ components:
           example: "Suspicious high amount for minor offense"
         user:
           type: string
-          description: "Reference to User (TTE) who created the anomaly"
+          description: "Reference to User (TC) who created the anomaly"
           example: "507f1f77bcf86cd799439011"
         challan:
           type: string
@@ -1147,8 +1147,8 @@ components:
           example: "507f1f77bcf86cd799439011"
         role:
           type: string
-          enum: [tte, admin, passenger]
-          example: "tte"
+          enum: [TC, admin, passenger]
+          example: "TC"
         metadata:
           type: object
           additionalProperties: true

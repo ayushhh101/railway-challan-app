@@ -2,6 +2,33 @@ const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const { ErrorResponses } = require('../utils/errorResponses');
+const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { commonValidations } = require('../middleware/commonValidations');
+
+// Validation middleware for each endpoint
+const dashboardValidation = [
+  validateFields({ query: [], body: [] }), // No fields allowed
+];
+
+const monthlyReportValidation = [
+  validateFields({ query: ['month', 'year'], body: [] }), // Only month and year in query
+  commonValidations.month(),
+  commonValidations.year(),
+  handleValidationErrors // This handles express-validator errors
+];
+
+const tteAnalyticsValidation = [
+  validateFields({ query: [], body: [] }), // No fields allowed
+];
+
+const resetPasswordValidation = [
+  validateFields({ query: [], body: ['userId', 'newPassword'] }), // Only these body fields
+  commonValidations.requiredString('userId'),
+  commonValidations.mongoId('userId'),
+  commonValidations.password('newPassword'),
+  handleValidationErrors // This handles express-validator errors
+];
+
 
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -264,3 +291,8 @@ exports.adminResetPassword = async (req, res) => {
     return res.status(serverError.statusCode).json(serverError);
   }
 };
+
+exports.dashboardValidation = dashboardValidation;
+exports.monthlyReportValidation = monthlyReportValidation;
+exports.tteAnalyticsValidation = tteAnalyticsValidation;
+exports.resetPasswordValidation = resetPasswordValidation;
