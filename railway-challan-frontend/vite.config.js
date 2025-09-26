@@ -6,7 +6,15 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    tailwindcss(),
+    tailwindcss({
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter var', 'Inter', 'sans-serif'],
+          },
+        },
+      },
+    }),
     react(),
     VitePWA({
       registerType: 'autoUpdate',

@@ -100,50 +100,158 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 md:px-8 py-8 md:py-12  font-sans">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-lg p-6 border border-neutral-gray400">
-        <h2 className="text-3xl font-bold text-center text-primary-blue mb-4 md:mb-6"
-        >Railway Portal Login</h2>
+ return (
+  <div 
+    className="min-h-screen bg-gray-50 flex items-center justify-center p-4"
+    style={{ fontFamily: 'Inter, sans-serif' }}
+  >
+    {/* main container */}
+    <div className="w-full max-w-6xl h-[85vh] flex rounded-3xl overflow-hidden shadow-2xl bg-white">
 
+      {/* left panel*/}
+      <div
+        className="hidden lg:flex lg:w-1/2 relative"
+        style={{
+          backgroundImage: `url('/loginTrain.PNG')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-blue-800/40"></div>
+      </div>
 
-        <form onSubmit={handleSubmit} >
-          <div className='p-2 md:p-4'>
-            <label className="block text-sm md:text-base font-medium text-neutral-gray900 mb-1">Employee ID</label>
-            <input
-              name="employeeId"
-              type="text"
-              value={formData.employeeId}
-              onChange={handleChange}
-              placeholder="Enter your ID"
-              className="w-full border border-gray-300 rounded-lg px-3 py-3 md:px-4 md:py-4 text-sm md:text-base font-normal focus:ring-2 focus:ring-[#1E40AF] focus:outline-none"
-              required
-            />
+      {/* right panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-8 relative bg-white">
+        {/* mobile bg image */}
+        <div
+          className="lg:hidden absolute inset-0 opacity-5 rounded-3xl"
+          style={{
+            backgroundImage: `url('/loginTrain.PNG')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        ></div>
+
+        {/* login Card */}
+        <div className="w-full max-w-sm relative z-10">
+          <div className="text-center mb-6">
+            {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
+            <h1 className="mt-3 text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight">
+              Railway Portal Login
+            </h1>
+            {/* Secondary Text: 14px */}
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Sign in to access your account
+            </p>
           </div>
 
-          <div className='p-2 md:p-4'>
-            <label className="block text-sm font-medium md:text-base  text-neutral-gray900 mb-1">Password</label>
-            <input
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full border border-gray-300 rounded-lg px-3 py-3 md:px-4 md:py-4 text-sm md:text-base font-normal focus:ring-1 focus:ring-[#1E40AF] focus:outline-none"
-              required
-            />
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg px-6 py-6 border border-gray-200">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                {/* Form Labels: 14-16px */}
+                <label
+                  htmlFor="employeeId"
+                  className="block text-sm font-medium text-gray-700 mb-2 leading-normal"
+                >
+                  Employee ID
+                </label>
+                {/* Form Inputs: 16px - Critical for usability */}
+                <input
+                  id="employeeId"
+                  name="employeeId"
+                  type="text"
+                  value={formData.employeeId}
+                  onChange={handleChange}
+                  placeholder="Enter your Employee ID"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base leading-relaxed"
+                  required
+                />
+              </div>
+
+              <div>
+                {/* Form Labels: 14-16px */}
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-2 leading-normal"
+                >
+                  Password
+                </label>
+                {/* Form Inputs: 16px - Critical for usability */}
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your Password"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base leading-relaxed"
+                  required
+                />
+              </div>
+
+              {/* remember me & forgot pass - Secondary Text: 14px */}
+              <div className="flex items-center justify-between text-sm pt-3 leading-normal">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-gray-700">Remember me</span>
+                </label>
+                <button
+                  type="button"
+                  className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              {/* Buttons/CTAs: 16px */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-6 text-base leading-normal"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Logging in...
+                  </div>
+                ) : (
+                  'Login'
+                )}
+              </button>
+            </form>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full md:w-1/2 block mx-auto bg-primary-blue hover:bg-primary-dark text-white py-3 md:py-4 mt-3 md:mt-4 rounded-2xl font-medium text-base transition-colors duration-200 font-sans"
-            aria-label="Login"
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
+          {/* lang & help - Small Text: 12px */}
+          <div className="text-center space-y-3 pt-5">
+            <div className="flex items-center justify-center space-x-4 text-xs leading-normal">
+              <button className="text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200">
+                English
+              </button>
+              <span className="text-gray-300">|</span>
+              <button className="text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200">
+                हिन्दी
+              </button>
+              <span className="text-gray-300">|</span>
+              <button className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200">
+                Help
+              </button>
+            </div>
+            {/* Small Text/Captions: 12px */}
+            <p className="text-xs text-gray-500 leading-normal">
+              © 2025 Indian Railways. All rights reserved.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

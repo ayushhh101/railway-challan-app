@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Hans:wght@400;600;700&display=swap');
+@import "@fontsource/inter/variable.css";
 @import "tailwindcss";
 
-@theme{
+@theme {
   --color-mint-500: oklch(0.72 0.11 178);
   --color-primary-blue: #1E40AF;
   --color-primary-light: #3B82F6;
@@ -25,5 +25,5 @@
 }
 
 body {
-  font-family: 'Noto Sans Hans', sans-serif;
+  font-family: 'Inter var', Inter, sans-serif !important;
 }

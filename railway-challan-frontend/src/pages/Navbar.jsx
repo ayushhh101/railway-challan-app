@@ -14,7 +14,8 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-neutral-gray50 border-b border-gray-200 shadow-sm px-4 py-3 font-sans">
+    <nav className="bg-neutral-gray50 border-b border-gray-200 shadow-sm px-4 py-3"
+    style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <h1 className="text-lg sm:text-xl font-bold text-primary-blue">Railway Challan Portal</h1>
 
