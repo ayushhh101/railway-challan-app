@@ -11,98 +11,215 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     navigate('/');
+    setMenuOpen(false);
   };
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <nav className="bg-neutral-gray50 border-b border-gray-200 shadow-sm px-4 py-3"
-    style={{ fontFamily: 'Inter, sans-serif' }}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 className="text-lg sm:text-2xl font-bold text-primary-blue">Railway Challan Portal</h1>
+    <nav 
+      className="bg-white border-b border-gray-200 shadow-sm px-4 py-3"
+      style={{ fontFamily: 'Inter, sans-serif' }}
+    >
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Main Navigation Bar */}
+        <div className="flex items-center justify-between">
+          
+          {/* Logo/Brand */}
+          <div className="flex items-center">
+            {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
+            <h1 className="text-xl lg:text-2xl font-bold text-blue-800 leading-tight">
+              Railway Challan Portal
+            </h1>
+          </div>
 
-        <button
-          className="sm:hidden focus:outline-none"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-        >
-          {menuOpen ? (
-            <XMarkIcon className="h-6 w-6 text-primary-blue" />
-          ) : (
-            <Bars3Icon className="h-6 w-6 text-primary-blue" />
-          )}
-        </button>
+          {/* Mobile Menu Toggle */}
+          <button
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          >
+            {menuOpen ? (
+              <XMarkIcon className="h-6 w-6 text-blue-800" />
+            ) : (
+              <Bars3Icon className="h-6 w-6 text-blue-800" />
+            )}
+          </button>
 
-        {/* Desktop Links */}
-        <div className="hidden sm:flex gap-4 items-center text-sm text-neutral-gray900">
-          {user?.role === 'tte' && (
-            <>
-              <Link to="/issue-challan" className="hover:text-accent-orange  font-medium">Issue Challan</Link>
-              <Link to="/view-challans" className="hover:text-accent-orange font-medium">My Challans</Link>
-              <Link to="/tte-profile" className="hover:text-accent-orange  font-medium">Profile</Link>
-            </>
-          )}
+          {/* Desktop Navigation Links */}
+          <div className="hidden lg:flex items-center space-x-6">
+            
+            {/* TTE Navigation */}
+            {user?.role === 'tte' && (
+              <>
+                <Link 
+                  to="/issue-challan" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  Issue Challan
+                </Link>
+                <Link 
+                  to="/view-challans" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  My Challans
+                </Link>
+                <Link 
+                  to="/tte-profile" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  Profile
+                </Link>
+              </>
+            )}
 
-          {user?.role === 'admin' && (
-            <>
-              <Link to="/admin-dashboard" className="hover:text-accent-orange  font-medium">Dashboard</Link>
-              <Link to="/manage-users" className="hover:text-accent-orange  font-medium">Manage Users</Link>
-              <Link to="/view-challans" className="hover:text-accent-orange  font-medium">All Challans</Link>
-              <Link to="/passenger-history" className="hover:text-accent-orange  font-medium">History</Link>
-            </>
-          )}
-          {user &&
-            <button
-              onClick={handleLogout}
-              className="bg-secondary-danger-red text-white px-4 py-1.5 rounded-md hover:bg-secondary-danger-light transition font-medium"
-            >
-              Logout
-            </button>
-          }
+            {/* Admin Navigation */}
+            {user?.role === 'admin' && (
+              <>
+                <Link 
+                  to="/admin-dashboard" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/manage-users" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  Manage Users
+                </Link>
+                <Link 
+                  to="/view-challans" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  All Challans
+                </Link>
+                <Link 
+                  to="/passenger-history" 
+                  className="text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200 leading-normal"
+                >
+                  History
+                </Link>
+              </>
+            )}
+
+            {/* User Info & Logout */}
+            {user && (
+              <div className="flex items-center space-x-4 pl-4 border-l border-gray-200">
+                {/* User Welcome */}
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900 leading-normal">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-gray-500 leading-normal capitalize">
+                    {user.role}
+                  </p>
+                </div>
+                
+                {/* Logout Button */}
+                {/* Buttons/CTAs: 16px */}
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {menuOpen && (
+          <div className="lg:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
+            <div className="space-y-3">
+              
+              {/* TTE Mobile Navigation */}
+              {user?.role === 'tte' && (
+                <>
+                  <Link 
+                    to="/issue-challan" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    Issue Challan
+                  </Link>
+                  <Link 
+                    to="/view-challans" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    My Challans
+                  </Link>
+                  <Link 
+                    to="/tte-profile" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    Profile
+                  </Link>
+                </>
+              )}
+
+              {/* Admin Mobile Navigation */}
+              {user?.role === 'admin' && (
+                <>
+                  <Link 
+                    to="/admin-dashboard" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/manage-users" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    Manage Users
+                  </Link>
+                  <Link 
+                    to="/view-challans" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    All Challans
+                  </Link>
+                  <Link 
+                    to="/passenger-history" 
+                    className="block text-base font-medium text-gray-700 hover:text-blue-600 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 leading-normal"
+                    onClick={closeMenu}
+                  >
+                    History
+                  </Link>
+                </>
+              )}
+
+              {/* User Info Mobile */}
+              {user && (
+                <div className="pt-3 mt-3 border-t border-gray-200">
+                  <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                    <p className="text-base font-medium text-gray-900 leading-normal">
+                      {user.name}
+                    </p>
+                    <p className="text-sm text-gray-500 leading-normal capitalize">
+                      {user.role} Account
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* mobile */}
-      {menuOpen && (
-        <div className="sm:hidden mt-3 flex flex-col gap-3 text-sm text-[#0F172A]">
-          {user?.role === 'tte' && (
-            <>
-              <Link to="/issue-challan" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Issue Challan</Link>
-              <Link to="/view-challans" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>My Challans</Link>
-              <Link to="/tte-profile" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Profile</Link>
-            </>
-          )}
-
-          {user?.role === 'admin' && (
-            <>
-              <Link to="/admin-dashboard" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-              <Link to="/manage-users" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>Manage Users</Link>
-              <Link to="/view-challans" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>All Challans</Link>
-              <Link to="/passenger-history" className="hover:text-accent-orange" onClick={() => setMenuOpen(false)}>History</Link>
-            </>
-          )}
-
-          {user ?
-            <button
-              onClick={() => {
-                handleLogout();
-                setMenuOpen(false);
-              }}
-              className="bg-secondary-danger-red text-white px-4 py-2 rounded-md transition w-full text-left font-medium"
-            >
-              Logout
-            </button> :
-            <button
-              onClick={() => {
-                handleLogout();
-                setMenuOpen(false);
-              }}
-              className=" disabled: bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition w-full text-left"
-            >
-              Logout
-            </button>
-          }
-
-        </div>
-      )}
     </nav>
   );
 }

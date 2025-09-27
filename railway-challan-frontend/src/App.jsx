@@ -20,6 +20,7 @@ import PassengerLoginPage from './pages/PassengerLoginPage';
 import PassengerDashboard from './pages/PassengerDashboard';
 import PassengerOnboardingPage from './pages/PassengerOnBoardingPage';
 import ChallanDetailPage from './pages/ChallanDetailPage';
+import ChooseLoginPage from './pages/ChooseLoginPage';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -38,28 +39,6 @@ function HomeRedirect() {
     default:
       return <Navigate to="/" replace />;
   }
-}
-
-function ChooseLoginPage() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-6 bg-gray-50 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-center text-blue-800">Welcome to Railway Challan Portal</h1>
-      <div className="flex flex-col sm:flex-row gap-4">
-        <a
-          href="/login"
-          className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg text-center hover:bg-blue-700 transition"
-        >
-          TTE / Admin Login
-        </a>
-        <a
-          href="/passenger/login"
-          className="px-8 py-4 bg-green-600 text-white rounded-lg text-lg text-center hover:bg-green-700 transition"
-        >
-          Passenger Login
-        </a>
-      </div>
-    </div>
-  );
 }
 
 function App() {
