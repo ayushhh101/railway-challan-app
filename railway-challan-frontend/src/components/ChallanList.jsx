@@ -15,240 +15,485 @@ const ChallanList = ({
   handleAdminDownload,
   setCurrentPage,
   loading = false,
-  error = null
+  error = null,
+  downloadingId = null,
+  itemsPerPage = 8 // Add default value for itemsPerPage
 }) => {
-  if (filteredChallans.length === 0) return null;
-  if (loading)
+  
+  // Calculate pagination indices
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  
+  // Early returns for different states
+  if (filteredChallans.length === 0 && !loading && !error) return null;
+
+  if (loading) {
     return (
-      <div className="bg-white p-10 rounded-xl text-center text-blue-700 text-base font-semibold">
-        Loading challans...
+      <div 
+        className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center"
+        style={{ fontFamily: 'Inter, sans-serif' }}
+      >
+        <div className="flex flex-col items-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 mb-4">
+            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          {/* Body Text: 16px */}
+          <p className="text-base text-blue-700 font-semibold leading-normal">Loading challans...</p>
+        </div>
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
-      <div className="bg-white p-10 rounded-xl text-center">
-        <div className="mb-3 text-red-700 font-semibold">{error}</div>
+      <div 
+        className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center"
+        style={{ fontFamily: 'Inter, sans-serif' }}
+      >
+        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p className="text-base text-red-700 font-semibold mb-4 leading-normal">{error}</p>
         <button
-          aria-label="Refresh Page"
           onClick={() => window.location.reload()}
-          className="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700"
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal"
+          aria-label="Retry loading"
         >
-          Retry
+          Try Again
         </button>
       </div>
     );
+  }
 
-  if (!filteredChallans || filteredChallans.length === 0)
+  if (!filteredChallans || filteredChallans.length === 0) {
     return (
-      <div className="bg-white p-10 rounded-xl text-center text-gray-500 text-base">
-        No challans found.
+      <div 
+        className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center"
+        style={{ fontFamily: 'Inter, sans-serif' }}
+      >
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <p className="text-base text-gray-500 leading-normal">No challans found</p>
+        <p className="text-sm text-gray-400 mt-2 leading-normal">Try adjusting your search criteria</p>
       </div>
     );
+  }
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
 
   return (
-    <>
-      <div className="bg-white p-4 shadow rounded-xl">
-        <h2 className="text-xl font-semibold mb-4">Filtered Results</h2>
+    <div 
+      className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8"
+      style={{ fontFamily: 'Inter, sans-serif' }}
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
+        <div>
+          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight">
+            Search Results
+          </h2>
+          {/* Secondary Text: 14px */}
+          <p className="text-sm text-gray-600 mt-1 leading-normal">
+            Found {filteredChallans.length} challans matching your criteria
+          </p>
+        </div>
+
+        {/* Export Selected Info */}
         {selectedChallans.length > 0 && (
-          <div className="flex gap-4">
-            <button
-              aria-label="Download Selected as CSV"
-              onClick={handleSelectedExport}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
-            >
-              Download Selected CSV
-            </button>
+          <div className="mt-4 sm:mt-0">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-blue-600 font-medium leading-normal">
+                {selectedChallans.length} selected
+              </span>
+              <button
+                onClick={handleSelectedExport}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 leading-normal"
+                aria-label="Download selected as CSV"
+              >
+                Export CSV
+              </button>
+            </div>
           </div>
         )}
+      </div>
 
-        {viewType === 'card' ? (
-          <>
-            <div className="px-2 pb-3 flex items-center pt-3.5 gap-2 pl-0">
-              <span className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Select All</span>
-              <input
-                type="checkbox"
-                onChange={toggleSelectAll}
-                checked={
-                  filteredChallans.length > 0 &&
-                  filteredChallans.every(c => selectedChallans.includes(c._id))
-                }
-                className="w-5 h-5 text-blue-600 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                aria-label="Select All Challans"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {paginatedChallans.map((challan) => (
-                <div
-                  key={challan._id}
-                  className="relative bg-white border border-slate-300 rounded-xl p-4 shadow hover:shadow-lg hover:scale-[1.02] transition-transform duration-150"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedChallans.includes(challan._id)}
-                    onChange={() => toggleChallanSelection(challan._id)}
-                    className="absolute top-3 right-3 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                    aria-label="Select Challan"
-                  />
-                  <div className="flex flex-col space-y-1.5 pb-2">
-                    <p>
-                      <span className="font-semibold text-gray-600">Passenger:</span>
-                      <span className="pl-2 text-blue-950 font-medium">{challan.passengerName}</span>
+      {viewType === 'card' ? (
+        <>
+          {/* Select All Control for Card View */}
+          <div className="flex items-center space-x-3 mb-6 p-4 bg-gray-50 rounded-lg">
+            <input
+              type="checkbox"
+              onChange={toggleSelectAll}
+              checked={
+                filteredChallans.length > 0 &&
+                filteredChallans.every(c => selectedChallans.includes(c._id))
+              }
+              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              aria-label="Select all challans"
+            />
+            <label className="text-sm font-medium text-gray-700 leading-normal">
+              Select All Challans
+            </label>
+          </div>
+
+          {/* Card Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {paginatedChallans.map((challan) => (
+              <div
+                key={challan._id}
+                className="relative bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200"
+              >
+                {/* Selection Checkbox */}
+                <input
+                  type="checkbox"
+                  checked={selectedChallans.includes(challan._id)}
+                  onChange={() => toggleChallanSelection(challan._id)}
+                  className="absolute top-4 right-4 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  aria-label="Select challan"
+                />
+
+                {/* Challan Details */}
+                <div className="space-y-4 pr-8">
+                  {/* Passenger Info */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                      Passenger
+                    </label>
+                    <p className="text-base font-semibold text-gray-900 leading-normal mt-1">
+                      {challan.passengerName}
                     </p>
-                    <p>
-                      <span className="font-semibold text-gray-600">Train:</span>
-                      <span className="pl-2">{challan.trainNumber}</span>
-                    </p>
-                    <p>
-                      <span className="font-semibold text-gray-600">Reason:</span>
-                      <span className="pl-2 inline-block bg-blue-100 text-blue-700 rounded px-2 py-0.5 text-xs font-semibold">
+                    {challan.passengerAadharLast4 && (
+                      <p className="text-sm text-gray-600 leading-normal">
+                        Aadhar: ****{challan.passengerAadharLast4}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Train & Coach */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                        Train
+                      </label>
+                      <p className="text-base font-semibold text-gray-900 leading-normal mt-1">
+                        {challan.trainNumber}
+                      </p>
+                    </div>
+                    {challan.coachNumber && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                          Coach
+                        </label>
+                        <p className="text-base font-semibold text-gray-900 leading-normal mt-1">
+                          {challan.coachNumber}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Offense */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                      Offense
+                    </label>
+                    <div className="mt-1">
+                      <span className="inline-block bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full leading-normal">
                         {challan.reason}
                       </span>
-                    </p>
-                    <p>
-                      <span className="font-semibold text-gray-600">Amount:</span>
-                      <span className="pl-2 text-yellow-700 font-bold">₹{challan.fineAmount}</span>
-                    </p>
-                    <p>
-                      <span className="font-semibold text-gray-600">Status:</span>
-                      <span className={`ml-2 px-2 py-0.5 rounded font-semibold text-xs ${challan.paid
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
+                    </div>
+                  </div>
+
+                  {/* Amount & Status */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                        Fine Amount
+                      </label>
+                      <p className="text-lg font-bold text-orange-600 leading-normal mt-1">
+                        ₹{challan.fineAmount?.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                        Status
+                      </label>
+                      <div className="mt-1">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold leading-normal ${
+                          challan.paid
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                         }`}>
-                        {challan.paid ? 'Paid' : 'Unpaid'}
-                      </span>
-                    </p>
-                    <p>
-                      <span className="font-semibold text-gray-600">Date:</span>
-                      <span className="pl-2">{new Date(challan.createdAt).toLocaleDateString()}</span>
+                          {challan.paid ? 'Paid' : 'Unpaid'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Date */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                      Issue Date
+                    </label>
+                    <p className="text-sm text-gray-700 leading-normal mt-1">
+                      {formatDate(challan.issuedAt || challan.createdAt)}
                     </p>
                   </div>
-                  <div className="flex flex-row flex-wrap gap-2 pt-2">
+
+                  {/* Issued By (if available) */}
+                  {challan.issuedBy && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                        Issued By
+                      </label>
+                      <p className="text-sm text-gray-700 leading-normal mt-1">
+                        {challan.issuedBy.name || 'N/A'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Location (if available) */}
+                  {challan.location && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                        Location
+                      </label>
+                      <p className="text-sm text-gray-700 leading-normal mt-1">
+                        {challan.location}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-200">
                     <button
-                      className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-800 text-white text-xs font-semibold rounded px-3 py-1 shadow transition"
                       onClick={() => handleAdminDownload(challan._id)}
-                      aria-label="Download Receipt PDF"
+                      disabled={downloadingId === challan._id}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center justify-center space-x-2"
+                      aria-label="Download receipt PDF"
                     >
-                      Receipt PDF
+                      {downloadingId === challan._id ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Downloading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>Download PDF</span>
+                        </>
+                      )}
                     </button>
                     <Link
                       to={`/passenger-history?name=${encodeURIComponent(challan.passengerName)}&aadharLast4=${encodeURIComponent(challan.passengerAadharLast4 ?? '')}`}
-                      className="inline-flex items-center gap-1 bg-slate-100 hover:bg-blue-100 text-blue-900 font-semibold text-xs rounded px-3 py-1 shadow transition"
-                      aria-label="View Passenger History"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200 text-center leading-normal flex items-center justify-center space-x-2"
+                      aria-label="View passenger history"
                     >
-                      View History
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span>View History</span>
                     </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="w-full">
-            <table className="w-full table-fixed divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-
-                  <th className="w-16 px-2 py-3">
-                    <div className='flex flex-col items-center justify-center '>
-                      <span className="text-center text-xs font-medium text-gray-500 uppercase mb-1">Select All</span>
-                      <input
-                        type="checkbox"
-                        onChange={toggleSelectAll}
-                        checked={
-                          filteredChallans.length > 0 &&
-                          filteredChallans.every(c => selectedChallans.includes(c._id))
-                        }
-                        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 inline"
-                      />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        /* Table View */
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 w-16">
+                  <div className="flex flex-col items-center space-y-2">
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
+                      Select
+                    </span>
+                    <input
+                      type="checkbox"
+                      onChange={toggleSelectAll}
+                      checked={
+                        filteredChallans.length > 0 &&
+                        filteredChallans.every(c => selectedChallans.includes(c._id))
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      aria-label="Select all challans"
+                    />
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Passenger
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Train/Coach
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Offense
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Amount
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider leading-normal">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {paginatedChallans.map((challan) => (
+                <tr key={challan._id} className="hover:bg-gray-50 transition-colors duration-200">
+                  <td className="px-6 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedChallans.includes(challan._id)}
+                      onChange={() => toggleChallanSelection(challan._id)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      aria-label="Select challan"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-base font-semibold text-gray-900 leading-normal">
+                        {challan.passengerName}
+                      </div>
+                      {challan.passengerAadharLast4 && (
+                        <div className="text-sm text-gray-500 leading-normal">
+                          ****{challan.passengerAadharLast4}
+                        </div>
+                      )}
                     </div>
-                  </th>
-
-                  <th className="w-32 px-5 py-3 whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase">Passenger Name</th>
-                  <th className="w-24 px-5 py-3 whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase">Train</th>
-                  <th className="w-32 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase text-wrap">Reason</th>
-                  <th className="w-20 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                  <th className="w-20 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="w-24 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="w-28 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Download</th>
-                  <th className="w-24 px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">History</th>
-
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-
-                {paginatedChallans.map((challan, idx) => (
-                  <tr key={idx}>
-
-                    <td className="px-2 py-2 text-center w-16">
-                      <input
-                        type="checkbox"
-                        checked={selectedChallans.includes(challan._id)}
-                        onChange={() => toggleChallanSelection(challan._id)}
-                        className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                    </td>
-                    <td className="px-3 py-2 max-w-xs truncate">{challan.passengerName}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{challan.trainNumber}</td>
-                    <td className="px-3 py-2 max-w-xs truncate">{challan.reason}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">₹{challan.fineAmount}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <span className={challan.paid ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                        {challan.paid ? 'Paid' : 'Unpaid'}
-                      </span>
-                    </td>
-
-                    <td className="px-3 py-2 whitespace-nowrap">{new Date(challan.createdAt).toLocaleDateString()}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-base font-semibold text-gray-900 leading-normal">
+                      {challan.trainNumber}
+                    </div>
+                    {challan.coachNumber && (
+                      <div className="text-sm text-gray-500 leading-normal">
+                        Coach: {challan.coachNumber}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-red-100 text-red-800 leading-normal">
+                      {challan.reason}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="text-base font-bold text-orange-600 leading-normal">
+                      ₹{challan.fineAmount?.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold leading-normal ${
+                      challan.paid
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {challan.paid ? 'Paid' : 'Unpaid'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 leading-normal">
+                    {formatDate(challan.issuedAt || challan.createdAt)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center space-x-2">
                       <button
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:cursor-pointer"
-                      onClick={() => handleAdminDownload(challan._id)}
-                      aria-label="Download Receipt PDF"
-                    >
-                      Receipt PDF
-                    </button>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
+                        onClick={() => handleAdminDownload(challan._id)}
+                        disabled={downloadingId === challan._id}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs font-medium py-1 px-3 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal"
+                        aria-label="Download receipt PDF"
+                      >
+                        {downloadingId === challan._id ? 'Downloading...' : 'PDF'}
+                      </button>
                       <Link
                         to={`/passenger-history?name=${encodeURIComponent(challan.passengerName)}&aadharLast4=${encodeURIComponent(challan.passengerAadharLast4 || '')}`}
-                        className="bg-slate-200 px-3 py-1 rounded text-blue-900 font-semibold text-xs hover:bg-blue-100"
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium py-1 px-3 rounded transition-colors duration-200 leading-normal"
+                        aria-label="View passenger history"
                       >
-                        View History
+                        History
                       </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 mt-4">
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-200 space-y-4 sm:space-y-0">
+          {/* Page Info */}
+          <div className="flex items-center space-x-2">
+            {/* Secondary Text: 14px */}
+            <span className="text-sm text-gray-600 leading-normal">
+              Showing <span className="font-semibold">{indexOfFirst + 1}</span> to{' '}
+              <span className="font-semibold">{Math.min(indexOfLast, filteredChallans.length)}</span> of{' '}
+              <span className="font-semibold">{filteredChallans.length}</span> results
+            </span>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
               disabled={currentPage === 1}
-              aria-label="Go to Previous Page"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 leading-normal"
+              aria-label="Previous page"
             >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
               Previous
             </button>
-            <span className="text-sm text-gray-600">
+
+            <span className="text-sm text-gray-600 leading-normal">
               Page {currentPage} of {totalPages}
             </span>
+
             <button
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
               disabled={currentPage === totalPages}
-              aria-label="Go to Next Page"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 leading-normal"
+              aria-label="Next page"
             >
               Next
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
-        )}
-      </div>
-    </>
-
+        </div>
+      )}
+    </div>
   );
 };
 

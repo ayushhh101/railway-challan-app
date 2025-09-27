@@ -3,7 +3,7 @@ import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
-import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 //for bulk download
@@ -27,11 +27,12 @@ const AdminDashboardPage = () => {
   const [filteredChallans, setFilteredChallans] = useState([]);
   const [viewType, setViewType] = useState('table');
   const [loading, setLoading] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 8;
 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -40,12 +41,7 @@ const AdminDashboardPage = () => {
 
   // selected challans state
   const [selectedChallans, setSelectedChallans] = useState([]);
-  const [reportMonth, setReportMonth] = useState('');
-  const [reportYear, setReportYear] = useState('');
-  const [monthlyReport, setMonthlyReport] = useState(null);
-
   const [showAddUser, setShowAddUser] = useState(false);
-
   const [downloadingId, setDownloadingId] = useState(null);
 
   const toggleChallanSelection = (id) => {
@@ -60,7 +56,6 @@ const AdminDashboardPage = () => {
     const allSelected = filteredChallans.every(challan => selectedChallans.includes(challan._id));
 
     if (allSelected) {
-      // deselect all
       setSelectedChallans([]);
     } else {
       setSelectedChallans(filteredChallans.map(challan => challan._id));
@@ -70,28 +65,25 @@ const AdminDashboardPage = () => {
   useEffect(() => {
     const fetchStats = async () => {
       setError(null);
-      setLoading(true);
+      setDashboardLoading(true);
       try {
-        // fetch admin stats
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        setStats(res.data);
+        const [dashboardRes, locationRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/challan/locations`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          })
+        ]);
 
-        const locationRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/locations`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+        setStats(dashboardRes.data);
         setChallansByLocation(locationRes.data.data);
-
       } catch (error) {
-        console.log(error)
-        setError('Failed to fetch stats');
+        console.error('Dashboard fetch error:', error);
+        setError('Failed to fetch dashboard data');
+        toast.error('Failed to load dashboard data');
       } finally {
-        setLoading(false);
+        setDashboardLoading(false);
       }
     };
     fetchStats();
@@ -108,24 +100,26 @@ const AdminDashboardPage = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/challan/search?${params.toString()}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      console.log(res.data)
       setFilteredChallans(res.data);
       setCurrentPage(1);
+      setSelectedChallans([]);
+      toast.success(`Found ${res.data.length} challans`);
     } catch (error) {
       setError('Failed to fetch challans. Please try again.');
       setFilteredChallans([]);
+      toast.error('Search failed');
     } finally {
       setLoading(false);
     }
   };
 
   const clearFilters = () => {
-    setFilters({ name: '', train: '', reason: '', date: '', status: '' });
+    setFilters({ passenger: '', train: '', reason: '', date: '', status: '' });
     setFilteredChallans([]);
+    setSelectedChallans([]);
     setCurrentPage(1);
   };
 
-  // admin download challan pdf
   const handleAdminDownload = async (challanId) => {
     setDownloadingId(challanId);
     const toastId = toast.loading("Preparing PDF...");
@@ -133,9 +127,7 @@ const AdminDashboardPage = () => {
       const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/pdf/challan/${challanId}/pdf`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
@@ -168,152 +160,219 @@ const AdminDashboardPage = () => {
   };
 
   const handleSelectedExport = () => {
-    const allSelectedAcrossPages =
-      filteredChallans.length > 0 &&
-      selectedChallans.length === filteredChallans.length;
-
-    const selectedData = allSelectedAcrossPages
-      ? filteredChallans // download all filtered challans
-      : filteredChallans.filter(challan => selectedChallans.includes(challan._id));
+    const selectedData = filteredChallans.filter(challan => selectedChallans.includes(challan._id));
 
     if (selectedData.length === 0) {
-      alert('No selected challans to export');
+      toast.error('No challans selected for export');
       return;
     }
 
-    downloadCSV(selectedData, 'selected-challans');
+    downloadCSV(selectedData, `selected-challans-${new Date().toISOString().split('T')[0]}`);
+    toast.success(`Exported ${selectedData.length} challans successfully`);
   };
 
-  const handleMonthlyReport = async () => {
-    if (!reportMonth || !reportYear) return alert('Please select both month and year');
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/monthly-report?month=${reportMonth}&year=${reportYear}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      setMonthlyReport(res.data);
-    } catch (err) {
-      console.error('Monthly report error:', err);
-      alert('Failed to fetch monthly report');
-    }
-  };
-
-  if (!stats) return <div className="text-center mt-10">Loading dashboard...</div>;
+  if (dashboardLoading) {
+    return (
+      <div 
+        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
+        style={{ fontFamily: 'Inter, sans-serif' }}
+      >
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          {/* Body Text: 16px */}
+          <p className="text-base text-gray-600 leading-normal">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-2 sm:px-4 pt-6 sm:pt-8 pb-10 sm:pb-12 space-y-8 sm:space-y-10 min-h-screen font-sans">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
-        <h1 className="text-3xl pl-0 sm:pl-5 font-bold text-gray-800 text-center sm:text-left">
-          Admin Dashboard
-        </h1>
-      </div>
-
-      <AddUserModal
-        isOpen={showAddUser}
-        onClose={() => setShowAddUser(false)}
-        onUserAdded={() => {
-          toast.success("User added successfully")
-        }}
-      />
-
-      <ChallanFilters
-        filters={filters}
-        setFilters={setFilters}
-        handleFilter={handleFilter}
-        clearFilters={clearFilters}
-        viewType={viewType}
-        setViewType={setViewType}
-      />
-
-      <ChallanList
-        filteredChallans={filteredChallans}
-        selectedChallans={selectedChallans}
-        viewType={viewType}
-        paginatedChallans={paginatedChallans}
-        totalPages={totalPages}
-        currentPage={currentPage}
-        handleSelectedExport={handleSelectedExport}
-        toggleSelectAll={toggleSelectAll}
-        toggleChallanSelection={toggleChallanSelection}
-        handleAdminDownload={handleAdminDownload}
-        setCurrentPage={setCurrentPage}
-        loading={loading}
-        error={error}
-      />
-
-      <SummaryCard stats={stats} loading={loading} error={error} />
-
-      <div className="flex flex-wrap gap-2 mb-6 justify-start">
-        <Link to="/anomalies">
-          <button
-            className="rounded-2xl bg-secondary-danger-red text-white border border-secondary-danger-red px-1 sm:px-3 md:px-4 py-2 font-semibold text-sm hover:bg-secondary-danger-light transition shadow-sm"
-            aria-label="View anomalies"
-          >
-            <BugAntIcon className="w-5 h-5 mr-2 inline" />
-            Anomalies
-          </button>
-        </Link>
-        <Link to="/audit-log">
-          <button
-            className="rounded-2xl bg-primary-dark text-white border border-primary-light px-1 sm:px-3 md:px-4 py-2 font-semibold text-sm hover:bg-primary-light hover:text-white transition shadow-sm"
-            aria-label="View audit log"
-          >
-            <ClipboardDocumentListIcon className="w-5 h-5 mr-2 inline" />
-            Audit Log
-          </button>
-        </Link>
-        <button
-          className="rounded-2xl bg-primary-light text-white font-semibold px-1 py-2 sm:px-3 md:px-4 text-sm hover:bg-primary-dark transition shadow-sm"
-          onClick={() => setShowAddUser(true)}
-          aria-label="Add Admin or TTE"
-        >
-          <UserPlusIcon className="w-5 h-5 mr-2 inline" />
-          Add Admin/TTE
-        </button>
-      </div>
-
-
-      <div className="bg-white rounded-2xl shadow-lg border border-neutral-gray200 px-2 sm:px-10 py-5 sm:py-7 my-6">
-        {/* Title row */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6">
-          <h2 className="text-xl font-bold text-neutral-gray900">Data Visualization</h2>
-          <button
-            className="bg-primary-blue text-white font-semibold px-4 py-2 rounded-2xl shadow hover:bg-primary-dark transition text-sm w-fit"
-            onClick={() => {
-              // TODO: Add your export handler here, e.g. exportAnalyticsData()
-            }}
-          >
-            Export Data
-          </button>
+    <div 
+      className="min-h-screen bg-gray-50 px-4 py-6 lg:px-8 lg:py-8"
+      style={{ fontFamily: 'Inter, sans-serif' }}
+    >
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Page Header */}
+        <div className="text-center lg:text-left">
+          {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
+          <h1 className="text-2xl lg:text-4xl font-bold text-blue-800 leading-tight mb-2">
+            Railway Admin Dashboard
+          </h1>
+          {/* Secondary Text: 14px */}
+          <p className="text-sm text-gray-600 leading-normal">
+            Comprehensive overview and management of the railway challan system
+          </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
-            <div className="w-full h-full">
-              <ChallansByReasonChart data={stats?.challansByReason} stats={stats} loading={loading} error={error} />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
-            <div className="w-full h-full">
-              <MonthlyTrendChart trend={stats?.monthlyTrend} loading={loading} error={error} />
-            </div>
+        <AddUserModal
+          isOpen={showAddUser}
+          onClose={() => setShowAddUser(false)}
+          onUserAdded={() => {
+            toast.success("User added successfully!");
+          }}
+        />
+
+        {/* Summary Statistics */}
+        <SummaryCard stats={stats} loading={dashboardLoading} error={error} />
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
+          {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
+          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
+            Administrative Actions
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link to="/anomalies" className="group">
+              <button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
+                <BugAntIcon className="w-6 h-6 mx-auto mb-2" />
+                <div>Anomalies</div>
+                <div className="text-xs opacity-90 mt-1">View suspicious activities</div>
+              </button>
+            </Link>
+            
+            <Link to="/audit-log" className="group">
+              <button className="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
+                <ClipboardDocumentListIcon className="w-6 h-6 mx-auto mb-2" />
+                <div>Audit Log</div>
+                <div className="text-xs opacity-90 mt-1">System activities</div>
+              </button>
+            </Link>
+            
+            <button
+              onClick={() => setShowAddUser(true)}
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 leading-normal shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              <UserPlusIcon className="w-6 h-6 mx-auto mb-2" />
+              <div>Add User</div>
+              <div className="text-xs opacity-90 mt-1">Create Admin/TTE</div>
+            </button>
+
+            <Link to='/monthly-report' className="group">
+              <button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 leading-normal shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
+                <DocumentArrowDownIcon className="w-6 h-6 mx-auto mb-2" />
+                <div>Reports</div>
+                <div className="text-xs opacity-90 mt-1">Monthly analytics</div>
+              </button>
+            </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
-            <div className="w-full h-full">
-              <TopTTEBarChart stats={stats} loading={loading} error={error} />
+        {/* Challan Management */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
+          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
+            Challan Search & Management
+          </h2>
+          
+          <ChallanFilters
+            filters={filters}
+            setFilters={setFilters}
+            handleFilter={handleFilter}
+            clearFilters={clearFilters}
+            viewType={viewType}
+            setViewType={setViewType}
+          />
+
+          {/* Export Selected Panel */}
+          {selectedChallans.length > 0 && (
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  {/* Body Text: 16px */}
+                  <p className="text-base font-semibold text-blue-800 leading-normal">
+                    {selectedChallans.length} challan(s) selected
+                  </p>
+                  {/* Secondary Text: 14px */}
+                  <p className="text-sm text-blue-600 leading-normal">
+                    Ready for bulk operations
+                  </p>
+                </div>
+                {/* Buttons/CTAs: 16px */}
+                <button
+                  onClick={handleSelectedExport}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center space-x-2"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4" />
+                  <span>Export Selected</span>
+                </button>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Challan List Results */}
+        <ChallanList
+          filteredChallans={filteredChallans}
+          selectedChallans={selectedChallans}
+          viewType={viewType}
+          paginatedChallans={paginatedChallans}
+          totalPages={totalPages}
+          currentPage={currentPage}
+          handleSelectedExport={handleSelectedExport}
+          toggleSelectAll={toggleSelectAll}
+          toggleChallanSelection={toggleChallanSelection}
+          handleAdminDownload={handleAdminDownload}
+          setCurrentPage={setCurrentPage}
+          loading={loading}
+          error={error}
+          downloadingId={downloadingId}
+        />
+
+        {/* Data Visualization */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+            <div>
+              <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight mb-2">
+                Analytics & Insights
+              </h2>
+              <p className="text-sm text-gray-600 leading-normal">
+                Visual representation of challan data and performance metrics
+              </p>
+            </div>
+            
+            <button
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-4 lg:mt-0 leading-normal flex items-center space-x-2"
+              onClick={() => {
+                toast.success("Analytics export feature coming soon!");
+              }}
+            >
+              <DocumentArrowDownIcon className="w-4 h-4" />
+              <span>Export Analytics</span>
+            </button>
           </div>
-          <div className="bg-white rounded-xl px-4 sm:px-6 py-6 border border-neutral-gray200 shadow-sm flex flex-col">
-            <div className="w-full h-full">
-              <ChallanHeatmap challansByLocation={challansByLocation} loading={loading} error={error} />
-            </div>
+
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <ChallansByReasonChart 
+              data={stats?.challansByReason} 
+              stats={stats} 
+              loading={dashboardLoading} 
+              error={error} 
+            />
+            <MonthlyTrendChart 
+              trend={stats?.monthlyTrend} 
+              loading={dashboardLoading} 
+              error={error} 
+            />
+            <TopTTEBarChart 
+              stats={stats} 
+              loading={dashboardLoading} 
+              error={error} 
+            />
+            <ChallanHeatmap 
+              challansByLocation={challansByLocation} 
+              loading={dashboardLoading} 
+              error={error} 
+            />
           </div>
         </div>
       </div>
-
     </div>
   );
 };

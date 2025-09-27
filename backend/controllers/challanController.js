@@ -601,14 +601,14 @@ exports.updateAnomaly = async (req, res) => {
   try {
     const { status, anomalyId } = req.params;
 
-    const updatedAnomlay = await Anomaly.findByIdAndUpdate(req.params.anomalyId, { status }, { new: true });
+    const updatedAnomaly = await Anomaly.findByIdAndUpdate(req.params.anomalyId, { status }, { new: true });
 
     if (!updatedAnomaly) {
       const error = ErrorResponses.notFound('Anomaly');
       return res.status(error.statusCode).json(error);
     }
 
-    res.status(200).json({ message: 'Anomaly updated successfully', anomaly: updatedAnomlay });
+    res.status(200).json({ message: 'Anomaly updated successfully', anomaly: updatedAnomaly });
 
   } catch (error) {
     console.error("Error updating anomaly:", error);

@@ -27,7 +27,6 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
     }
   }, [isOpen]);
 
-  // Basic validation, only used on submit
   const validate = () => {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = 'Name is required';
@@ -80,103 +79,190 @@ const AddUserModal = ({ isOpen, onClose, onUserAdded }) => {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
+      style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      <form
-        className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 relative"
-        onSubmit={handleSubmit}
+      <div
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 relative"
         aria-modal="true"
         role="dialog"
       >
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">Add New User</h2>
+        {/* Modal Header */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          {/* Subsection Headings: 18px */}
+          <h2 className="text-lg font-semibold text-gray-900 leading-tight">
+            Add New User
+          </h2>
+          {/* Secondary Text: 14px */}
+          <p className="text-sm text-gray-600 mt-1 leading-normal">
+            Create a new admin or TTE account
+          </p>
+        </div>
 
-        <label className="block mb-2 font-medium" htmlFor="name">Name</label>
-        <input
-          ref={firstInputRef}
-          id="name"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.name ? 'border-secondary-danger-red' : 'border-neutral-gray300'} `}
-          autoComplete="off"
-        />
-        {errors.name && <div className="text-red-600 text-xs mb-2">{errors.name}</div>}
+        {/* Modal Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          
+          {/* Name Field */}
+          <div>
+            {/* Form Labels: 14-16px */}
+            <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="name">
+              Full Name *
+            </label>
+            {/* Form Inputs: 16px */}
+            <input
+              ref={firstInputRef}
+              id="name"
+              name="name"
+              type="text"
+              value={form.name}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all duration-200 leading-relaxed ${
+                errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              placeholder="Enter full name"
+              autoComplete="off"
+            />
+            {errors.name && (
+              <p className="text-xs text-red-600 mt-1 leading-normal">{errors.name}</p>
+            )}
+          </div>
 
-        <label className="block mb-2 font-medium" htmlFor="employeeId">Employee ID</label>
-        <input
-          id="employeeId"
-          name="employeeId"
-          value={form.employeeId}
-          onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.employeeId ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
-          autoComplete="off"
-        />
-        {errors.employeeId && <div className="text-red-600 text-xs mb-2">{errors.employeeId}</div>}
+          {/* Employee ID Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="employeeId">
+              Employee ID *
+            </label>
+            <input
+              id="employeeId"
+              name="employeeId"
+              type="text"
+              value={form.employeeId}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all duration-200 leading-relaxed ${
+                errors.employeeId ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              placeholder="e.g., TTE12345"
+              autoComplete="off"
+            />
+            {errors.employeeId && (
+              <p className="text-xs text-red-600 mt-1 leading-normal">{errors.employeeId}</p>
+            )}
+          </div>
 
-        <label className="block mb-2 font-medium" htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.password ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
-        />
-        {errors.password && (
-          <div className="text-red-600 text-xs mb-2">{errors.password}</div>
-        )}
+          {/* Password Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="password">
+              Password *
+            </label>
+            <input
+              id="password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all duration-200 leading-relaxed ${
+                errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              placeholder="Minimum 8 characters"
+            />
+            {errors.password && (
+              <p className="text-xs text-red-600 mt-1 leading-normal">{errors.password}</p>
+            )}
+          </div>
 
-        <label className="block mb-2 font-medium" htmlFor="role">Role</label>
-        <select
-          id="role"
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none ${errors.role ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
-        >
-          <option value="tte">TTE</option>
-          <option value="admin">Admin</option>
-        </select>
-        {errors.role && <div className="text-red-600 text-xs mb-2">{errors.role}</div>}
+          {/* Role Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="role">
+              Role *
+            </label>
+            <div className="relative">
+              <select
+                id="role"
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                className={`w-full appearance-none px-4 py-3 pr-10 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all duration-200 bg-white leading-relaxed ${
+                  errors.role ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
+                }`}
+              >
+                <option value="tte">Train Ticket Examiner (TTE)</option>
+                <option value="admin">Administrator</option>
+              </select>
+              {/* Custom dropdown arrow */}
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+            {errors.role && (
+              <p className="text-xs text-red-600 mt-1 leading-normal">{errors.role}</p>
+            )}
+          </div>
 
-        <label className="block mb-2 font-medium" htmlFor="zone">Zone</label>
-        <input
-          id="zone"
-          name="zone"
-          value={form.zone}
-          onChange={handleChange}
-          className={`w-full p-2 mb-1 border rounded-2xl focus:outline-none focus:ring-2 ${errors.zone ? 'border-secondary-danger-red' : 'border-neutral-gray300'}`}
-        />
-        {errors.zone && <div className="text-red-600 text-xs mb-2">{errors.zone}</div>}
+          {/* Zone Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="zone">
+              Zone *
+            </label>
+            <input
+              id="zone"
+              name="zone"
+              type="text"
+              value={form.zone}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 transition-all duration-200 leading-relaxed ${
+                errors.zone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              placeholder="e.g., Central, Western, Northern"
+            />
+            {errors.zone && (
+              <p className="text-xs text-red-600 mt-1 leading-normal">{errors.zone}</p>
+            )}
+          </div>
 
-        {apiError && <div className="text-red-600 text-sm mb-2">{apiError}</div>}
+          {/* API Error Display */}
+          {apiError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-700 leading-normal">{apiError}</p>
+            </div>
+          )}
+        </form>
 
-        <div className="flex justify-end gap-2 mt-4">
+        {/* Modal Footer */}
+        <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 sm:justify-end">
+          {/* Buttons/CTAs: 16px */}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-2xl bg-neutral-gray200 hover:bg-neutral-gray300 text-neutral-gray900"
             disabled={loading}
+            className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200 leading-normal"
           >
             Cancel
           </button>
           <button
             type="submit"
-            aria-label='Add User'
-            className="px-4 py-2 rounded-2xl bg-primary-blue hover:bg-primary-dark text-white font-medium"
+            onClick={handleSubmit}
             disabled={loading}
+            className="w-full sm:w-auto px-6 py-3 border border-transparent rounded-lg text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200 leading-normal"
+            aria-label='Add User'
           >
             {loading ? (
-              <span>
-                <svg className="animate-spin h-4 w-4 mr-2 inline" viewBox="0 0 24 24"></svg>
-                Adding...
-              </span>
-            ) : 'Add User'}
+              <div className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Adding User...
+              </div>
+            ) : (
+              'Add User'
+            )}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
