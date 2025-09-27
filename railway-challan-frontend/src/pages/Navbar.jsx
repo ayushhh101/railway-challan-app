@@ -112,7 +112,7 @@ export default function Navbar() {
                   <p className="text-sm font-medium text-gray-900 leading-normal">
                     {user.name}
                   </p>
-                  <p className="text-xs text-gray-500 leading-normal capitalize">
+                  <p className="text-xs text-center text-gray-500 leading-normal capitalize">
                     {user.role}
                   </p>
                 </div>

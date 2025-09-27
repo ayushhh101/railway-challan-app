@@ -34,12 +34,6 @@ const ChallanList = ({
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <div className="flex flex-col items-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 mb-4">
-            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
           {/* Body Text: 16px */}
           <p className="text-base text-blue-700 font-semibold leading-normal">Loading challans...</p>
         </div>
@@ -100,20 +94,16 @@ const ChallanList = ({
       className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
         <div>
           <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight">
             Search Results
           </h2>
-          {/* Secondary Text: 14px */}
           <p className="text-sm text-gray-600 mt-1 leading-normal">
             Found {filteredChallans.length} challans matching your criteria
           </p>
         </div>
 
-        {/* Export Selected Info */}
         {selectedChallans.length > 0 && (
           <div className="mt-4 sm:mt-0">
             <div className="flex items-center space-x-3">
@@ -134,7 +124,6 @@ const ChallanList = ({
 
       {viewType === 'card' ? (
         <>
-          {/* Select All Control for Card View */}
           <div className="flex items-center space-x-3 mb-6 p-4 bg-gray-50 rounded-lg">
             <input
               type="checkbox"
@@ -151,14 +140,13 @@ const ChallanList = ({
             </label>
           </div>
 
-          {/* Card Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {paginatedChallans.map((challan) => (
               <div
                 key={challan._id}
                 className="relative bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200"
               >
-                {/* Selection Checkbox */}
+
                 <input
                   type="checkbox"
                   checked={selectedChallans.includes(challan._id)}
@@ -167,9 +155,8 @@ const ChallanList = ({
                   aria-label="Select challan"
                 />
 
-                {/* Challan Details */}
                 <div className="space-y-4 pr-8">
-                  {/* Passenger Info */}
+
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
                       Passenger
@@ -184,7 +171,7 @@ const ChallanList = ({
                     )}
                   </div>
 
-                  {/* Train & Coach */}
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
@@ -206,7 +193,6 @@ const ChallanList = ({
                     )}
                   </div>
 
-                  {/* Offense */}
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
                       Offense
@@ -218,7 +204,6 @@ const ChallanList = ({
                     </div>
                   </div>
 
-                  {/* Amount & Status */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
@@ -244,7 +229,7 @@ const ChallanList = ({
                     </div>
                   </div>
 
-                  {/* Date */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
                       Issue Date
@@ -254,7 +239,6 @@ const ChallanList = ({
                     </p>
                   </div>
 
-                  {/* Issued By (if available) */}
                   {challan.issuedBy && (
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
@@ -266,7 +250,6 @@ const ChallanList = ({
                     </div>
                   )}
 
-                  {/* Location (if available) */}
                   {challan.location && (
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-normal">
@@ -277,7 +260,7 @@ const ChallanList = ({
                       </p>
                     </div>
                   )}
-
+                </div>
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-200">
                     <button

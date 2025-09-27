@@ -20,12 +20,12 @@ const SummaryCard = ({ stats, loading, error }) => {
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 animate-pulse">
             <div className="flex items-center justify-between">
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                <div className="h-8 bg-gray-200 rounded w-16"></div>
-                <div className="h-3 bg-gray-200 rounded w-32"></div>
+              <div className="space-y-3 flex-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-3 bg-gray-200 rounded w-full"></div>
               </div>
-              <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+              <div className="h-12 w-12 bg-gray-200 rounded-full flex-shrink-0 ml-4"></div>
             </div>
           </div>
         ))}
@@ -44,6 +44,7 @@ const SummaryCard = ({ stats, loading, error }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
+        {/* Body Text: 16px */}
         <p className="text-base text-red-700 font-semibold leading-normal">{error}</p>
       </div>
     );
@@ -96,12 +97,12 @@ const SummaryCard = ({ stats, loading, error }) => {
       {summary.map((item, idx) => (
         <div
           key={item.title}
-          className={`${item.bgColor} rounded-2xl shadow-lg border-l-4 ${item.borderColor} p-6 hover:shadow-xl transition-shadow duration-300`}
+          className={`${item.bgColor} rounded-2xl shadow-lg border-l-4 ${item.borderColor} p-6 hover:shadow-xl transition-all duration-300 hover:scale-105`}
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
               {/* Form Labels: 14px */}
-              <p className="text-sm font-medium text-gray-600 mb-2 leading-normal">
+              <p className="text-sm font-medium text-gray-600 mb-2 leading-normal uppercase tracking-wide">
                 {item.title}
               </p>
               {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
@@ -132,7 +133,9 @@ const SummaryCard = ({ stats, loading, error }) => {
             </div>
             
             <div className="flex-shrink-0 ml-4">
-              {item.icon}
+              <div className="p-2 bg-white rounded-xl shadow-md">
+                {item.icon}
+              </div>
             </div>
           </div>
         </div>

@@ -152,21 +152,18 @@ export default function PassengerHistoryPage() {
     >
       <div className="max-w-7xl mx-auto">
         
-        {/* Page Header */}
-        <div className="mb-8">
-          {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
+        <div className="text-center mb-8">
           <h1 className="text-2xl lg:text-4xl font-bold text-blue-800 leading-tight mb-2">
             Passenger History
           </h1>
-          {/* Secondary Text: 14px */}
+
           <p className="text-sm text-gray-600 leading-normal">
             Search and view detailed challan history for individual passengers
           </p>
         </div>
 
-        {/* Search Form */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
-          {/* Subsection Headings: 18px */}
+
           <h2 className="text-lg font-semibold text-gray-900 mb-6 leading-tight">
             Search Passenger Records
           </h2>
@@ -174,13 +171,12 @@ export default function PassengerHistoryPage() {
           <form onSubmit={handleSearch} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               
-              {/* Passenger Name */}
               <div className="lg:col-span-2">
-                {/* Form Labels: 14px */}
+
                 <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="name">
                   Passenger Name
                 </label>
-                {/* Form Inputs: 16px */}
+
                 <input
                   id="name"
                   type="text"
@@ -191,7 +187,6 @@ export default function PassengerHistoryPage() {
                 />
               </div>
 
-              {/* Aadhar Last 4 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="aadhar">
                   Aadhar Last 4 Digits
@@ -209,7 +204,6 @@ export default function PassengerHistoryPage() {
                 />
               </div>
 
-              {/* Date From */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="dateFrom">
                   From Date
@@ -224,7 +218,6 @@ export default function PassengerHistoryPage() {
                 />
               </div>
 
-              {/* Date To */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="dateTo">
                   To Date
@@ -241,7 +234,7 @@ export default function PassengerHistoryPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Payment Status */}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal" htmlFor="paymentStatus">
                   Payment Status
@@ -265,9 +258,8 @@ export default function PassengerHistoryPage() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="lg:col-span-3 flex flex-col sm:flex-row gap-3 sm:items-end">
-                {/* Buttons/CTAs: 16px */}
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -311,7 +303,7 @@ export default function PassengerHistoryPage() {
           )}
         </div>
 
-        {/* Passenger Statistics */}
+
         {passengerStats && (
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
             <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 leading-tight">
@@ -320,7 +312,6 @@ export default function PassengerHistoryPage() {
             
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               
-              {/* Total Challans */}
               <div className="bg-blue-50 rounded-lg p-6 border border-blue-200 text-center">
                 <div className="text-2xl lg:text-3xl font-bold text-blue-800 leading-tight">
                   {passengerStats.totalChallans}
@@ -330,7 +321,6 @@ export default function PassengerHistoryPage() {
                 </div>
               </div>
 
-              {/* Paid Challans */}
               <div className="bg-green-50 rounded-lg p-6 border border-green-200 text-center">
                 <div className="text-2xl lg:text-3xl font-bold text-green-800 leading-tight">
                   {passengerStats.paidCount}
@@ -340,7 +330,6 @@ export default function PassengerHistoryPage() {
                 </div>
               </div>
 
-              {/* Unpaid Challans */}
               <div className="bg-red-50 rounded-lg p-6 border border-red-200 text-center">
                 <div className="text-2xl lg:text-3xl font-bold text-red-800 leading-tight">
                   {passengerStats.unpaidCount}
@@ -350,7 +339,6 @@ export default function PassengerHistoryPage() {
                 </div>
               </div>
 
-              {/* Total Fine Amount */}
               <div className="bg-orange-50 rounded-lg p-6 border border-orange-200 text-center">
                 <div className="text-2xl lg:text-3xl font-bold text-orange-800 leading-tight">
                   ₹{passengerStats.totalFine?.toLocaleString()}
@@ -363,7 +351,6 @@ export default function PassengerHistoryPage() {
           </div>
         )}
 
-        {/* Results */}
         {results.length > 0 ? (
           <ChallanList
             filteredChallans={results}

@@ -117,21 +117,18 @@ export default function ManageUsersPage() {
     >
       <div className="max-w-7xl mx-auto">
         
-        {/* Page Header */}
         <div className="mb-8">
-          {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl lg:text-4xl font-bold text-blue-800 leading-tight mb-2">
                 User Management
               </h1>
-              {/* Secondary Text: 14px */}
+              
               <p className="text-sm text-gray-600 leading-normal">
                 Track and monitor ticket examiner performance metrics and manage user accounts
               </p>
             </div>
             
-            {/* Refresh Button */}
             <button
               onClick={fetchAnalytics}
               disabled={loading}

@@ -8,13 +8,11 @@ export default function DigitalSignature({ sigCanvasRef }) {
 
   return (
     <div>
-      {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
       <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
         Digital Signature
       </h2>
       
       <div className="space-y-4">
-        {/* Form Labels: 14-16px */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal">
             TTE Signature *
@@ -37,17 +35,16 @@ export default function DigitalSignature({ sigCanvasRef }) {
         </div>
         
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-          {/* Clear Button */}
+
           <button
             type="button"
             onClick={clearSignature}
             className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors duration-200 leading-normal self-start"
             aria-label="Clear Signature"
           >
-            🗑️ Clear Signature
+            Clear Signature
           </button>
           
-          {/* Helper Text */}
           <p className="text-xs text-gray-500 leading-normal">
             Draw your signature using mouse/finger
           </p>

@@ -178,13 +178,6 @@ const AdminDashboardPage = () => {
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-          {/* Body Text: 16px */}
           <p className="text-base text-gray-600 leading-normal">Loading dashboard...</p>
         </div>
       </div>
@@ -227,48 +220,91 @@ const AdminDashboardPage = () => {
           <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
             Administrative Actions
           </h2>
+          {/* Secondary Text: 14px */}
+          <p className="text-sm text-gray-600 leading-normal mb-6">
+            Quick access to essential administrative functions and system management tools
+          </p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link to="/anomalies" className="group">
-              <button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
-                <BugAntIcon className="w-6 h-6 mx-auto mb-2" />
-                <div>Anomalies</div>
-                <div className="text-xs opacity-90 mt-1">View suspicious activities</div>
-              </button>
+              <div className="w-full bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-2 border-red-200 rounded-2xl p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                    <BugAntIcon className="w-7 h-7 text-white" />
+                  </div>
+                  {/* Buttons/CTAs: 16px */}
+                  <h3 className="text-base font-semibold text-red-800 leading-normal mb-2">
+                    Anomalies
+                  </h3>
+                  {/* Small Text: 12px */}
+                  <p className="text-xs text-red-700 leading-normal">
+                    View suspicious activities
+                  </p>
+                </div>
+              </div>
             </Link>
             
             <Link to="/audit-log" className="group">
-              <button className="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
-                <ClipboardDocumentListIcon className="w-6 h-6 mx-auto mb-2" />
-                <div>Audit Log</div>
-                <div className="text-xs opacity-90 mt-1">System activities</div>
-              </button>
+              <div className="w-full bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-2 border-blue-200 rounded-2xl p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                    <ClipboardDocumentListIcon className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold text-blue-800 leading-normal mb-2">
+                    Audit Log
+                  </h3>
+                  <p className="text-xs text-blue-700 leading-normal">
+                    System activities
+                  </p>
+                </div>
+              </div>
             </Link>
             
             <button
               onClick={() => setShowAddUser(true)}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 leading-normal shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="w-full bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border-2 border-green-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-105"
             >
-              <UserPlusIcon className="w-6 h-6 mx-auto mb-2" />
-              <div>Add User</div>
-              <div className="text-xs opacity-90 mt-1">Create Admin/TTE</div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                  <UserPlusIcon className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-base font-semibold text-green-800 leading-normal mb-2">
+                  Add User
+                </h3>
+                <p className="text-xs text-green-700 leading-normal">
+                  Create Admin/TTE
+                </p>
+              </div>
             </button>
 
             <Link to='/monthly-report' className="group">
-              <button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 leading-normal shadow-lg group-hover:shadow-xl transform group-hover:scale-105">
-                <DocumentArrowDownIcon className="w-6 h-6 mx-auto mb-2" />
-                <div>Reports</div>
-                <div className="text-xs opacity-90 mt-1">Monthly analytics</div>
-              </button>
+              <div className="w-full bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border-2 border-purple-200 rounded-2xl p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-14 h-14 bg-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                    <DocumentArrowDownIcon className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold text-purple-800 leading-normal mb-2">
+                    Reports
+                  </h3>
+                  <p className="text-xs text-purple-700 leading-normal">
+                    Monthly analytics
+                  </p>
+                </div>
+              </div>
             </Link>
           </div>
         </div>
 
         {/* Challan Management */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
-          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
-            Challan Search & Management
-          </h2>
+          <div className="mb-6">
+            <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight mb-2">
+              Challan Search & Management
+            </h2>
+            <p className="text-sm text-gray-600 leading-normal">
+              Search, filter, and manage challan records with advanced filtering options
+            </p>
+          </div>
           
           <ChallanFilters
             filters={filters}
@@ -281,7 +317,7 @@ const AdminDashboardPage = () => {
 
           {/* Export Selected Panel */}
           {selectedChallans.length > 0 && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-6 p-6 bg-blue-50 rounded-2xl border border-blue-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   {/* Body Text: 16px */}
@@ -290,7 +326,7 @@ const AdminDashboardPage = () => {
                   </p>
                   {/* Secondary Text: 14px */}
                   <p className="text-sm text-blue-600 leading-normal">
-                    Ready for bulk operations
+                    Ready for bulk operations and export
                   </p>
                 </div>
                 {/* Buttons/CTAs: 16px */}
@@ -298,7 +334,7 @@ const AdminDashboardPage = () => {
                   onClick={handleSelectedExport}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center space-x-2"
                 >
-                  <DocumentArrowDownIcon className="h-4 w-4" />
+                  <DocumentArrowDownIcon className="h-5 w-5" />
                   <span>Export Selected</span>
                 </button>
               </div>
@@ -342,7 +378,7 @@ const AdminDashboardPage = () => {
                 toast.success("Analytics export feature coming soon!");
               }}
             >
-              <DocumentArrowDownIcon className="w-4 h-4" />
+              <DocumentArrowDownIcon className="w-5 h-5" />
               <span>Export Analytics</span>
             </button>
           </div>

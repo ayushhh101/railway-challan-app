@@ -110,7 +110,7 @@ export default function TTEProfilePage() {
       <div className="max-w-7xl mx-auto">
         {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
         <div className="mb-8">
-          <h1 className="text-2xl text-center lg:text-4xl font-bold text-black leading-tight">
+          <h1 className="text-2xl text-center lg:text-4xl font-bold text-primary-blue leading-tight">
             TC Profile Dashboard
           </h1>
           {/* Secondary Text: 14px */}
@@ -296,11 +296,7 @@ export default function TTEProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Total Challans */}
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-blue-600 rounded-full">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
+              
               <div className="text-xl lg:text-2xl font-bold text-blue-800 leading-tight">
                 {stats?.total || 0}
               </div>
@@ -311,11 +307,7 @@ export default function TTEProfilePage() {
 
             {/* Paid Challans */}
             <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-600 rounded-full">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+              
               <div className="text-xl lg:text-2xl font-bold text-green-800 leading-tight">
                 {stats?.paid || 0}
               </div>
@@ -326,11 +318,7 @@ export default function TTEProfilePage() {
 
             {/* Unpaid Challans */}
             <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-600 rounded-full">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
+              
               <div className="text-xl lg:text-2xl font-bold text-red-800 leading-tight">
                 {stats?.unpaid || 0}
               </div>
@@ -341,11 +329,6 @@ export default function TTEProfilePage() {
 
             {/* Recovery Rate */}
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-orange-600 rounded-full">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
               <div className="text-xl lg:text-2xl font-bold text-orange-800 leading-tight">
                 {stats?.recovery || 0}%
               </div>

@@ -127,7 +127,7 @@ const ViewChallansPage = () => {
   <div className="p-4 sm:p-6 max-w-7xl mx-auto bg-neutral-gray50 min-h-screen"
   style={{ fontFamily: 'Inter, sans-serif' }}>
     <div>
-      <h1 className="text-center text-2xl sm:text-4xl font-bold text-black mb-3">
+      <h1 className="text-center text-2xl sm:text-4xl font-bold text-primary-blue mb-3">
         {searchMode
           ? `History for ${nameQuery} (****${aadharQuery})`
           : 'Challan History'}

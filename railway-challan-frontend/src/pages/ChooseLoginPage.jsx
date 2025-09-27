@@ -134,7 +134,6 @@ function ChooseLoginPage() {
                 </div>
               </div>
 
-              {/* Login Button */}
               <Link
                 to="/passenger/login"
                 className="w-full inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-lg text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 leading-normal"
@@ -148,7 +147,6 @@ function ChooseLoginPage() {
           </div>
         </div>
 
-        {/* Footer Info */}
         <div className="text-center mt-12">
           <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-2xl mx-auto">
             <div className="flex items-center justify-center mb-3">
