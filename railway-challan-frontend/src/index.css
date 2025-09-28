@@ -22,8 +22,27 @@
   --color-neutral-gray700: #374151;
   --color-neutral-gray800: #1F2937;
   --color-neutral-gray900: #111827;
+
+  
 }
 
 body {
   font-family: 'Inter var', Inter, sans-serif !important;
+}
+
+/* Add to your CSS */
+:root {
+  /* Railway Brand Colors */
+  --primary-railway-blue: #1E3A8A;
+  --primary-railway-light: #3B82F6;
+  --secondary-steel: #64748B;
+  --accent-orange: #F59E0B;
+  --success-green: #10B981;
+  --danger-red: #EF4444;
+  --neutral-light: #F8FAFC;
+  --neutral-dark: #1E293B;
+  
+  /* Enhanced Shadows */
+  --shadow-railway: 0 25px 50px -12px rgba(30, 58, 138, 0.25);
+  --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }

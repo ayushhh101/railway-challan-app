@@ -136,6 +136,7 @@ export default function LoginPage() {
 
         {/* login Card */}
         <div className="w-full max-w-sm relative z-10">
+          
           <div className="text-center mb-6">
             {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
             <h1 className="mt-3 text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight">
@@ -157,6 +158,7 @@ export default function LoginPage() {
                 >
                   Employee ID
                 </label>
+                
                 {/* Form Inputs: 16px - Critical for usability */}
                 <input
                   id="employeeId"
@@ -229,7 +231,6 @@ export default function LoginPage() {
             </form>
           </div>
 
-          {/* lang & help - Small Text: 12px */}
           <div className="text-center space-y-3 pt-5">
             <div className="flex items-center justify-center space-x-4 text-xs leading-normal">
               <button className="text-gray-700 hover:text-gray-900 font-medium transition-colors duration-200">
