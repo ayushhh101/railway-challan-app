@@ -1,4 +1,6 @@
 const { ErrorResponses } = require('../utils/errorResponses');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss');
 
 /**
  * Simple middleware to validate allowed fields and prevent extra fields
@@ -62,7 +64,41 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
+/**
+ * Sanitize all string inputs to prevent XSS and NoSQL injection
+ */
+const sanitizeInput = (req, res, next) => {
+  try {
+    // Remove any keys that start with '$' or contain '.'
+    mongoSanitize.sanitize(req.body);
+    mongoSanitize.sanitize(req.query);
+    mongoSanitize.sanitize(req.params);
+
+    // XSS protection for string values
+    const sanitizeObject = (obj) => {
+      for (const key in obj) {
+        if (typeof obj[key] === 'string') {
+          obj[key] = xss(obj[key]);
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          sanitizeObject(obj[key]);
+        }
+      }
+    };
+
+    if (req.body) sanitizeObject(req.body);
+    if (req.query) sanitizeObject(req.query);
+
+    next();
+  } catch (error) {
+    console.error('Sanitization error:', error);
+    const serverError = ErrorResponses.serverError();
+    return res.status(serverError.statusCode).json(serverError);
+  }
+};
+
+
 module.exports = {
   validateFields,
-  handleValidationErrors
+  handleValidationErrors,
+  sanitizeInput
 };

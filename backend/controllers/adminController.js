@@ -2,33 +2,37 @@ const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const { ErrorResponses } = require('../utils/errorResponses');
-const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 
-// Validation middleware for each endpoint
+// Validation middleware definitions
+
 const dashboardValidation = [
-  validateFields({ query: [], body: [] }), // No fields allowed
+  validateFields({ query: [], body: [] }),
+  handleValidationErrors
 ];
 
 const monthlyReportValidation = [
   validateFields({ query: ['month', 'year'], body: [] }), // Only month and year in query
   commonValidations.month(),
   commonValidations.year(),
-  handleValidationErrors // This handles express-validator errors
+  handleValidationErrors
 ];
 
 const tteAnalyticsValidation = [
-  validateFields({ query: [], body: [] }), // No fields allowed
+  validateFields({ query: [], body: [] }),
 ];
 
 const resetPasswordValidation = [
-  validateFields({ query: [], body: ['userId', 'newPassword'] }), // Only these body fields
+  sanitizeInput,
+  validateFields({ query: [], body: ['userId', 'newPassword'] }),
   commonValidations.requiredString('userId'),
   commonValidations.mongoId('userId'),
   commonValidations.password('newPassword'),
-  handleValidationErrors // This handles express-validator errors
+  handleValidationErrors
 ];
 
+// Controller functions
 
 exports.getDashboardStats = async (req, res) => {
   try {
@@ -37,109 +41,70 @@ exports.getDashboardStats = async (req, res) => {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    const totalChallans = await Challan.countDocuments();
+    const [
+      totalChallans,
+      totalFineCollected,
+      paidUnpaidStats,
+      challansPerTTE,
+      challansPerTrain,
+      challansByReason,
+      monthlyTrend,
+      challansThisMonth,
+      challansLastMonth
+    ] = await Promise.all([
+      Challan.countDocuments(),
 
-    // total fine collected (only paid challans)
-    const totalFineCollected = await Challan.aggregate([
-      { $match: { paid: true } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$fineAmount" }
-        }
-      }
+      Challan.aggregate([
+        { $match: { paid: true } },
+        { $group: { _id: null, total: { $sum: "$fineAmount" } } }
+      ]),
+
+      Challan.aggregate([
+        { $group: { _id: "$paid", count: { $sum: 1 } } }
+      ]),
+
+      Challan.aggregate([
+        { $group: { _id: "$issuedBy", count: { $sum: 1 } } },
+        { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "tte" } },
+        { $unwind: "$tte" },
+        { $project: { _id: 0, tteName: "$tte.name", employeeId: "$tte.employeeId", count: 1 } },
+        { $sort: { count: -1 } },
+        { $limit: 5 }
+      ]),
+
+      Challan.aggregate([
+        { $group: { _id: "$trainNumber", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 }
+      ]),
+
+      Challan.aggregate([
+        { $group: { _id: "$reason", count: { $sum: 1 } } }
+      ]),
+
+      Challan.aggregate([
+        { $group: { _id: { year: { $year: "$issuedAt" }, month: { $month: "$issuedAt" } }, count: { $sum: 1 } } },
+        { $sort: { "_id.year": 1, "_id.month": 1 } }
+      ]),
+
+      Challan.countDocuments({ issuedAt: { $gte: startOfThisMonth } }),
+      Challan.countDocuments({ issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } })
     ]);
 
-    // paid vs unpaid challans count
-    const paidUnpaidStats = await Challan.aggregate([
-      {
-        $group: {
-          _id: "$paid",
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    //(only the latest 5)
-    const challansPerTTE = await Challan.aggregate([
-      {
-        $group: {
-          _id: "$issuedBy",
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "tte"
-        }
-      },
-      { $unwind: "$tte" },
-      {
-        $project: {
-          _id: 0,
-          tteName: "$tte.name",
-          employeeId: "$tte.employeeId",
-          count: 1
-        }
-      },
-      { $sort: { count: -1 } },
-      { $limit: 5 }
-    ]);
-
-    //(only the latest 5)
-    const challansPerTrain = await Challan.aggregate([
-      {
-        $group: {
-          _id: "$trainNumber",
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { count: -1 } },
-      { $limit: 5 }
-    ]);
-
-    const challansByReason = await Challan.aggregate([
-      {
-        $group: {
-          _id: "$reason",
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    //(last 6 months)
-    const monthlyTrend = await Challan.aggregate([
-      {
-        $group: {
-          _id: {
-            year: { $year: "$issuedAt" },
-            month: { $month: "$issuedAt" }
-          },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
-    ]);
-
-    const challansThisMonth = await Challan.countDocuments({
-      issuedAt: { $gte: startOfThisMonth }
-    });
-    const challansLastMonth = await Challan.countDocuments({
-      issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth }
-    });
     const totalChallansChange = challansLastMonth === 0 ? 100 : ((challansThisMonth - challansLastMonth) / Math.max(challansLastMonth, 1)) * 100;
 
-    const fineThisMonthAgg = await Challan.aggregate([
-      { $match: { paid: true, issuedAt: { $gte: startOfThisMonth } } },
-      { $group: { _id: null, total: { $sum: "$fineAmount" } } }
+    const [fineThisMonthAgg, fineLastMonthAgg] = await Promise.all([
+      Challan.aggregate([
+        { $match: { paid: true, issuedAt: { $gte: startOfThisMonth } } },
+        { $group: { _id: null, total: { $sum: "$fineAmount" } } }
+      ]),
+      Challan.aggregate([
+        { $match: { paid: true, issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } } },
+        { $group: { _id: null, total: { $sum: "$fineAmount" } } }
+      ])
     ]);
-    const fineLastMonthAgg = await Challan.aggregate([
-      { $match: { paid: true, issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } } },
-      { $group: { _id: null, total: { $sum: "$fineAmount" } } }
-    ]);
+
+
     const fineThisMonth = fineThisMonthAgg[0]?.total || 0;
     const fineLastMonth = fineLastMonthAgg[0]?.total || 0;
     const totalFineCollectedChange = fineLastMonth === 0 ? (fineThisMonth ? 100 : 0) : ((fineThisMonth - fineLastMonth) / Math.max(fineLastMonth, 1)) * 100;
@@ -183,25 +148,18 @@ exports.getDashboardStats = async (req, res) => {
 }
 
 exports.getMonthlyReport = async (req, res) => {
-  const { month, year } = req.query;
-
-  if (
-    !month || !year ||
-    !/^(0[1-9]|1[0-2])$/.test(month) ||
-    !/^\d{4}$/.test(year)
-  ) {
-    const error = ErrorResponses.validationError('Invalid month or year');
-    return res.status(error.statusCode).json(error);
-  }
 
   try {
+    const { month, year } = req.query;
+
     const start = new Date(`${year}-${month}-01`);
     const end = new Date(start);
     end.setMonth(end.getMonth() + 1);
 
     const challans = await Challan.find({
       issuedAt: { $gte: start, $lt: end }
-    }).populate('issuedBy', 'name zone');
+    }).populate('issuedBy', 'name zone')
+      .lean();
 
     const stats = {
       totalChallans: challans.length,
@@ -217,9 +175,9 @@ exports.getMonthlyReport = async (req, res) => {
       stats.stationBreakdown[c.location] = (stats.stationBreakdown[c.location] || 0) + 1;
     });
 
-    res.json({ challans, stats });
-  } catch (err) {
-    console.error("Monthly report error:", err);
+    res.json({ success: true, challans, stats });
+  } catch (error) {
+    console.error("Monthly report error:", error);
     const serverError = ErrorResponses.serverError();
     return res.status(serverError.statusCode).json(serverError);
   }
@@ -229,7 +187,6 @@ exports.getTTEAnalytics = async (req, res) => {
   try {
     const ttes = await User.find({ role: 'tte' });
 
-    //each tc stats
     const stats = await Promise.all(
       ttes.map(async (tte) => {
         const challans = await Challan.find({ issuedBy: tte._id });
@@ -251,7 +208,9 @@ exports.getTTEAnalytics = async (req, res) => {
       })
     );
 
-    res.status(200).json({ tteStats: stats });
+    stats.sort((a, b) => b.issued - a.issued);
+
+    res.status(200).json({ success: true, tteStats: stats });
   } catch (error) {
     console.error("TTE analytics error:", error);
     const serverError = ErrorResponses.serverError();
@@ -262,16 +221,6 @@ exports.getTTEAnalytics = async (req, res) => {
 exports.adminResetPassword = async (req, res) => {
   try {
     const { userId, newPassword } = req.body;
-
-    if (!userId || !newPassword) {
-      const error = ErrorResponses.missingFields('User ID and new password are required');
-      return res.status(error.statusCode).json(error);
-    }
-
-    if (newPassword.length < 8) {
-      const error = ErrorResponses.validationError('Password must be at least 8 characters');
-      return res.status(error.statusCode).json(error);
-    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -284,7 +233,14 @@ exports.adminResetPassword = async (req, res) => {
     await user.save();
     // TODO:Log action here for audit if desired
 
-    res.status(200).json({ message: 'Password updated successfully.' });
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully.',
+      data: {
+        userId: user._id,
+        updatedAt: user.passwordChangedAt
+      }
+    });
   } catch (err) {
     console.error("Admin reset password error:", err);
     const serverError = ErrorResponses.serverError();
