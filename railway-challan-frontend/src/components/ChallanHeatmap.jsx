@@ -91,7 +91,7 @@ const ChallanHeatmap = ({ challansByLocation, loading, error }) => {
       {/* Chart Header */}
       <div className="mb-4">
         {/* Subsection Headings: 18px */}
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight mb-2">
+        <h3 className="text-xl font-semibold text-gray-900 leading-tight mb-2">
           Challan Heatmap
         </h3>
         {/* Secondary Text: 14px */}

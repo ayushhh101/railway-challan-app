@@ -13,7 +13,6 @@ const MonthlyTrendChart = ({ trend, error, loading }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        {/* Body Text: 16px */}
         <p className="text-base text-red-700 font-semibold leading-normal">{error}</p>
       </div>
     );
@@ -27,7 +26,6 @@ const MonthlyTrendChart = ({ trend, error, loading }) => {
       >
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-          {/* Body Text: 16px */}
           <p className="text-base text-blue-600 font-semibold leading-normal">Loading chart...</p>
         </div>
       </div>
@@ -61,19 +59,15 @@ const MonthlyTrendChart = ({ trend, error, loading }) => {
       className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200 h-[350px] sm:h-[400px] flex flex-col"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      {/* Chart Header */}
       <div className="mb-4">
-        {/* Subsection Headings: 18px */}
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight mb-2">
+        <h3 className="text-xl font-semibold text-gray-900 leading-tight mb-2">
           Monthly Challan Trend
         </h3>
-        {/* Secondary Text: 14px */}
         <p className="text-sm text-gray-600 leading-normal">
           Issuance trends over recent months
         </p>
       </div>
       
-      {/* Chart Container */}
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart 

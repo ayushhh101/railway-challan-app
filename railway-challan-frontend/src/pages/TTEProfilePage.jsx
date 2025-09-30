@@ -1,5 +1,23 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import toast from 'react-hot-toast';
+import {
+  UserCircleIcon,
+  IdentificationIcon,
+  MapPinIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+  DocumentTextIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  BuildingOfficeIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  CurrencyRupeeIcon,
+  InformationCircleIcon
+} from '@heroicons/react/24/outline';
+import {TrainIcon} from 'lucide-react';
 
 export default function TTEProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -10,6 +28,7 @@ export default function TTEProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      const toastId = toast.loading('Loading profile...');
       setLoading(true);
       try {
         const res = await axios.get(
@@ -19,57 +38,19 @@ export default function TTEProfilePage() {
         setProfile(res.data.profile);
         setStats(res.data.stats);
         setRecentChallans(res.data.recentChallans);
+        toast.success('Profile loaded successfully', { id: toastId });
       } catch (err) {
-        setError(
-          err?.response?.data?.message ||
+        const errorMessage = err?.response?.data?.message ||
           err?.response?.data?.error ||
-          "Could not load your profile."
-        );
+          "Could not load your profile.";
+        setError(errorMessage);
+        toast.error(errorMessage, { id: toastId });
       } finally {
         setLoading(false);
       }
     };
     fetchProfile();
   }, []);
-
-  if (loading) {
-    return (
-      <div 
-        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
-        style={{ fontFamily: 'Inter, sans-serif' }}
-      >
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-          <p className="text-base text-gray-600 leading-normal">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div 
-        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
-        style={{ fontFamily: 'Inter, sans-serif' }}
-      >
-        <div className="text-center max-w-md mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-              <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-base text-red-700 leading-normal" role="alert">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const formatDate = (dateString) => {
     if (!dateString) return "—";
@@ -92,7 +73,6 @@ export default function TTEProfilePage() {
     });
   };
 
-  // Calculate profile completion percentage based on filled fields
   const calculateProfileCompletion = () => {
     if (!profile) return 0;
     const fields = ['name', 'employeeId', 'email', 'phone', 'zone', 'currentStation', 'designation', 'dateOfJoining'];
@@ -100,103 +80,186 @@ export default function TTEProfilePage() {
     return Math.round((filledFields / fields.length) * 100);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-slate-700">Loading Profile...</p>
+          <p className="text-sm text-slate-500 mt-1">Fetching your dashboard data</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <div className="text-center max-w-md mx-auto">
+          <div className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-200/50 rounded-2xl p-8">
+            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-red-800 mb-3">Profile Loading Error</h3>
+            <p className="text-base text-red-700 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors duration-200"
+            >
+              Retry Loading
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const profileCompletion = calculateProfileCompletion();
 
   return (
-    <div 
-      className="min-h-screen bg-gray-50 px-4 py-6 lg:px-8 lg:py-8"
-      style={{ fontFamily: 'Inter, sans-serif' }}
-    >
-      <div className="max-w-7xl mx-auto">
-        {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
-        <div className="mb-8">
-          <h1 className="text-2xl text-center lg:text-4xl font-bold text-primary-blue leading-tight">
-            TC Profile Dashboard
-          </h1>
-          {/* Secondary Text: 14px */}
-          <p className="text-center text-sm text-gray-600 mt-2 leading-normal">
-            Manage your profile and view your performance statistics
-          </p>
-        </div>
-
-        {/* Profile Header Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 lg:p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            
-            {/* Profile Info Section */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              {/* Profile Picture */}
-              <div className="flex-shrink-0">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-2xl lg:text-3xl font-bold text-white shadow-lg">
-                  {profile.profilePic ? (
-                    <img 
-                      src={profile.profilePic} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  ) : (
-                    profile.name?.charAt(0)?.toUpperCase() || 'T'
-                  )}
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style={{ fontFamily: 'Inter, sans-serif' }}>
+      
+      {/* Professional Header */}
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+                <UserCircleIcon className="w-8 h-8 text-white" />
               </div>
-
-              {/* Basic Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-                  {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
-                  <h2 className="text-xl lg:text-2xl font-bold text-gray-900 leading-tight">
-                    {profile.name || "TTE User"}
-                  </h2>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold leading-normal mt-2 sm:mt-0">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Active
-                  </span>
-                </div>
-
-                {/* Subsection Headings: 18px */}
-                <h3 className="text-lg font-semibold text-blue-600 mb-2 leading-tight">
-                  {profile.designation || "Traveling Ticket Examiner"}
-                </h3>
-
-                {/* Secondary Text: 14px */}
-                <p className="text-sm text-gray-600 leading-normal">
-                  Employee ID: <span className="font-semibold text-gray-900">{profile.employeeId}</span>
+              <div>
+                <h1 className="text-3xl lg:text-5xl font-black tracking-tight mb-2">
+                  TTE Profile Dashboard
+                </h1>
+                <p className="text-lg text-blue-100 font-medium">
+                  Manage your profile and monitor performance statistics
                 </p>
               </div>
             </div>
+            
+            <div className="mt-6 lg:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <div className="text-center">
+                  <p className="text-blue-100 text-sm font-medium">Profile Completion</p>
+                  <div className="flex items-center justify-center mt-2">
+                    <span className="text-3xl font-bold text-white">{profileCompletion}%</span>
+                  </div>
+                  <p className="text-blue-200 text-xs mt-1">of required fields</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Contact Details */}
-            <div className="bg-gray-50 rounded-lg p-4 lg:min-w-[300px]">
-              {/* Subsection Headings: 18px */}
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 leading-tight">
-                Contact Information
-              </h3>
-              <div className="space-y-3">
-                <div className="flex flex-col sm:flex-row sm:justify-between">
-                  {/* Form Labels: 14px */}
-                  <span className="text-sm font-medium text-gray-600 leading-normal">Email:</span>
-                  {/* Body Text: 16px */}
-                  <span className="text-base text-gray-900 leading-normal break-all">
-                    {profile.email || "Not provided"}
-                  </span>
+      <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 space-y-8">
+        
+        {/* Enhanced Profile Header Card */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Personal Information</h2>
+            <p className="text-slate-600">Your profile details and contact information</p>
+          </div>
+          
+          <div className="p-8">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+              
+              {/* Profile Info Section */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 flex-1">
+                
+                {/* Profile Picture */}
+                <div className="flex-shrink-0">
+                  <div className="relative">
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-xl border-4 border-white">
+                      {profile.profilePic ? (
+                        <img 
+                          src={profile.profilePic} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      ) : (
+                        profile.name?.charAt(0)?.toUpperCase() || 'T'
+                      )}
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                      <CheckCircleIcon className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-sm font-medium text-gray-600 leading-normal">Phone:</span>
-                  <span className="text-base text-gray-900 leading-normal">
-                    {profile.phone || "Not provided"}
-                  </span>
+
+                {/* Basic Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-1">
+                        {profile.name || "TTE User"}
+                      </h3>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <IdentificationIcon className="w-5 h-5 text-slate-400" />
+                        <span className="text-base font-semibold text-blue-600">
+                          {profile.designation || "Traveling Ticket Examiner"}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-slate-600">Employee ID:</span>
+                        <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-1 rounded">
+                          {profile.employeeId}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-bold border border-green-200 mt-4 sm:mt-0">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      Active
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-sm font-medium text-gray-600 leading-normal">Zone:</span>
-                  <span className="text-base text-gray-900 leading-normal">
-                    {profile.zone || "—"}
-                  </span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between">
-                  <span className="text-sm font-medium text-gray-600 leading-normal">Current Station:</span>
-                  <span className="text-base text-gray-900 leading-normal">
-                    {profile.currentStation || "Not assigned"}
-                  </span>
+              </div>
+
+              {/* Contact Details */}
+              <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-6 lg:min-w-[350px] border border-slate-200">
+                <h4 className="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2">
+                  <EnvelopeIcon className="w-5 h-5 text-slate-600" />
+                  <span>Contact Information</span>
+                </h4>
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-2">
+                      <EnvelopeIcon className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-600">Email:</span>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900 break-all ml-2">
+                      {profile.email || "Not provided"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <PhoneIcon className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-600">Phone:</span>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {profile.phone || "Not provided"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <MapPinIcon className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-600">Zone:</span>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {profile.zone || "—"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <BuildingOfficeIcon className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-600">Station:</span>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {profile.currentStation || "Not assigned"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -204,38 +267,41 @@ export default function TTEProfilePage() {
         </div>
 
         {/* Professional Details Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Employment Details */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-            {/* Subsection Headings: 18px */}
-            <h3 className="text-lg font-semibold text-blue-800 mb-4 pb-3 border-b border-gray-200 leading-tight">
-              Employment Details
-            </h3>
-            <div className="space-y-4">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-slate-200">
+              <h3 className="text-lg font-bold text-blue-800 flex items-center space-x-2">
+                <IdentificationIcon className="w-5 h-5" />
+                <span>Employment Details</span>
+              </h3>
+            </div>
+            <div className="p-6 space-y-6">
               <div>
-                {/* Form Labels: 14px */}
-                <label className="block text-sm font-medium text-gray-600 mb-1 leading-normal">
-                  Date of Joining
-                </label>
-                {/* Body Text: 16px */}
-                <p className="text-base font-semibold text-gray-900 leading-normal">
+                <div className="flex items-center space-x-2 mb-2">
+                  <CalendarDaysIcon className="w-4 h-4 text-slate-400" />
+                  <label className="text-sm font-semibold text-slate-600">Date of Joining</label>
+                </div>
+                <p className="text-base font-bold text-slate-900 bg-slate-50 px-3 py-2 rounded-lg">
                   {formatDate(profile.dateOfJoining) || "Not available"}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1 leading-normal">
-                  Role
-                </label>
-                <p className="text-base font-semibold text-gray-900 leading-normal capitalize">
-                  {profile.role.toUpperCase() || "TTE"}
+                <div className="flex items-center space-x-2 mb-2">
+                  <UserCircleIcon className="w-4 h-4 text-slate-400" />
+                  <label className="text-sm font-semibold text-slate-600">Role</label>
+                </div>
+                <p className="text-base font-bold text-slate-900 bg-slate-50 px-3 py-2 rounded-lg uppercase">
+                  {profile.role || "TTE"}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1 leading-normal">
-                  Zone
-                </label>
-                <p className="text-base font-semibold text-gray-900 leading-normal">
+                <div className="flex items-center space-x-2 mb-2">
+                  <MapPinIcon className="w-4 h-4 text-slate-400" />
+                  <label className="text-sm font-semibold text-slate-600">Zone</label>
+                </div>
+                <p className="text-base font-bold text-slate-900 bg-slate-50 px-3 py-2 rounded-lg">
                   {profile.zone || "Not assigned"}
                 </p>
               </div>
@@ -243,187 +309,228 @@ export default function TTEProfilePage() {
           </div>
 
           {/* System Information */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-blue-800 mb-4 pb-3 border-b border-gray-200 leading-tight">
-              System Information
-            </h3>
-            <div className="space-y-4">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-slate-200">
+              <h3 className="text-lg font-bold text-green-800 flex items-center space-x-2">
+                <InformationCircleIcon className="w-5 h-5" />
+                <span>System Information</span>
+              </h3>
+            </div>
+            <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1 leading-normal">
-                  Last Login
-                </label>
-                <p className="text-base font-semibold text-gray-900 leading-normal">
+                <div className="flex items-center space-x-2 mb-2">
+                  <ClockIcon className="w-4 h-4 text-slate-400" />
+                  <label className="text-sm font-semibold text-slate-600">Last Login</label>
+                </div>
+                <p className="text-base font-bold text-slate-900 bg-slate-50 px-3 py-2 rounded-lg">
                   {formatDateTime(profile.lastLogin)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1 leading-normal">
-                  Account Status
-                </label>
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold leading-normal">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <label className="text-sm font-semibold text-slate-600 mb-2 block">Account Status</label>
+                <span className="inline-flex items-center px-4 py-2 rounded-xl bg-green-100 text-green-800 text-sm font-bold border border-green-200">
+                  <CheckCircleIcon className="w-4 h-4 mr-2" />
                   Active & Verified
                 </span>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1 leading-normal">
-                  Profile Completion
-                </label>
-                <div className="flex items-center space-x-3">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                <label className="text-sm font-semibold text-slate-600 mb-2 block">Profile Completion</label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-700">{profileCompletion}% Complete</span>
+                    <span className="text-xs text-slate-500">8/8 fields</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-3">
                     <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        profileCompletion >= 80 ? 'bg-green-500' : 
-                        profileCompletion >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                      className={`h-3 rounded-full transition-all duration-500 ${
+                        profileCompletion >= 80 ? 'bg-emerald-500' : 
+                        profileCompletion >= 50 ? 'bg-orange-500' : 
+                        'bg-red-500 '
                       }`} 
                       style={{width: `${profileCompletion}%`}}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{profileCompletion}%</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Performance Statistics */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 lg:p-8 mb-8">
-          {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
-          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
-            Performance Statistics
-          </h2>
+        {/* Enhanced Performance Statistics */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-purple-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex items-center space-x-3">
+              <ChartBarIcon className="w-8 h-8 text-purple-600" />
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-1">Performance Statistics</h2>
+                <p className="text-slate-600">Your challan issuance and collection metrics</p>
+              </div>
+            </div>
+          </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Total Challans */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
+          <div className="p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               
-              <div className="text-xl lg:text-2xl font-bold text-blue-800 leading-tight">
-                {stats?.total || 0}
+              {/* Total Challans */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-2xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <DocumentTextIcon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-blue-800 mb-2">
+                  {stats?.total || 0}
+                </div>
+                <div className="text-sm text-blue-700 font-semibold uppercase tracking-wide">
+                  Total Challans
+                </div>
               </div>
-              <div className="text-xs text-blue-700 font-semibold mt-2 uppercase tracking-wide leading-normal">
-                Total Challans
-              </div>
-            </div>
 
-            {/* Paid Challans */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              
-              <div className="text-xl lg:text-2xl font-bold text-green-800 leading-tight">
-                {stats?.paid || 0}
+              {/* Paid Challans */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-2xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <CheckCircleIcon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-green-800 mb-2">
+                  {stats?.paid || 0}
+                </div>
+                <div className="text-sm text-green-700 font-semibold uppercase tracking-wide">
+                  Paid Challans
+                </div>
               </div>
-              <div className="text-xs text-green-700 font-semibold mt-2 uppercase tracking-wide leading-normal">
-                Paid Challans
-              </div>
-            </div>
 
-            {/* Unpaid Challans */}
-            <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              
-              <div className="text-xl lg:text-2xl font-bold text-red-800 leading-tight">
-                {stats?.unpaid || 0}
+              {/* Unpaid Challans */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-2xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <XCircleIcon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-red-800 mb-2">
+                  {stats?.unpaid || 0}
+                </div>
+                <div className="text-sm text-red-700 font-semibold uppercase tracking-wide">
+                  Unpaid Challans
+                </div>
               </div>
-              <div className="text-xs text-red-700 font-semibold mt-2 uppercase tracking-wide leading-normal">
-                Unpaid Challans
-              </div>
-            </div>
 
-            {/* Recovery Rate */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="text-xl lg:text-2xl font-bold text-orange-800 leading-tight">
-                {stats?.recovery || 0}%
-              </div>
-              <div className="text-xs text-orange-700 font-semibold mt-2 uppercase tracking-wide leading-normal">
-                Recovery Rate
+              {/* Recovery Rate */}
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-2xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <CurrencyRupeeIcon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-orange-800 mb-2">
+                  {stats?.recovery || 0}%
+                </div>
+                <div className="text-sm text-orange-700 font-semibold uppercase tracking-wide">
+                  Recovery Rate
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 lg:p-8">
-          {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
-          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
-            Recent Activity
-          </h2>
+        {/* Enhanced Recent Activity */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-green-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex items-center space-x-3">
+              <ClockIcon className="w-8 h-8 text-green-600" />
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-1">Recent Activity</h2>
+                <p className="text-slate-600">Latest challans issued by you</p>
+              </div>
+            </div>
+          </div>
 
           {recentChallans.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
-                <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <DocumentTextIcon className="w-12 h-12 text-slate-400" />
               </div>
-              <p className="text-base text-gray-500 leading-normal">No recent challans found</p>
-              <p className="text-sm text-gray-400 mt-2 leading-normal">
-                Your issued challans will appear here
-              </p>
+              <h3 className="text-xl font-semibold text-slate-700 mb-2">No Recent Challans</h3>
+              <p className="text-slate-500 mb-4">You haven't issued any challans recently</p>
+              <p className="text-sm text-slate-400">Issued challans will appear here for quick access</p>
             </div>
           ) : (
             <>
-              {/* Desktop Table - Hidden on Mobile */}
+              {/* Desktop Table */}
               <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                        Challan ID
+                      <th className="text-left py-4 px-6 font-semibold text-slate-700 text-sm uppercase tracking-wider">
+                        Challan Details
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                        Passenger
+                      <th className="text-left py-4 px-6 font-semibold text-slate-700 text-sm uppercase tracking-wider">
+                        Passenger Info
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                        Train
+                      <th className="text-left py-4 px-6 font-semibold text-slate-700 text-sm uppercase tracking-wider">
+                        Train & Coach
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
+                      <th className="text-left py-4 px-6 font-semibold text-slate-700 text-sm uppercase tracking-wider">
                         Offense
                       </th>
-                      <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
+                      <th className="text-center py-4 px-6 font-semibold text-slate-700 text-sm uppercase tracking-wider">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
+                      <th className="text-center py-4 px-6 font-semibold text-slate-700 text-sm uppercase tracking-wider">
                         Status
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-slate-100">
                     {recentChallans.map((challan) => (
-                      <tr key={challan._id} className="hover:bg-blue-50 transition-colors duration-200">
-                        <td className="px-6 py-4 whitespace-nowrap text-base font-mono text-gray-900 leading-normal">
-                          #{challan._id.slice(-8).toUpperCase()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 leading-normal">
+                      <tr key={challan._id} className="hover:bg-slate-50/50 transition-colors duration-200">
+                        <td className="py-4 px-6">
                           <div>
-                            <div className="font-semibold">{challan.passengerName}</div>
+                            <p className="font-mono font-semibold text-slate-900">
+                              #{challan._id.slice(-8).toUpperCase()}
+                            </p>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <CalendarDaysIcon className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm text-slate-500">
+                                {new Date(challan.issuedAt || challan.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div>
+                            <p className="font-semibold text-slate-900">{challan.passengerName}</p>
                             {challan.passengerAadharLast4 && (
-                              <div className="text-sm text-gray-500">****{challan.passengerAadharLast4}</div>
+                              <p className="text-sm text-slate-500 font-mono">****{challan.passengerAadharLast4}</p>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-base font-semibold text-gray-900 leading-normal">
-                          <div>
-                            <div>{challan.trainNumber}</div>
-                            {challan.coachNumber && (
-                              <div className="text-sm text-gray-500">Coach: {challan.coachNumber}</div>
-                            )}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center space-x-2">
+                            <TrainIcon className="w-4 h-4 text-slate-400" />
+                            <div>
+                              <p className="font-semibold text-slate-900">{challan.trainNumber}</p>
+                              {challan.coachNumber && (
+                                <p className="text-sm text-slate-500">Coach: {challan.coachNumber}</p>
+                              )}
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-base text-gray-900 leading-normal">
-                          <div className="max-w-xs truncate" title={challan.reason}>
+                        <td className="py-4 px-6">
+                          <p className="text-sm text-slate-900 max-w-xs truncate" title={challan.reason}>
                             {challan.reason}
+                          </p>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <div className="flex items-center justify-center space-x-1">
+                            <CurrencyRupeeIcon className="w-4 h-4 text-green-600" />
+                            <span className="font-bold text-green-600">
+                              {challan.fineAmount?.toLocaleString()}
+                            </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-base font-bold text-gray-900 leading-normal">
-                          ₹{challan.fineAmount?.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center leading-normal">
+                        <td className="py-4 px-6 text-center">
                           {challan.paid ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
-                              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-bold border border-green-200">
+                              <CheckCircleIcon className="w-4 h-4 mr-1" />
                               Paid
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-semibold">
-                              <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-bold border border-red-200">
+                              <XCircleIcon className="w-4 h-4 mr-1" />
                               Unpaid
                             </span>
                           )}
@@ -434,67 +541,73 @@ export default function TTEProfilePage() {
                 </table>
               </div>
 
-              {/* Mobile Card View - Visible on Mobile */}
-              <div className="lg:hidden space-y-4">
+              {/* Mobile Card View */}
+              <div className="lg:hidden p-6 space-y-4">
                 {recentChallans.map((challan) => (
-                  <div key={challan._id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <div className="flex justify-between items-start mb-3">
+                  <div key={challan._id} className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-6 border border-slate-200 hover:shadow-lg transition-all duration-300">
+                    
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className="text-xs text-gray-500 leading-normal">Challan ID</p>
-                        <p className="text-sm font-mono font-semibold text-gray-900 leading-normal">
+                        <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Challan ID</p>
+                        <p className="font-mono font-bold text-slate-900">
                           #{challan._id.slice(-8).toUpperCase()}
                         </p>
                       </div>
                       <div className="text-right">
                         {challan.paid ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold">
+                            <CheckCircleIcon className="w-3 h-3 mr-1" />
                             Paid
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold">
+                            <XCircleIcon className="w-3 h-3 mr-1" />
                             Unpaid
                           </span>
                         )}
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-xs text-gray-500 leading-normal">Passenger</p>
-                        <p className="text-sm font-semibold text-gray-900 leading-normal">
-                          {challan.passengerName}
-                        </p>
+                        <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Passenger</p>
+                        <p className="font-semibold text-slate-900">{challan.passengerName}</p>
                         {challan.passengerAadharLast4 && (
-                          <p className="text-xs text-gray-500">****{challan.passengerAadharLast4}</p>
+                          <p className="text-xs text-slate-500 font-mono">****{challan.passengerAadharLast4}</p>
                         )}
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 leading-normal">Train</p>
-                        <p className="text-sm font-semibold text-gray-900 leading-normal">
-                          {challan.trainNumber}
-                        </p>
+                        <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Train</p>
+                        <p className="font-semibold text-slate-900">{challan.trainNumber}</p>
                         {challan.coachNumber && (
-                          <p className="text-xs text-gray-500">Coach: {challan.coachNumber}</p>
+                          <p className="text-xs text-slate-500">Coach: {challan.coachNumber}</p>
                         )}
                       </div>
-                      <div className="col-span-2">
-                        <p className="text-xs text-gray-500 leading-normal">Offense</p>
-                        <p className="text-sm text-gray-900 leading-normal">
-                          {challan.reason}
-                        </p>
+                    </div>
+                    
+                    <div className="border-t border-slate-200 pt-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Fine Amount</p>
+                          <div className="flex items-center space-x-1">
+                            <CurrencyRupeeIcon className="w-4 h-4 text-green-600" />
+                            <span className="font-bold text-green-600">
+                              {challan.fineAmount?.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Payment Mode</p>
+                          <p className="text-sm font-semibold text-slate-900 capitalize">
+                            {challan.paymentMode}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-500 leading-normal">Fine Amount</p>
-                        <p className="text-sm font-bold text-gray-900 leading-normal">
-                          ₹{challan.fineAmount?.toLocaleString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 leading-normal">Payment Mode</p>
-                        <p className="text-sm text-gray-900 leading-normal capitalize">
-                          {challan.paymentMode}
-                        </p>
-                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-slate-200">
+                      <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold mb-1">Offense</p>
+                      <p className="text-sm text-slate-900">{challan.reason}</p>
                     </div>
                   </div>
                 ))}

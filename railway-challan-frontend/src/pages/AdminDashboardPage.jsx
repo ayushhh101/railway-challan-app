@@ -3,7 +3,13 @@ import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
-import { UserPlusIcon, BugAntIcon, ClipboardDocumentListIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import {
+  UserPlusIcon,
+  BugAntIcon,
+  ClipboardDocumentListIcon,
+  DocumentArrowDownIcon,
+  ChartBarIcon,
+} from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 //for bulk download
@@ -173,35 +179,47 @@ const AdminDashboardPage = () => {
 
   if (dashboardLoading) {
     return (
-      <div 
-        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
-        style={{ fontFamily: 'Inter, sans-serif' }}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-base text-gray-600 leading-normal">Loading dashboard...</p>
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-slate-700">Loading Dashboard...</p>
+          <p className="text-sm text-slate-500 mt-1">Fetching latest data</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen bg-gray-50 px-4 py-6 lg:px-8 lg:py-8"
-      style={{ fontFamily: 'Inter, sans-serif' }}
-    >
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Page Header */}
-        <div className="text-center lg:text-left">
-          {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
-          <h1 className="text-2xl lg:text-4xl font-bold text-blue-800 leading-tight mb-2">
-            Railway Admin Dashboard
-          </h1>
-          {/* Secondary Text: 14px */}
-          <p className="text-sm text-gray-600 leading-normal">
-            Comprehensive overview and management of the railway challan system
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style={{ fontFamily: 'Inter, sans-serif' }}>
+
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-xl lg:text-3xl font-black  mb-3">
+                Railway Admin Dashboard
+              </h1>
+              <p className="text-lg text-blue-100 font-medium max-w-2xl">
+                Comprehensive oversight and management of the railway challan system with real-time analytics
+              </p>
+            </div>
+
+            <div className="mt-6 lg:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/20">
+                <div className="text-center">
+                  <p className="text-blue-100 text-sm font-medium">System Status</p>
+                  <div className="flex items-center justify-center mt-2">
+                    <div className="w-3 h-3 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                    <span className="text-white font-semibold">All Systems Operational</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 space-y-8">
 
         <AddUserModal
           isOpen={showAddUser}
@@ -211,138 +229,183 @@ const AdminDashboardPage = () => {
           }}
         />
 
-        {/* Summary Statistics */}
-        <SummaryCard stats={stats} loading={dashboardLoading} error={error} />
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 rounded-3xl"></div>
+          <div className="relative">
+            <SummaryCard stats={stats} loading={dashboardLoading} error={error} />
+          </div>
+        </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
-          {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
-          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 pb-3 border-b-2 border-blue-100 leading-tight">
-            Administrative Actions
-          </h2>
-          {/* Secondary Text: 14px */}
-          <p className="text-sm text-gray-600 leading-normal mb-6">
-            Quick access to essential administrative functions and system management tools
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link to="/anomalies" className="group">
-              <div className="w-full bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-2 border-red-200 rounded-2xl p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                    <BugAntIcon className="w-7 h-7 text-white" />
-                  </div>
-                  {/* Buttons/CTAs: 16px */}
-                  <h3 className="text-base font-semibold text-red-800 leading-normal mb-2">
-                    Anomalies
-                  </h3>
-                  {/* Small Text: 12px */}
-                  <p className="text-xs text-red-700 leading-normal">
-                    View suspicious activities
-                  </p>
-                </div>
-              </div>
-            </Link>
-            
-            <Link to="/audit-log" className="group">
-              <div className="w-full bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-2 border-blue-200 rounded-2xl p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                    <ClipboardDocumentListIcon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-base font-semibold text-blue-800 leading-normal mb-2">
-                    Audit Log
-                  </h3>
-                  <p className="text-xs text-blue-700 leading-normal">
-                    System activities
-                  </p>
-                </div>
-              </div>
-            </Link>
-            
-            <button
-              onClick={() => setShowAddUser(true)}
-              className="w-full bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border-2 border-green-200 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-105"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                  <UserPlusIcon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-base font-semibold text-green-800 leading-normal mb-2">
-                  Add User
-                </h3>
-                <p className="text-xs text-green-700 leading-normal">
-                  Create Admin/TTE
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                  Administrative Hub
+                </h2>
+                <p className="text-slate-600">
+                  Access essential tools and system management functions
                 </p>
               </div>
-            </button>
-
-            <Link to='/monthly-report' className="group">
-              <div className="w-full bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border-2 border-purple-200 rounded-2xl p-6 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-14 h-14 bg-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                    <DocumentArrowDownIcon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-base font-semibold text-purple-800 leading-normal mb-2">
-                    Reports
-                  </h3>
-                  <p className="text-xs text-purple-700 leading-normal">
-                    Monthly analytics
-                  </p>
+              <div className="hidden lg:block">
+                <div className="flex items-center space-x-2 text-sm text-slate-500">
+                  <ChartBarIcon className="w-5 h-5" />
+                  <span>4 Quick Actions Available</span>
                 </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Challan Management */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
-          <div className="mb-6">
-            <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight mb-2">
-              Challan Search & Management
-            </h2>
-            <p className="text-sm text-gray-600 leading-normal">
-              Search, filter, and manage challan records with advanced filtering options
-            </p>
-          </div>
-          
-          <ChallanFilters
-            filters={filters}
-            setFilters={setFilters}
-            handleFilter={handleFilter}
-            clearFilters={clearFilters}
-            viewType={viewType}
-            setViewType={setViewType}
-          />
-
-          {/* Export Selected Panel */}
-          {selectedChallans.length > 0 && (
-            <div className="mt-6 p-6 bg-blue-50 rounded-2xl border border-blue-200">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  {/* Body Text: 16px */}
-                  <p className="text-base font-semibold text-blue-800 leading-normal">
-                    {selectedChallans.length} challan(s) selected
-                  </p>
-                  {/* Secondary Text: 14px */}
-                  <p className="text-sm text-blue-600 leading-normal">
-                    Ready for bulk operations and export
-                  </p>
-                </div>
-                {/* Buttons/CTAs: 16px */}
-                <button
-                  onClick={handleSelectedExport}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center space-x-2"
-                >
-                  <DocumentArrowDownIcon className="h-5 w-5" />
-                  <span>Export Selected</span>
-                </button>
               </div>
             </div>
-          )}
+          </div>
+
+          <div className="p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              <Link to="/anomalies" className="group relative overflow-hidden">
+                <div className="h-full bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-2 border-red-200/50 hover:border-red-300 rounded-2xl p-6 transform hover:scale-101 transition-all duration-100 hover:shadow-xl">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-full -mr-10 -mt-10"></div>
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl">
+                      <BugAntIcon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-red-900 mb-2">
+                      System Anomalies
+                    </h3>
+                    <p className="text-sm text-red-700 leading-relaxed">
+                      Monitor suspicious activities and security threats
+                    </p>
+                    <div className="mt-4 flex items-center text-red-600">
+                      <span className="text-xs font-semibold">View Details</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <Link to="/audit-log" className="group relative overflow-hidden">
+                <div className="h-full bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-2 border-blue-200/50 hover:border-blue-300 rounded-2xl p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10"></div>
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl">
+                      <ClipboardDocumentListIcon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-blue-900 mb-2">
+                      Audit Trail
+                    </h3>
+                    <p className="text-sm text-blue-700 leading-relaxed">
+                      Complete log of system activities and changes
+                    </p>
+                    <div className="mt-4 flex items-center text-blue-600">
+                      <span className="text-xs font-semibold">View Logs</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <button
+                onClick={() => setShowAddUser(true)}
+                className="group relative overflow-hidden h-full text-left"
+              >
+                <div className="h-full bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border-2 border-emerald-200/50 hover:border-emerald-300 rounded-2xl p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 rounded-full -mr-10 -mt-10"></div>
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl">
+                      <UserPlusIcon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-emerald-900 mb-2">
+                      User Management
+                    </h3>
+                    <p className="text-sm text-emerald-700 leading-relaxed">
+                      Create and manage admin and TTE accounts
+                    </p>
+                    <div className="mt-4 flex items-center text-emerald-600">
+                      <span className="text-xs font-semibold">Add User</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <Link to='/monthly-report' className="group relative overflow-hidden">
+                <div className="h-full bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border-2 border-purple-200/50 hover:border-purple-300 rounded-2xl p-6 transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full -mr-10 -mt-10"></div>
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl">
+                      <DocumentArrowDownIcon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-purple-900 mb-2">
+                      Analytics Reports
+                    </h3>
+                    <p className="text-sm text-purple-700 leading-relaxed">
+                      Generate comprehensive monthly reports
+                    </p>
+                    <div className="mt-4 flex items-center text-purple-600">
+                      <span className="text-xs font-semibold">Generate</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* Challan List Results */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                  Challan Search & Management
+                </h2>
+                <p className="text-sm text-slate-600">
+                  Advanced search, filtering, and bulk operations for challan records
+                </p>
+              </div>
+              <div className="mt-4 lg:mt-0 flex items-center space-x-4">
+                <div className="flex items-center space-x-2 px-3 py-2 bg-white rounded-lg border border-slate-200">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-slate-700 animate-pulse">Live Data</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8">
+            <ChallanFilters
+              filters={filters}
+              setFilters={setFilters}
+              handleFilter={handleFilter}
+              clearFilters={clearFilters}
+              viewType={viewType}
+              setViewType={setViewType}
+            />
+
+            {selectedChallans.length > 0 && (
+              <div className="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200/50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-blue-900">
+                        {selectedChallans.length} Records Selected
+                      </p>
+                      <p className="text-sm text-blue-600">
+                        Ready for export and bulk operations
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSelectedExport}
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold text-sm transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                  >
+                    <DocumentArrowDownIcon className="h-5 w-5" />
+                    <span>Export Selected</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <ChallanList
           filteredChallans={filteredChallans}
           selectedChallans={selectedChallans}
@@ -360,52 +423,63 @@ const AdminDashboardPage = () => {
           downloadingId={downloadingId}
         />
 
-        {/* Data Visualization */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-            <div>
-              <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight mb-2">
-                Analytics & Insights
-              </h2>
-              <p className="text-sm text-gray-600 leading-normal">
-                Visual representation of challan data and performance metrics
-              </p>
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-black mb-2">
+                  Analytics & Business Intelligence
+                </h2>
+                <p className="text-sm text-slate-600">
+                  Real-time insights and performance metrics with interactive visualizations
+                </p>
+              </div>
+
+              <button
+                className="bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg text-sm transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-4 lg:mt-0 flex items-center space-x-2"
+                onClick={() => {
+                  toast.success("Advanced analytics export coming soon!");
+                }}
+              >
+                <ChartBarIcon className="w-5 h-5" />
+                <span>Export Analytics</span>
+              </button>
             </div>
-            
-            <button
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-4 lg:mt-0 leading-normal flex items-center space-x-2"
-              onClick={() => {
-                toast.success("Analytics export feature coming soon!");
-              }}
-            >
-              <DocumentArrowDownIcon className="w-5 h-5" />
-              <span>Export Analytics</span>
-            </button>
           </div>
 
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ChallansByReasonChart 
-              data={stats?.challansByReason} 
-              stats={stats} 
-              loading={dashboardLoading} 
-              error={error} 
-            />
-            <MonthlyTrendChart 
-              trend={stats?.monthlyTrend} 
-              loading={dashboardLoading} 
-              error={error} 
-            />
-            <TopTTEBarChart 
-              stats={stats} 
-              loading={dashboardLoading} 
-              error={error} 
-            />
-            <ChallanHeatmap 
-              challansByLocation={challansByLocation} 
-              loading={dashboardLoading} 
-              error={error} 
-            />
+          <div className="p-8">
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 border border-slate-200/50 shadow-sm">
+                <ChallansByReasonChart
+                  data={stats?.challansByReason}
+                  stats={stats}
+                  loading={dashboardLoading}
+                  error={error}
+                />
+              </div>
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 border border-slate-200/50 shadow-sm">
+                <MonthlyTrendChart
+                  trend={stats?.monthlyTrend}
+                  loading={dashboardLoading}
+                  error={error}
+                />
+              </div>
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 border border-slate-200/50 shadow-sm">
+                <TopTTEBarChart
+                  stats={stats}
+                  loading={dashboardLoading}
+                  error={error}
+                />
+              </div>
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 border border-slate-200/50 shadow-sm">
+                <ChallanHeatmap
+                  challansByLocation={challansByLocation}
+                  loading={dashboardLoading}
+                  error={error}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

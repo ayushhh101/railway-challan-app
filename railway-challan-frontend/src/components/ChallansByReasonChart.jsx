@@ -59,19 +59,15 @@ const ChallansByReasonChart = ({ data, stats, error, loading }) => {
       className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200 h-[350px] sm:h-[400px] flex flex-col"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      {/* Chart Header */}
       <div className="mb-4">
-        {/* Subsection Headings: 18px */}
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight mb-2">
+        <h3 className="text-xl font-semibold text-gray-900 leading-tight mb-2">
           Challans by Offense Type
         </h3>
-        {/* Secondary Text: 14px */}
         <p className="text-sm text-gray-600 leading-normal">
           Distribution across offense categories
         </p>
       </div>
       
-      {/* Chart Container */}
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

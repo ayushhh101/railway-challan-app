@@ -1,16 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { CalendarIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { 
+  CalendarIcon, 
+  ExclamationTriangleIcon, 
+  ShieldCheckIcon, 
+  XMarkIcon,
+  ArrowPathIcon,
+  MagnifyingGlassIcon
+} from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 
 const TABS = [
-  { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Resolved', value: 'resolved' },
-  { label: 'Dismissed', value: 'dismissed' }
+  { label: 'All', value: 'all', icon: MagnifyingGlassIcon, color: 'slate' },
+  { label: 'Pending', value: 'pending', icon: ExclamationTriangleIcon, color: 'yellow' },
+  { label: 'Resolved', value: 'resolved', icon: ShieldCheckIcon, color: 'green' },
+  { label: 'Dismissed', value: 'dismissed', icon: XMarkIcon, color: 'gray' }
 ];
 
+//TODO:change stuff here boxes here
 const AdminAnomalies = () => {
   const [anomalies, setAnomalies] = useState([]);
   const { user } = useAuth();
@@ -71,7 +79,7 @@ const AdminAnomalies = () => {
   }, [anomalies, activeTab, page]);
 
   const handleUpdateAnomaly = async (anomalyId, newStatus) => {
-    if (updatingId === anomalyId) return; // Prevent double clicks
+    if (updatingId === anomalyId) return;
 
     setUpdatingId(anomalyId);
     const toastId = toast.loading(`Updating anomaly to ${newStatus}...`);
@@ -82,10 +90,9 @@ const AdminAnomalies = () => {
         throw new Error('No authentication token found');
       }
 
-      // Make the API call with status in URL params as originally intended
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/admin/anomalies/${anomalyId}/${newStatus}`,
-        {}, // Empty body
+        {},
         {
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -94,13 +101,11 @@ const AdminAnomalies = () => {
         }
       );
 
-      // Update local state
       const updatedAnomalies = anomalies.map(anomaly =>
         anomaly._id === anomalyId ? { ...anomaly, status: newStatus } : anomaly
       );
       setAnomalies(updatedAnomalies);
       
-      // Reset page if needed
       const currentTabFiltered = activeTab === 'all' ? updatedAnomalies : updatedAnomalies.filter(a => a.status === activeTab);
       const newTotalPages = Math.ceil(currentTabFiltered.length / itemsPerPage);
       if (page > newTotalPages && newTotalPages > 0) {
@@ -118,7 +123,6 @@ const AdminAnomalies = () => {
     }
   };
 
-  // Retry function for error state
   const handleRetry = () => {
     fetchAnomalies();
   };
@@ -126,18 +130,18 @@ const AdminAnomalies = () => {
   if (loading) {
     return (
       <div 
-        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
+        className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </div>
-          {/* Body Text: 16px */}
-          <p className="text-base text-gray-600 leading-normal">Loading anomalies...</p>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Loading Security Anomalies</h3>
+          <p className="text-base text-slate-600">Scanning for suspicious activities...</p>
         </div>
       </div>
     );
@@ -146,23 +150,23 @@ const AdminAnomalies = () => {
   if (error && anomalies.length === 0) {
     return (
       <div 
-        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
+        className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <div className="text-center max-w-md mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-8">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+          <div className="bg-white rounded-3xl shadow-xl border border-red-200/50 p-8">
+            <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <ExclamationTriangleIcon className="h-10 w-10 text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-red-800 mb-2 leading-tight">
-              Failed to Load Anomalies
+            <h3 className="text-xl font-bold text-red-800 mb-2">
+              Failed to Load Security Data
             </h3>
-            <p className="text-base text-red-700 leading-normal mb-4">{error}</p>
+            <p className="text-base text-red-700 mb-6">{error}</p>
             <button
               onClick={handleRetry}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal"
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-xl font-bold transform hover:scale-105 transition-all duration-200 shadow-lg"
             >
-              Try Again
+              Retry Connection
             </button>
           </div>
         </div>
@@ -172,300 +176,349 @@ const AdminAnomalies = () => {
   
   return (
     <div 
-      className="min-h-screen bg-gray-50 px-4 py-6 lg:px-8 lg:py-8"
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Page Header */}
-        <div className="mb-8">
-          {/* Page Title: Mobile 24-28px, Desktop 32-36px */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      {/* Enhanced Header Section */}
+      <div className="bg-gradient-to-r from-red-900 via-red-800 to-pink-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-2xl lg:text-4xl font-bold text-blue-800 leading-tight mb-2">
-                Anomaly Management
+              <h1 className="text-3xl lg:text-4xl font-black mb-3">
+                Security Anomaly Center
               </h1>
-              {/* Secondary Text: 14px */}
-              <p className="text-sm text-gray-600 leading-normal">
-                Monitor and manage system-detected anomalies and suspicious activities
+              <p className="text-lg text-red-100 font-medium max-w-2xl">
+                Monitor, investigate, and resolve system-detected anomalies and suspicious activities
               </p>
             </div>
             
-            {/* Refresh Button */}
-            <button
-              onClick={fetchAnomalies}
-              disabled={loading}
-              className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center space-x-2"
-            >
-              <svg className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>Refresh</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 overflow-x-auto">
-              {TABS.map(tab => (
-                <button
-                  key={tab.value}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base leading-normal transition-colors duration-200 ${
-                    activeTab === tab.value
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                  onClick={() => {
-                    setActiveTab(tab.value);
-                    setPage(1);
-                  }}
-                >
-                  {tab.label}
-                  <span className={`ml-2 font-semibold rounded-full py-1 px-3 text-xs ${
-                    activeTab === tab.value
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {tabCounts[tab.value]}
-                  </span>
-                </button>
-              ))}
-            </nav>
-          </div>
-        </div>
-
-        {/* Anomalies List */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
-          <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 mb-6 leading-tight">
-            {activeTab === 'all' ? 'All Anomalies' : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Anomalies`}
-          </h2>
-
-          {filteredAnomalies.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ExclamationTriangleIcon className="h-8 w-8 text-gray-400" />
-              </div>
-              {/* Body Text: 16px */}
-              <p className="text-base text-gray-500 leading-normal">
-                {activeTab === 'all' ? "No anomalies detected." : `No ${activeTab} anomalies.`}
-              </p>
-              {/* Secondary Text: 14px */}
-              <p className="text-sm text-gray-400 mt-2 leading-normal">
-                The system will display anomalies here when they are detected
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {filteredAnomalies.map(anomal => (
-                <div
-                  key={anomal._id}
-                  className="relative bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-200"
-                >
-                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                    
-                    {/* Anomaly Icon */}
-                    <div className="flex-shrink-0">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        anomal.status === 'pending' 
-                          ? 'bg-red-100 border border-red-200'
-                          : anomal.status === 'resolved'
-                          ? 'bg-green-100 border border-green-200'
-                          : 'bg-gray-100 border border-gray-200'
-                      }`}>
-                        <ExclamationTriangleIcon className={`h-6 w-6 ${
-                          anomal.status === 'pending' 
-                            ? 'text-red-600'
-                            : anomal.status === 'resolved'
-                            ? 'text-green-600'
-                            : 'text-gray-600'
-                        }`} />
-                      </div>
-                    </div>
-
-                    {/* Anomaly Details */}
-                    <div className="flex-1 min-w-0">
-                      
-                      {/* Message and Status */}
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
-                        <div className="flex-1">
-                          {/* Body Text: 16px */}
-                          <h3 className="text-base font-semibold text-gray-900 leading-normal mb-2">
-                            {anomal.message}
-                          </h3>
-                        </div>
-                        
-                        {/* Status Badge */}
-                        <div className="mt-2 sm:mt-0 sm:ml-4">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold leading-normal ${
-                            anomal.status === "pending" 
-                              ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                              : anomal.status === "resolved"
-                              ? 'bg-green-100 text-green-800 border border-green-200'
-                              : 'bg-gray-100 text-gray-700 border border-gray-200'
-                          }`}>
-                            {anomal.status.charAt(0).toUpperCase() + anomal.status.slice(1)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Metadata */}
-                      <div className="space-y-2">
-                        {anomal.user && (anomal.user._id || anomal.user.name) && (
-                          <div className="flex flex-wrap items-center">
-                            {/* Form Labels: 14px */}
-                            <span className="text-sm font-medium text-gray-600 mr-2 leading-normal">
-                              Issued By:
-                            </span>
-                            {/* Body Text: 16px */}
-                            <span className="text-base text-gray-900 leading-normal">
-                              {anomal.user.name || 'Unknown User'} 
-                              {anomal.user._id && anomal.user._id !== anomal.user.name && (
-                                <span className="text-gray-500"> ({anomal.user._id})</span>
-                              )}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0">
-                          {/* Created Date */}
-                          <div className="flex items-center">
-                            <CalendarIcon className="h-4 w-4 text-gray-400 mr-2" />
-                            {/* Small Text: 12px */}
-                            <span className="text-xs text-gray-500 leading-normal">
-                              Created on {new Date(anomal.createdAt).toLocaleString('en-GB', {
-                                day: "2-digit",
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
-
-                          {/* Related Challan */}
-                          {anomal.challan?._id && (
-                            <div>
-                              <span className="text-xs text-gray-500 leading-normal">
-                                Related Challan:{' '}
-                                <a
-                                  href={`/challans/${anomal.challan._id}`}
-                                  className="text-blue-600 hover:text-blue-800 underline font-medium"
-                                >
-                                  {anomal.challan.code || anomal.challan._id.slice(-8)}
-                                </a>
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex-shrink-0">
-                      {anomal.status === "pending" && (
-                        <div className="flex flex-row lg:flex-col gap-3">
-                          {/* Buttons/CTAs: 16px */}
-                          <button
-                            onClick={() => handleUpdateAnomaly(anomal._id, "resolved")}
-                            disabled={updatingId === anomal._id}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg px-6 py-3 text-base font-semibold shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center space-x-2"
-                            aria-label="Resolve Anomaly"
-                          >
-                            {updatingId === anomal._id ? (
-                              <>
-                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span>Resolving...</span>
-                              </>
-                            ) : (
-                              <span>Resolve</span>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => handleUpdateAnomaly(anomal._id, "dismissed")}
-                            disabled={updatingId === anomal._id}
-                            className="bg-red-50 hover:bg-red-100 disabled:bg-red-25 text-red-600 border border-red-200 rounded-lg px-6 py-3 text-base font-medium shadow-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 leading-normal"
-                            aria-label="Dismiss Anomaly"
-                          >
-                            {updatingId === anomal._id ? 'Dismissing...' : 'Dismiss'}
-                          </button>
-                        </div>
-                      )}
-                      {anomal.status !== "pending" && (
-                        <button
-                          className="bg-gray-100 text-gray-500 rounded-lg px-6 py-3 text-base font-medium shadow cursor-not-allowed leading-normal"
-                          disabled
-                        >
-                          {anomal.status.charAt(0).toUpperCase() + anomal.status.slice(1)}
-                        </button>
-                      )}
+            <div className="mt-6 lg:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={fetchAnomalies}
+                    disabled={loading}
+                    className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/50 flex items-center space-x-2 border border-white/20"
+                  >
+                    <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <span>Refresh Data</span>
+                  </button>
+                  <div className="text-center">
+                    <p className="text-red-100 text-sm font-medium">System Status</p>
+                    <div className="flex items-center justify-center mt-1">
+                      <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                      <span className="text-white font-semibold text-sm">Monitoring Active</span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-200 space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 leading-normal">
-                  Page {page} of {totalPages} ({filteredAnomalies.length} results)
-                </span>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  Previous
-                </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = i + 1;
-                  } else if (page <= 3) {
-                    pageNumber = i + 1;
-                  } else if (page >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + i;
-                  } else {
-                    pageNumber = page - 2 + i;
+      <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 space-y-8">
+
+        {/* Enhanced Tab Navigation */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-red-50 px-8 py-6 border-b border-slate-200">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              Anomaly Classification
+            </h2>
+            <p className="text-slate-600">
+              Filter and manage anomalies by their current status and priority level
+            </p>
+          </div>
+          
+          <div className="p-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {TABS.map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    className={`relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300 transform hover:scale-105 ${
+                      isActive
+                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl'
+                        : 'bg-gradient-to-br from-white to-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-lg'
+                    }`}
+                    onClick={() => {
+                      setActiveTab(tab.value);
+                      setPage(1);
+                    }}
+                  >
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                    <div className="relative flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Icon className="w-5 h-5" />
+                          <span className="font-semibold">{tab.label}</span>
+                        </div>
+                        <div className={`text-2xl font-black ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                          {tabCounts[tab.value]}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Anomalies List */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-red-50 px-8 py-6 border-b border-slate-200">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              {activeTab === 'all' ? 'All Security Anomalies' : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Anomalies`}
+            </h2>
+            <p className="text-slate-600">
+              Detailed view of system-detected anomalies requiring administrative attention
+            </p>
+          </div>
+
+          <div className="p-8">
+            {filteredAnomalies.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <ExclamationTriangleIcon className="h-10 w-10 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  {activeTab === 'all' ? "No Security Anomalies Detected" : `No ${activeTab} Anomalies Found`}
+                </h3>
+                <p className="text-base text-slate-500 mb-4">
+                  {activeTab === 'pending' 
+                    ? "All anomalies have been reviewed. Great job keeping the system secure!"
+                    : "The security monitoring system will display anomalies here when they are detected"
                   }
-                  
-                  return (
-                    <button
-                      key={pageNumber}
-                      className={`w-10 h-10 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                        page === pageNumber
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                      onClick={() => setPage(pageNumber)}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  Next
-                </button>
+                </p>
+                <div className="flex items-center justify-center space-x-2 text-sm text-slate-400">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>System monitoring active</span>
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="space-y-6">
+                {filteredAnomalies.map(anomal => (
+                  <div
+                    key={anomal._id}
+                    className="relative bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200/50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:border-slate-300/50"
+                  >
+                    <div className="flex flex-col xl:flex-row xl:items-start gap-6">
+                      
+                      {/* Enhanced Anomaly Icon */}
+                      <div className="flex-shrink-0">
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
+                          anomal.status === 'pending' 
+                            ? 'bg-gradient-to-br from-red-500 to-red-600 text-white'
+                            : anomal.status === 'resolved'
+                            ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
+                            : 'bg-gradient-to-br from-gray-400 to-gray-500 text-white'
+                        }`}>
+                          <ExclamationTriangleIcon className="h-8 w-8" />
+                        </div>
+                      </div>
+
+                      {/* Enhanced Anomaly Details */}
+                      <div className="flex-1 min-w-0">
+                        
+                        {/* Message and Status */}
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">
+                              Security Alert: {anomal.message}
+                            </h3>
+                          </div>
+                          
+                          {/* Enhanced Status Badge */}
+                          <div className="mt-2 lg:mt-0 lg:ml-6">
+                            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold shadow-lg ${
+                              anomal.status === "pending" 
+                                ? 'bg-yellow-400 text-white'
+                                : anomal.status === "resolved"
+                                ? 'bg-green-400  text-white'
+                                : 'bg-gray-400  text-white'
+                            }`}>
+                              {anomal.status.charAt(0).toUpperCase() + anomal.status.slice(1)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Enhanced Metadata */}
+                        <div className="bg-slate-50 rounded-xl p-4 space-y-3 mb-6">
+                          {anomal.user && (anomal.user._id || anomal.user.name) && (
+                            <div className="flex flex-wrap items-center">
+                              <span className="text-sm font-semibold text-slate-600 mr-3">
+                                Reported By:
+                              </span>
+                              <span className="text-base font-medium text-slate-900">
+                                {anomal.user.name || 'Unknown User'} 
+                                {anomal.user._id && anomal.user._id !== anomal.user.name && (
+                                  <span className="text-slate-500 ml-2">({anomal.user._id})</span>
+                                )}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-8 space-y-2 sm:space-y-0">
+                            {/* Enhanced Created Date */}
+                            <div className="flex items-center">
+                              <CalendarIcon className="h-5 w-5 text-slate-400 mr-2" />
+                              <span className="text-sm font-medium text-slate-600">
+                                Detected: {new Date(anomal.createdAt).toLocaleString('en-GB', {
+                                  day: "2-digit",
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+
+                            {/* Enhanced Related Challan */}
+                            {anomal.challan?._id && (
+                              <div className="flex items-center">
+                                <span className="text-sm font-medium text-slate-600 mr-2">
+                                  Related Case:
+                                </span>
+                                <a
+                                  href={`/challans/${anomal.challan._id}`}
+                                  className="text-blue-600 hover:text-blue-800 font-semibold text-sm underline decoration-2 underline-offset-2 transition-colors duration-200"
+                                >
+                                  #{anomal.challan.code || anomal.challan._id.slice(-8).toUpperCase()}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Enhanced Action Buttons */}
+                      <div className="flex-shrink-0">
+                        {anomal.status === "pending" && (
+                          <div className="flex flex-col gap-3">
+                            <button
+                              onClick={() => handleUpdateAnomaly(anomal._id, "resolved")}
+                              disabled={updatingId === anomal._id}
+                              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-400 text-white rounded-xl px-8 py-4 text-base font-bold shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-105 disabled:transform-none flex items-center justify-center space-x-2 min-w-[140px]"
+                              aria-label="Resolve Anomaly"
+                            >
+                              {updatingId === anomal._id ? (
+                                <>
+                                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <span>Resolving...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ShieldCheckIcon className="h-5 w-5" />
+                                  <span>Resolve</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleUpdateAnomaly(anomal._id, "dismissed")}
+                              disabled={updatingId === anomal._id}
+                              className="bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 disabled:from-red-25 disabled:to-red-50 text-red-600 border-2 border-red-200 rounded-xl px-8 py-4 text-base font-bold shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:scale-105 disabled:transform-none flex items-center justify-center space-x-2 min-w-[140px]"
+                              aria-label="Dismiss Anomaly"
+                            >
+                              {updatingId === anomal._id ? (
+                                <>
+                                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <span>Dismissing...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <XMarkIcon className="h-5 w-5" />
+                                  <span>Dismiss</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                        {anomal.status !== "pending" && (
+                          <div className="bg-slate-100 text-slate-500 rounded-xl px-8 py-4 text-base font-bold shadow cursor-not-allowed min-w-[140px] text-center">
+                            <div className="flex items-center justify-center space-x-2">
+                              {anomal.status === 'resolved' ? (
+                                <ShieldCheckIcon className="h-5 w-5" />
+                              ) : (
+                                <XMarkIcon className="h-5 w-5" />
+                              )}
+                              <span>{anomal.status.charAt(0).toUpperCase() + anomal.status.slice(1)}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Enhanced Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-12 pt-8 border-t border-slate-200 space-y-4 sm:space-y-0">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-slate-600">
+                    Page {page} of {totalPages} • {filteredAnomalies.length} results
+                  </span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    className="px-6 py-3 text-sm font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-lg"
+                  >
+                    Previous
+                  </button>
+
+                  <div className="flex space-x-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNumber;
+                      if (totalPages <= 5) {
+                        pageNumber = i + 1;
+                      } else if (page <= 3) {
+                        pageNumber = i + 1;
+                      } else if (page >= totalPages - 2) {
+                        pageNumber = totalPages - 4 + i;
+                      } else {
+                        pageNumber = page - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNumber}
+                          className={`w-12 h-12 rounded-xl font-bold text-sm transition-all duration-200 shadow-sm ${
+                            page === pageNumber
+                              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-105'
+                              : 'bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:shadow-lg'
+                          }`}
+                          onClick={() => setPage(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={page === totalPages}
+                    className="px-6 py-3 text-sm font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-lg"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

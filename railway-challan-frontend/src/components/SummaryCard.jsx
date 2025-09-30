@@ -54,7 +54,7 @@ const SummaryCard = ({ stats, loading, error }) => {
     {
       title: "Total Challans",
       value: stats?.totalChallans || 0,
-      icon: <TicketIcon className="w-8 h-8 text-blue-600" />,
+      icon: <TicketIcon className="w-12 h-12 text-blue-600" />,
       change: stats?.totalChallansChange,
       changePos: (stats?.totalChallansChange || 0) >= 0,
       bgColor: "bg-gradient-to-br from-blue-50 to-blue-100",
@@ -63,7 +63,7 @@ const SummaryCard = ({ stats, loading, error }) => {
     {
       title: "Total Revenue",
       value: <>₹ {numberWithCommas(stats?.totalFineCollected)}</>,
-      icon: <CurrencyRupeeIcon className="w-8 h-8 text-green-600" />,
+      icon: <CurrencyRupeeIcon className="w-12 h-12 text-green-600" />,
       change: stats?.totalFineCollectedChange,
       changePos: (stats?.totalFineCollectedChange || 0) >= 0,
       bgColor: "bg-gradient-to-br from-green-50 to-green-100",
@@ -72,7 +72,7 @@ const SummaryCard = ({ stats, loading, error }) => {
     {
       title: "Paid Challans",
       value: stats?.paidUnpaidStats?.find((s) => s._id === true)?.count || 0,
-      icon: <CheckCircleIcon className="w-8 h-8 text-emerald-600" />,
+      icon: <CheckCircleIcon className="w-12 h-12 text-emerald-600" />,
       change: stats?.paidChallansChange,
       changePos: (stats?.paidChallansChange || 0) >= 0,
       bgColor: "bg-gradient-to-br from-emerald-50 to-emerald-100",
@@ -81,7 +81,7 @@ const SummaryCard = ({ stats, loading, error }) => {
     {
       title: "Unpaid Challans",
       value: stats?.paidUnpaidStats?.find((s) => s._id === false)?.count || 0,
-      icon: <XCircleIcon className="w-8 h-8 text-red-600" />,
+      icon: <XCircleIcon className="w-12 h-12 text-red-600" />,
       change: stats?.unpaidChallansChange,
       changePos: (stats?.unpaidChallansChange || 0) >= 0,
       bgColor: "bg-gradient-to-br from-red-50 to-red-100",
@@ -91,7 +91,7 @@ const SummaryCard = ({ stats, loading, error }) => {
 
   return (
     <div 
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
       {summary.map((item, idx) => (
@@ -101,11 +101,11 @@ const SummaryCard = ({ stats, loading, error }) => {
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              {/* Form Labels: 14px */}
-              <p className="text-sm font-medium text-gray-600 mb-2 leading-normal uppercase tracking-wide">
+
+              <p className="text-sm font-bold text-gray-600 mb-2 leading-normal uppercase tracking-wide">
                 {item.title}
               </p>
-              {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
+
               <p className="text-xl lg:text-2xl font-bold text-gray-900 mb-3 leading-tight">
                 {item.value}
               </p>
@@ -117,7 +117,7 @@ const SummaryCard = ({ stats, loading, error }) => {
                   ) : (
                     <ArrowDownIcon className="w-4 h-4 text-red-600" />
                   )}
-                  {/* Small Text: 12px */}
+
                   <span
                     className={`text-xs font-semibold leading-normal ${
                       item.changePos ? 'text-green-600' : 'text-red-600'
@@ -133,9 +133,7 @@ const SummaryCard = ({ stats, loading, error }) => {
             </div>
             
             <div className="flex-shrink-0 ml-4">
-              <div className="p-2 bg-white rounded-xl shadow-md">
-                {item.icon}
-              </div>
+              {item.icon}
             </div>
           </div>
         </div>

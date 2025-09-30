@@ -2,6 +2,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import ResetPasswordModal from "../components/ResetPasswordModal";
 import toast from 'react-hot-toast';
+import {
+  UsersIcon,
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
+  ClockIcon,
+  CheckBadgeIcon,
+  ExclamationTriangleIcon,
+  ChartBarSquareIcon,
+  UserCircleIcon,
+  MapPinIcon
+} from "@heroicons/react/24/outline";
 
 const ZONES = ["Central", "Western", "Harbour", "Trans-Harbour"];
 const ITEMS_PER_PAGE = 10;
@@ -90,21 +101,26 @@ export default function ManageUsersPage() {
     setPage(1);
   };
 
+  // Calculate summary stats
+  const summaryStats = useMemo(() => {
+    const totalTTEs = filteredStats.length;
+    const totalChallans = filteredStats.reduce((sum, tte) => sum + tte.issued, 0);
+    const totalPaid = filteredStats.reduce((sum, tte) => sum + tte.paid, 0);
+    const avgRecovery = totalTTEs > 0 ? (filteredStats.reduce((sum, tte) => sum + tte.recovery, 0) / totalTTEs).toFixed(1) : 0;
+    
+    return { totalTTEs, totalChallans, totalPaid, avgRecovery };
+  }, [filteredStats]);
+
   if (loading) {
     return (
       <div 
-        className="min-h-screen bg-gray-50 flex items-center justify-center px-4"
+        className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-          {/* Body Text: 16px */}
-          <p className="text-base text-gray-600 leading-normal">Loading TTE analytics...</p>
+          <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Loading User Analytics</h2>
+          <p className="text-slate-600">Gathering performance data...</p>
         </div>
       </div>
     );
@@ -112,397 +128,472 @@ export default function ManageUsersPage() {
 
   return (
     <div 
-      className="min-h-screen bg-gray-50 px-4 py-6 lg:px-8 lg:py-8"
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-      <div className="max-w-7xl mx-auto">
-        
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl lg:text-4xl font-bold text-blue-800 leading-tight mb-2">
-                User Management
-              </h1>
-              
-              <p className="text-sm text-gray-600 leading-normal">
-                Track and monitor ticket examiner performance metrics and manage user accounts
-              </p>
+
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center border border-white/30">
+                <UsersIcon className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl lg:text-3xl font-black mb-3">
+                  User Management Portal
+                </h1>
+                <p className="text-lg text-blue-100 font-medium max-w-2xl">
+                  Comprehensive analytics and management for ticket examining officers
+                </p>
+              </div>
             </div>
             
             <button
               onClick={fetchAnalytics}
               disabled={loading}
-              className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal flex items-center space-x-2"
+              className="mt-6 lg:mt-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 focus:ring-2 50focus:ring-offset-blue-800 flex items-center space-x-2 shadow-lg hover:shadow-xl"
             >
-              <svg className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>Refresh</span>
+              <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh Data</span>
             </button>
           </div>
-          
-          {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-base text-red-700 leading-normal">{error}</p>
-            </div>
-          )}
         </div>
+      </div>
 
-        {/* Filters Section */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 mb-8">
-          {/* Subsection Headings: 18px */}
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 leading-tight">
-            Filter & Search
-          </h2>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            
-            {/* Search Input */}
-            <div className="lg:col-span-2">
-              {/* Form Labels: 14px */}
-              <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal">
-                Search TTE
-              </label>
-              {/* Form Inputs: 16px */}
-              <input
-                type="text"
-                placeholder="Search by name or employee ID"
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
-                className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 leading-relaxed"
-              />
-            </div>
-
-            {/* Zone Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal">
-                Zone
-              </label>
-              <div className="relative">
-                <select
-                  value={zone}
-                  onChange={e => { setZone(e.target.value); setPage(1); }}
-                  className="w-full appearance-none border border-gray-300 px-4 py-3 pr-10 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 leading-relaxed bg-white"
-                >
-                  <option value="All Zones">All Zones</option>
-                  {ZONES.map(z => (
-                    <option key={z} value={z}>{z}</option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 space-y-8">
+        
+        {error && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
+                <ExclamationTriangleIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-red-800">Error Loading Data</h3>
+                <p className="text-red-600">{error}</p>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Date From */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal">
-                Login From
-              </label>
-              <input
-                type="date"
-                value={dateRange.from}
-                onChange={e => { setDateRange(dr => ({ ...dr, from: e.target.value })); setPage(1); }}
-                className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 leading-relaxed"
-                max={dateRange.to || undefined}
-              />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"> 
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-6 border border-blue-200/50 shadow-lg border-l-4 border-l-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-600 text-sm font-semibold  mb-2">TOTAL TC's</p>
+                <p className="text-xl lg:text-2xl font-bold mb-3 leading-tight text-blue-900">{summaryStats.totalTTEs}</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center ">
+                <UserCircleIcon className="h-12 w-12 text-blue-600" />
+              </div>
             </div>
+          </div>
 
-            {/* Date To */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 leading-normal">
-                Login To
-              </label>
-              <input
-                type="date"
-                value={dateRange.to}
-                onChange={e => { setDateRange(dr => ({ ...dr, to: e.target.value })); setPage(1); }}
-                className="w-full border border-gray-300 px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 leading-relaxed"
-                min={dateRange.from || undefined}
-              />
+          <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-3xl p-6 border border-green-200/50 shadow-lg border-l-4 border-l-green-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-600 text-sm font-semibold uppercase tracking-wider mb-2">Total Challans</p>
+                <p className="text-xl lg:text-2xl font-bold mb-3 leading-tight text-green-900">{summaryStats.totalChallans.toLocaleString()}</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center">
+                <ChartBarSquareIcon className="w-12 h-12 text-green-500" />
+              </div>
             </div>
+          </div>
 
-            {/* Clear Filters Button */}
-            <div className="flex items-end">
-              {/* Buttons/CTAs: 16px */}
-              <button
-                onClick={clearFilters}
-                className="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-medium text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 leading-normal"
-              >
-                Clear Filters
-              </button>
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-6 border border-purple-200/50 shadow-lg border-l-4 border-l-purple-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-600 text-sm font-semibold uppercase tracking-wider mb-2">Paid Challans</p>
+                <p className="text-xl lg:text-2xl font-bold mb-3 leading-tight text-purple-900">{summaryStats.totalPaid.toLocaleString()}</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center">
+                <CheckBadgeIcon className="w-12 h-12 text-purple-500" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-6 border border-orange-200/50 shadow-lg border-l-4 border-l-orange-600">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-600 text-sm font-semibold uppercase tracking-wider mb-2">Avg Recovery</p>
+                <p className="text-xl lg:text-2xl font-bold mb-3 leading-tight text-orange-900">{summaryStats.avgRecovery}%</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center">
+                <ChartBarSquareIcon className="w-12 h-12 text-orange-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Filters Section */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <MagnifyingGlassIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-1">Search & Filter TTEs</h2>
+                <p className="text-slate-600">Find specific officers and analyze their performance</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+              
+              <div className="lg:col-span-2 space-y-2">
+                <label className="block text-sm font-semibold text-slate-700">
+                  Search TTE
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by name or employee ID"
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setPage(1); }}
+                    className="w-full border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 px-4 py-3 pl-12 rounded-xl text-base focus:outline-none focus:ring-0 transition-all duration-200 placeholder:text-slate-400"
+                  />
+                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700">
+                  Zone
+                </label>
+                <div className="relative">
+                  <select
+                    value={zone}
+                    onChange={e => { setZone(e.target.value); setPage(1); }}
+                    className="w-full appearance-none border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 px-4 py-3 pr-12 rounded-xl text-base focus:outline-none focus:ring-0 transition-all duration-200 bg-white"
+                  >
+                    <option value="All Zones">All Zones</option>
+                    {ZONES.map(z => (
+                      <option key={z} value={z}>{z}</option>
+                    ))}
+                  </select>
+                  <MapPinIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700">
+                  Login From
+                </label>
+                <input
+                  type="date"
+                  value={dateRange.from}
+                  onChange={e => { setDateRange(dr => ({ ...dr, from: e.target.value })); setPage(1); }}
+                  className="w-full border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-0 transition-all duration-200"
+                  max={dateRange.to || undefined}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700">
+                  Login To
+                </label>
+                <input
+                  type="date"
+                  value={dateRange.to}
+                  onChange={e => { setDateRange(dr => ({ ...dr, to: e.target.value })); setPage(1); }}
+                  className="w-full border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-0 transition-all duration-200"
+                  min={dateRange.from || undefined}
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  onClick={clearFilters}
+                  className="w-full bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-xl font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                >
+                  <ArrowPathIcon className="h-5 w-5" />
+                  <span>Clear</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Results Section */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          {/* Section Headings: Mobile 20-22px, Desktop 24-28px */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <h2 className="text-xl lg:text-2xl font-semibold text-blue-800 leading-tight">
-              TTE Performance Analytics
-            </h2>
-            <div className="mt-2 sm:mt-0">
-              {/* Secondary Text: 14px */}
-              <span className="text-sm text-gray-600 leading-normal">
-                Showing {paginatedStats.length} of {filteredStats.length} TTEs
-              </span>
-            </div>
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="lg:hidden space-y-4">
-            {paginatedStats.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <p className="text-base text-gray-500 leading-normal">No TTE data available</p>
-                <p className="text-sm text-gray-400 mt-2 leading-normal">
-                  Try adjusting your search criteria
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                  TTE Performance Analytics
+                </h2>
+                <p className="text-slate-600">
+                  Detailed performance metrics and account management
                 </p>
               </div>
-            ) : (
-              paginatedStats.map((tte) => (
-                <div key={tte.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-                  
-                  {/* TTE Header */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      {/* Body Text: 16px */}
-                      <h3 className="text-base font-semibold text-gray-900 leading-normal">
-                        {tte.name}
-                      </h3>
-                      {/* Secondary Text: 14px */}
-                      <p className="text-sm text-gray-600 leading-normal">
-                        {tte.employeeId} • {tte.zone}
-                      </p>
-                    </div>
-                    
-                    {/* Recovery Rate Badge */}
-                    <div className="ml-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 leading-normal">
-                        {tte.recovery}% Recovery
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-gray-900 leading-tight">{tte.issued}</div>
-                      <div className="text-xs text-gray-600 leading-normal">Total</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-green-600 leading-tight">{tte.paid}</div>
-                      <div className="text-xs text-gray-600 leading-normal">Paid</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-red-600 leading-tight">{tte.unpaid}</div>
-                      <div className="text-xs text-gray-600 leading-normal">Unpaid</div>
-                    </div>
-                  </div>
-
-                  {/* Last Login & Action */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <span className="text-sm font-medium text-gray-600 leading-normal">Last Login:</span>
-                      <div className="text-sm text-gray-800 leading-normal">
-                        {tte.lastLogin ? (
-                          new Date(tte.lastLogin).toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true
-                          })
-                        ) : (
-                          "Never"
-                        )}
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => handleOpenResetModal(tte)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal"
-                    >
-                      Reset Password
-                    </button>
-                  </div>
+              <div className="mt-4 lg:mt-0 flex items-center space-x-4">
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-xl border border-slate-200">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-slate-700">{paginatedStats.length} of {filteredStats.length} TTEs</span>
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden lg:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {/* Form Labels: 14px */}
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                    TTE Details
-                  </th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                    Performance
-                  </th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                    Recovery Rate
-                  </th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                    Last Login
-                  </th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider leading-normal">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedStats.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="px-6 py-12 text-center">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <p className="text-base text-gray-500 leading-normal">No TTE data available</p>
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedStats.map((tte) => (
-                    <tr key={tte.id} className="hover:bg-gray-50 transition-colors duration-200">
-                      
-                      {/* TTE Details */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-base font-semibold text-gray-900 leading-normal">
-                            {tte.name}
-                          </div>
-                          <div className="text-sm text-gray-500 leading-normal">
-                            {tte.employeeId} • {tte.zone}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Performance Stats */}
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex justify-center space-x-4">
-                          <div>
-                            <div className="text-base font-bold text-gray-900 leading-normal">{tte.issued}</div>
-                            <div className="text-xs text-gray-600 leading-normal">Total</div>
-                          </div>
-                          <div>
-                            <div className="text-base font-bold text-green-600 leading-normal">{tte.paid}</div>
-                            <div className="text-xs text-gray-600 leading-normal">Paid</div>
-                          </div>
-                          <div>
-                            <div className="text-base font-bold text-red-600 leading-normal">{tte.unpaid}</div>
-                            <div className="text-xs text-gray-600 leading-normal">Unpaid</div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Recovery Rate */}
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 leading-normal">
-                          {tte.recovery}%
-                        </span>
-                      </td>
-
-                      {/* Last Login */}
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600 leading-normal">
-                        {tte.lastLogin ? (
-                          new Date(tte.lastLogin).toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true
-                          })
-                        ) : (
-                          "Never"
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => handleOpenResetModal(tte)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 leading-normal"
-                        >
-                          Reset Password
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-200 space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 leading-normal">
-                  Page {page} of {totalPages}
-                </span>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  Previous
-                </button>
-
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNumber;
-                  if (totalPages <= 5) {
-                    pageNumber = i + 1;
-                  } else if (page <= 3) {
-                    pageNumber = i + 1;
-                  } else if (page >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + i;
-                  } else {
-                    pageNumber = page - 2 + i;
-                  }
-                  
-                  return (
-                    <button
-                      key={pageNumber}
-                      className={`w-10 h-10 rounded-lg font-medium text-sm transition-colors duration-200 ${
-                        page === pageNumber
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                      onClick={() => setPage(pageNumber)}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                >
-                  Next
-                </button>
               </div>
             </div>
-          )}
+          </div>
+
+          <div className="p-8">
+            {/* Mobile Card View */}
+            <div className="lg:hidden space-y-6">
+              {paginatedStats.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <UsersIcon className="h-10 w-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-600 mb-2">No TTE Data Found</h3>
+                  <p className="text-slate-500">Try adjusting your search criteria or filters</p>
+                </div>
+              ) : (
+                paginatedStats.map((tte) => (
+                  <div key={tte.id} className="bg-gradient-to-br from-white to-slate-50 rounded-2xl border-2 border-slate-200/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                    
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
+                          {tte.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="text-xl text-slate-900">
+                            {tte.name}
+                          </h3>
+                          <div className="flex items-center space-x-2 text-sm text-slate-600">
+                            <span>{tte.employeeId}</span>
+                            <span>•</span>
+                            <div className="flex items-center space-x-1">
+                              <MapPinIcon className="h-4 w-4" />
+                              <span>{tte.zone}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-2 rounded-xl border border-blue-200">
+                        <span className="text-blue-800 font-bold text-lg">{tte.recovery}%</span>
+                        <div className="text-blue-600 text-xs font-semibold">Recovery</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div className="text-2xl font-black text-slate-900">{tte.issued}</div>
+                        <div className="text-xs text-slate-600 font-semibold">Total Issued</div>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-xl border border-green-200">
+                        <div className="text-2xl font-black text-green-700">{tte.paid}</div>
+                        <div className="text-xs text-green-600 font-semibold">Paid</div>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-xl border border-red-200">
+                        <div className="text-2xl font-black text-red-700">{tte.unpaid}</div>
+                        <div className="text-xs text-red-600 font-semibold">Unpaid</div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-200">
+                      <div className="flex items-center space-x-2 text-slate-600">
+                        <ClockIcon className="h-4 w-4" />
+                        <span className="text-sm font-medium">Last Login:</span>
+                        <span className="text-sm text-slate-800 font-semibold">
+                          {tte.lastLogin ? (
+                            new Date(tte.lastLogin).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "2-digit"
+                            })
+                          ) : (
+                            "Never"
+                          )}
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={() => handleOpenResetModal(tte)}
+                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        Reset Password
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b-2 border-slate-200">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700 uppercase tracking-wider">
+                      TTE Details
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700 uppercase tracking-wider">
+                      Performance
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700 uppercase tracking-wider">
+                      Recovery Rate
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700 uppercase tracking-wider">
+                      Last Login
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {paginatedStats.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-16 text-center">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <UsersIcon className="h-8 w-8 text-slate-400" />
+                        </div>
+                        <p className="text-lg text-slate-500 font-semibold">No TTE data available</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedStats.map((tte) => (
+                      <tr key={tte.id} className="hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50 transition-all duration-200">
+                        
+                        <td className="px-6 py-6 whitespace-nowrap">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                              {tte.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="text-md font-semibold text-slate-900">
+                                {tte.name}
+                              </div>
+                              <div className="flex items-center space-x-2 text-sm text-slate-600">
+                                <span className="">{tte.employeeId}</span>
+                                <span>•</span>
+                                <div className="flex items-center space-x-1">
+                                  <MapPinIcon className="h-4 w-4" />
+                                  <span>{tte.zone}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-6 whitespace-nowrap text-center">
+                          <div className="flex justify-center space-x-6">
+                            <div className="text-center">
+                              <div className="text-xl font-semibold text-slate-900">{tte.issued}</div>
+                              <div className="text-xs text-slate-600 font-semibold">Total</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xl font-semibold text-green-600">{tte.paid}</div>
+                              <div className="text-xs text-green-600 font-semibold">Paid</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xl font-semibold text-red-600">{tte.unpaid}</div>
+                              <div className="text-xs text-red-600 font-semibold">Unpaid</div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-6 whitespace-nowrap text-center">
+                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-3 rounded-2xl border border-blue-200 inline-block">
+                            <span className="text-blue-800 font-semibold text-xl">{tte.recovery}%</span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-6 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center space-x-2 text-slate-600">
+                            <ClockIcon className="h-4 w-4" />
+                            <span className="text-sm font-semibold">
+                              {tte.lastLogin ? (
+                                new Date(tte.lastLogin).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "2-digit"
+                                })
+                              ) : (
+                                "Never"
+                              )}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-6 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => handleOpenResetModal(tte)}
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          >
+                            Reset Password
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Enhanced Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-8 border-t-2 border-slate-200 space-y-4 sm:space-y-0">
+                <div className="flex items-center space-x-2 text-slate-600">
+                  <span className="text-sm font-semibold">
+                    Showing {Math.min((page - 1) * ITEMS_PER_PAGE + 1, filteredStats.length)} to {Math.min(page * ITEMS_PER_PAGE, filteredStats.length)} of {filteredStats.length} results
+                  </span>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    className="px-6 py-3 text-sm font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Previous
+                  </button>
+
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNumber;
+                      if (totalPages <= 5) {
+                        pageNumber = i + 1;
+                      } else if (page <= 3) {
+                        pageNumber = i + 1;
+                      } else if (page >= totalPages - 2) {
+                        pageNumber = totalPages - 4 + i;
+                      } else {
+                        pageNumber = page - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNumber}
+                          className={`w-12 h-12 rounded-xl font-bold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            page === pageNumber
+                              ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                          onClick={() => setPage(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={page === totalPages}
+                    className="px-6 py-3 text-sm font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
