@@ -13,25 +13,46 @@ const storage = multer.diskStorage({
     cb(null, proofsDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + ext;
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const ext = path.extname(sanitizedName).toLowerCase();
+
+    const uniqueName = `proof_${Date.now()}_${Math.round(Math.random() * 1E9)}${ext}`;
     cb(null, uniqueName);
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-  if (allowedTypes.includes(file.mimetype)) {
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/png', 
+    'image/jpg',
+    'application/pdf'
+  ];
+  
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf'];
+  const fileExt = path.extname(file.originalname).toLowerCase();
+  
+  if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(fileExt)) {
     cb(null, true);
   } else {
-    cb(new Error('Only JPEG, PNG, JPG or PDF files allowed!'), false);
+    cb(new Error(`Invalid file type. Only JPEG, PNG, and PDF files are allowed. Received: ${file.mimetype}`), false);
   }
 };
 
 const uploadProof = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max
+  limits: { 
+    fileSize: 5 * 1024 * 1024, // 5mb limit 
+    files: 1, // only allow 1 file per upload
+    fieldSize: 1024, 
+    fields: 5 
+  },
+  // Handle multer errors gracefully
+  onError: (err, next) => {
+    console.error('File upload error:', err);
+    next(err);
+  }
 });
 
 module.exports = uploadProof;
