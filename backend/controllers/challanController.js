@@ -10,7 +10,7 @@ const Passenger = require('../models/passengerModel');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const { ErrorResponses } = require('../utils/errorResponses');
-const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 const { body, query, param } = require('express-validator');
 
@@ -28,9 +28,10 @@ async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
 
 // Validation middleware for issue challan
 const issueChallanValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
-    body: ['trainNumber', 'coachNumber', 'passengerName', 'passengerAadharLast4', 'mobileNumber', 'reason', 'fineAmount', 'location', 'paymentMode', 'paid', 'signature','proofFiles']
+    body: ['trainNumber', 'coachNumber', 'passengerName', 'passengerAadharLast4', 'mobileNumber', 'reason', 'fineAmount', 'location', 'paymentMode', 'paid', 'signature', 'proofFiles']
   }),
   commonValidations.requiredString('trainNumber'),
   body('trainNumber')
@@ -96,6 +97,7 @@ const getChallanLocationsValidation = [
 
 // Validation for search challans
 const searchChallansValidation = [
+  sanitizeInput,
   validateFields({
     query: ['passenger', 'train', 'reason', 'date', 'status'],
     body: []
@@ -103,6 +105,8 @@ const searchChallansValidation = [
   query('passenger')
     .optional()
     .isString()
+    .trim()
+    .escape()
     .withMessage('Passenger must be a string'),
   query('train')
     .optional()
@@ -132,18 +136,27 @@ const getChallanDetailsValidation = [
 
 // Validation for download bulk PDF
 const downloadBulkPDFValidation = [
+  sanitizeInput,
   validateFields({ query: [], body: ['challanIds'] }),
   body('challanIds')
     .isArray({ min: 1 })
     .withMessage('challanIds must be a non-empty array'),
   body('challanIds.*')
     .matches(/^[0-9a-fA-F]{24}$/)
-    .withMessage('Each challan ID must be a valid MongoDB ObjectId'),
+    .withMessage('Each challan ID must be a valid MongoDB ObjectId')
+    .custom((arr) => {
+      if (arr.length > 30) {
+        throw new Error('Maximum 30 challans allowed for bulk download');
+      }
+      return true;
+    }),
+
   handleValidationErrors
 ];
 
 // Validation for update challan
 const updateChallanValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
     body: ['trainNumber', 'passengerName', 'passengerAadhar', 'reason', 'fineAmount', 'location']
@@ -197,6 +210,7 @@ const getChallanValidation = [
 
 // Validation for user history
 const userHistoryValidation = [
+  sanitizeInput,
   validateFields({ query: ['name', 'aadhar'], body: [] }),
   query('name')
     .optional()
@@ -220,6 +234,7 @@ const markChallanAsPaidValidation = [
 
 // Validation for passenger history
 const getPassengerHistoryValidation = [
+  sanitizeInput,
   validateFields({
     query: ['name', 'aadharLast4', 'dateFrom', 'dateTo', 'paymentStatus'],
     body: []
@@ -265,23 +280,37 @@ exports.issueChallan = async (req, res) => {
       signature = '', // base64 encoded image
     } = req.body;
 
-    trainNumber = trainNumber.trim();
-    coachNumber = coachNumber?.trim();
-    passengerName = passengerName.trim();
-    location = location.trim();
-    paymentMode = paymentMode.toLowerCase();
-    fineAmount = Number(fineAmount);
-
-    const normalizedCoachNumber = coachNumber && coachNumber.trim() !== '' ? coachNumber.trim() : null;
+    const normalizedCoachNumber = coachNumber?.toString().toUpperCase().trim() || '';
+    
+    if (paid && paymentMode === 'offline' && !signature) {
+      const error = ErrorResponses.validationError('Digital signature required for offline payments');
+      return res.status(error.statusCode).json(error);
+    }
 
     const proofFiles = req.files?.map(f => f.path) || [];
     if (proofFiles.length > 4) {
       const error = ErrorResponses.validationError('You can upload up to 4 proof files only');
       return res.status(error.statusCode).json(error);
     }
+    for (const file of req.files || []) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        const error = ErrorResponses.validationError('Only JPEG and PNG images are allowed');
+        return res.status(error.statusCode).json(error);
+      }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        const error = ErrorResponses.validationError('File size must be less than 5MB');
+        return res.status(error.statusCode).json(error);
+      }
+    }
 
     // lookup station lat/lng
-    const station = await Station.findOne({ name: { $regex: `^${location}$`, $options: 'i' } }); //TODO: options i ??
+    const escapedLocation = location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');//TODO: usecase of this
+    const station = await Station.findOne({
+      name: { $regex: `^${escapedLocation}$`, $options: 'i' }
+    });
+
     if (!station) {
       const error = ErrorResponses.notFound('Station');
       return res.status(error.statusCode).json(error);
@@ -493,9 +522,15 @@ exports.searchChallans = async (req, res) => {
   const { passenger, train, reason, date, status } = req.query;
 
   const filter = {};
-  if (passenger) filter.passengerName = { $regex: passenger, $options: 'i' };
+  if (passenger) {
+    const escapedPassenger = passenger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    filter.passengerName = { $regex: escapedPassenger, $options: 'i' };
+  }
   if (train) filter.trainNumber = train;
-  if (reason) filter.reason = { $regex: reason, $options: 'i' };
+  if (reason) {
+    const escapedReason = reason.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    filter.reason = { $regex: escapedReason, $options: 'i' };
+  }
   if (date) filter.createdAt = {
     $gte: new Date(date),
     $lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1)),

@@ -128,7 +128,22 @@ const commonValidations = {
   // Status validation
   status: (fieldName = 'status', allowedValues = ['active', 'inactive']) => body(fieldName)
     .isIn(allowedValues)
-    .withMessage(`${fieldName} must be one of: ${allowedValues.join(', ')}`)
+    .withMessage(`${fieldName} must be one of: ${allowedValues.join(', ')}`),
+
+  coachNumber: (fieldName = 'coachNumber') => body(fieldName)
+    .optional()
+    .matches(/^[A-Z0-9]{1,6}$/)
+    .withMessage(`${fieldName} must be alphanumeric, max 6 characters`),
+
+  aadharLast4: (fieldName = 'passengerAadharLast4') => body(fieldName)
+  .optional()
+  .matches(/^[0-9]{4}$/)
+  .withMessage(`${fieldName} must be exactly 4 digits`),
+
+  signature: (fieldName = 'signature') => body(fieldName)
+  .optional()
+  .matches(/^data:image\/(jpeg|jpg|png|gif);base64,[A-Za-z0-9+/=]+$/)
+  .withMessage(`${fieldName} must be a valid base64 image string`),
 };
 
 module.exports = { commonValidations };

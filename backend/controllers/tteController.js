@@ -1,21 +1,28 @@
 const Challan = require('../models/challanModel');
 const User = require('../models/userModel');
 const { ErrorResponses } = require('../utils/errorResponses');
-const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 
 const getTTEProfileValidation = [
-  validateFields({ 
-    query: [], 
-    body: [] 
+  sanitizeInput,
+  validateFields({
+    query: [],
+    body: [],
+    param: []
   })
 ];
 
 exports.getTTEProfile = async (req, res) => {
   try {
-    const tteId = req.user.id; 
+    const tteId = req.user.id;
 
     const tte = await User.findById(tteId).lean();
+
+    if (!tte) {
+      const error = ErrorResponses.userNotFound('TTE not found or inactive');
+      return res.status(error.statusCode).json(error);
+    }
 
     const challans = await Challan.find({ issuedBy: tteId }).sort({ issuedAt: -1 });
     const total = challans.length;

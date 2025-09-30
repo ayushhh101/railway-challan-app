@@ -3,10 +3,11 @@ const bcrypt = require("bcrypt");
 const Passenger = require("../models/passengerModel");
 const Challan = require("../models/challanModel");
 const { ErrorResponses } = require('../utils/errorResponses');
-const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 
 const myChallansValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
     body: []

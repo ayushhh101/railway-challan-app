@@ -3,21 +3,29 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logAudit = require('../utils/auditLogger');
 const { ErrorResponses } = require('../utils/errorResponses');
-const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 const { body } = require('express-validator');
 
 const JWT_SECRET = process.env.JWT_SECRET
 
 const generateAccessToken = (user) => {
-  return jwt.sign({ id: user._id, role: user.role }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      employeeId: user.employeeId
+    },
+    process.env.ACCESS_SECRET,
+    { expiresIn: '15m' }
+  );
 };
 
 const generateRefreshToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
 };
 
-// Validation middleware for registration
+// Validation middlewares
 const registerValidation = [
   validateFields({
     query: [],
@@ -25,10 +33,40 @@ const registerValidation = [
   }),
   commonValidations.requiredString('name'),
   commonValidations.requiredString('employeeId'),
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters')
+    .matches(/^[a-zA-Z\s.'-]+$/)
+    .withMessage('Name can only contain letters, spaces, dots, apostrophes, and hyphens')
+    .escape(),
+
+  body('employeeId')
+    .trim()
+    .custom(async (value) => {
+      const existingUser = await User.findOne({ employeeId: value });
+      if (existingUser) {
+        throw new Error('Employee ID already exists');
+      }
+      return true;
+    }),
+
   body('email')
     .optional()
+    .trim()
     .isEmail()
-    .withMessage('Email must be valid'),
+    .isLength({ max: 254 })
+    .withMessage('Email must be less than 254 characters')
+    .custom(async (value) => {
+      if (value) {
+        const existingUser = await User.findOne({ email: value });
+        if (existingUser) {
+          throw new Error('Email already exists');
+        }
+      }
+      return true;
+    }),
+
   commonValidations.password('password'),
   body('phone')
     .optional()
@@ -37,6 +75,7 @@ const registerValidation = [
   body('profilePic')
     .optional()
     .isString()
+    .isLength({ max: 500 })
     .withMessage('Profile picture must be a string'),
   body('role')
     .isIn(['tte', 'admin'])
@@ -58,8 +97,8 @@ const registerValidation = [
   handleValidationErrors
 ];
 
-// Validation middleware for login
 const loginValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
     body: ['employeeId', 'password']
@@ -69,7 +108,6 @@ const loginValidation = [
   handleValidationErrors
 ];
 
-// Validation middleware for refresh token
 const refreshTokenValidation = [
   validateFields({
     query: [],
@@ -77,48 +115,62 @@ const refreshTokenValidation = [
   })
 ];
 
-// Validation middleware for logout
 const logoutValidation = [
   validateFields({
     query: [],
     body: []
-  })
+  }),
+  handleValidationErrors
 ];
 
+// Controller functions
 exports.register = async (req, res) => {
   try {
-    if (!req.body.name || !req.body.employeeId || !req.body.password || !req.body.role || !req.body.zone) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
     const { name, employeeId, email, password, phone, profilePic, role, zone, currentStation, designation, dateOfJoining } = req.body;
-
-    if (!['tte', 'admin'].includes(role)) {
-      return res.status(400).json({ message: 'Role must be tte or admin' });
-    }
-    // checks if user already exists
-    const existingUser = await User.findOne({ employeeId });
-    if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
       name,
       employeeId,
-      email,
+      email: email || null,
       password: hashedPassword,
-      phone,
-      profilePic,
+      phone: phone || null,
+      profilePic: profilePic || null,
       role,
       zone,
-      currentStation,
-      designation,
-      dateOfJoining
+      currentStation: currentStation || null,
+      designation: designation || null,
+      dateOfJoining: dateOfJoining || new Date(),
     });
 
     await newUser.save();
 
-    res.status(201).json({ message: 'Registration successful' });
+    await logAudit({
+      action: 'USER_REGISTERED',
+      performedBy: req.user?.id || null, 
+      role:role,
+      metadata: {
+        newUserEmployeeId: employeeId,
+        newUserRole: role,
+        newUserZone: zone
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+      severity: 'medium',
+      status: 'SUCCESS',
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful',
+      data: {
+        employeeId: newUser.employeeId,
+        name: newUser.name,
+        role: newUser.role,
+        zone: newUser.zone
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -129,6 +181,7 @@ exports.login = async (req, res) => {
     const { employeeId, password } = req.body;
 
     const user = await User.findOne({ employeeId });
+    //TODO: log this
     if (!user) {
       const error = ErrorResponses.userNotFound();
       return res.status(error.statusCode).json(error);
@@ -154,17 +207,6 @@ exports.login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    res.status(200).json({
-      message: 'Login successful',
-      token: accessToken,
-      user: {
-        name: user.name,
-        employeeId: user.employeeId,
-        role: user.role,
-        zone: user.zone
-      }
-    });
-
     await logAudit({
       action: 'LOGGED_IN',
       performedBy: user._id,
@@ -176,6 +218,18 @@ exports.login = async (req, res) => {
       userAgent: req.headers['user-agent'],
       status: 'SUCCESS',
       severity: 'low'
+    });
+
+    res.status(200).json({
+      message: 'Login successful',
+      token: accessToken,
+      user: {
+        name: user.name,
+        employeeId: user.employeeId,
+        role: user.role,
+        zone: user.zone
+      },
+      
     });
 
   } catch (err) {

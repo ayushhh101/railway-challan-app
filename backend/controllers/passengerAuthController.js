@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const logAudit = require('../utils/auditLogger');
 const { ErrorResponses } = require('../utils/errorResponses');
-const { validateFields, handleValidationErrors } = require('../middleware/fieldValidator');
+const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 const { body } = require('express-validator');
 
@@ -16,12 +16,6 @@ const generateOnboardingToken = (passengerId) => {
   );
 };
 
-async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
-  // Integration with SMS/email provider here
-  console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
-  console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
-}
-
 const generateAccessToken = (passenger) => {
   return jwt.sign({ id: passenger._id, role: 'passenger' }, process.env.PASSENGER_ACCESS_SECRET, { expiresIn: '15m' });
 };
@@ -30,28 +24,69 @@ const generateRefreshToken = (passenger) => {
   return jwt.sign({ id: passenger._id, role: 'passenger' }, process.env.PASSENGER_REFRESH_SECRET, { expiresIn: '7d' });
 };
 
+async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
+  try {
+    // Integration with SMS/email provider here
+    console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
+    console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
+  } catch (error) {
+    console.error('Error sending onboarding notification:', error);
+  }
+}
+
 const registerValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
     body: ['name', 'aadharLast4', 'mobileNumber', 'password']
   }),
   commonValidations.requiredString('name'),
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters')
+    .matches(/^[a-zA-Z\s.'-]+$/)
+    .withMessage('Name can only contain letters, spaces, dots, apostrophes, and hyphens')
+    .escape(),
+
   body('aadharLast4')
     .isLength({ min: 4, max: 4 })
     .withMessage('Aadhar must be exactly 4 digits')
     .isNumeric()
-    .withMessage('Aadhar must contain only numbers'),
+    .withMessage('Aadhar must contain only numbers')
+    .custom(async (value, { req }) => {
+      // Check for existing passenger with same name and aadhar
+      const existingPassenger = await Passenger.findOne({
+        aadharLast4: value,
+        name: { $regex: new RegExp(`^${req.body.name.trim()}$`, 'i') }
+      });
+      if (existingPassenger) {
+        throw new Error('Passenger with this name and Aadhar already exists');
+      }
+      return true;
+    }),
   body('mobileNumber')
     .isMobilePhone('en-IN')
     .withMessage('Mobile number must be a valid 10-digit Indian number')
     .isLength({ min: 10, max: 10 })
-    .withMessage('Mobile number must be exactly 10 digits'),
-  commonValidations.password('password'),
+    .withMessage('Mobile number must be exactly 10 digits')
+    .custom(async (value) => {
+      const existingPassenger = await Passenger.findOne({ mobileNumber: value });
+      if (existingPassenger) {
+        throw new Error('Mobile number already registered');
+      }
+      return true;
+    }),
+  body('password')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('Password must be between 8 and 128 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
   handleValidationErrors
 ];
 
-// Validation middleware for passenger login
 const loginValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
     body: ['mobileNumber', 'password']
@@ -61,6 +96,11 @@ const loginValidation = [
     .withMessage('Mobile number must be a valid 10-digit Indian number')
     .isLength({ min: 10, max: 10 })
     .withMessage('Mobile number must be exactly 10 digits'),
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 1, max: 128 })
+    .withMessage('Password length invalid'),
   commonValidations.requiredString('password'),
   handleValidationErrors
 ];
@@ -70,7 +110,8 @@ const refreshTokenValidation = [
   validateFields({
     query: [],
     body: []
-  })
+  }),
+  handleValidationErrors
 ];
 
 // Validation middleware for logout
@@ -78,11 +119,12 @@ const logoutValidation = [
   validateFields({
     query: [],
     body: []
-  })
+  }),
+  handleValidationErrors
 ];
 
-// Validation middleware for reset password
 const resetPasswordValidation = [
+  sanitizeInput,
   validateFields({
     query: [],
     body: ['mobileNumber', 'newPassword']
@@ -96,18 +138,12 @@ const resetPasswordValidation = [
   handleValidationErrors
 ];
 
-
+// Controller functions
 exports.register = async (req, res) => {
   try {
     const { name, aadharLast4, mobileNumber, password } = req.body;
 
-    const existingPassenger = await Passenger.findOne({ mobileNumber });
-    if (existingPassenger) {
-      const error = ErrorResponses.alreadyExists('Passenger');
-      return res.status(error.statusCode).json(error);
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const newPassenger = new Passenger({
       name,
@@ -118,8 +154,7 @@ exports.register = async (req, res) => {
 
     await newPassenger.save();
 
-    res.status(201).json({ message: 'Registration successful' });
-
+    
     await logAudit({
       action: 'PASSENGER_REGISTER',
       performedBy: newPassenger._id,
@@ -130,6 +165,7 @@ exports.register = async (req, res) => {
       status: 'SUCCESS',
       severity: 'low',
     });
+    res.status(201).json({ message: 'Registration successful' });
   } catch (err) {
     console.error('Passenger registration error:', err);
     const serverError = ErrorResponses.serverError();
@@ -137,6 +173,7 @@ exports.register = async (req, res) => {
   }
 };
 
+//TODO: add audit log
 exports.login = async (req, res) => {
   try {
     const { mobileNumber, password } = req.body;
@@ -243,7 +280,7 @@ exports.refreshToken = async (req, res) => {
   }
 
   try {
-    const payload = jwt.verify(token, PASSENGER_REFRESH_SECRET);
+    const payload = jwt.verify(token, process.env.PASSENGER_REFRESH_SECRET);
     const newAccessToken = generateAccessToken(payload);
     const newRefreshToken = generateRefreshToken(payload);
 
