@@ -108,7 +108,6 @@ export default function ChallanDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style={{ fontFamily: 'Inter, sans-serif' }}>
       
-      {/* Professional Header */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -117,7 +116,7 @@ export default function ChallanDetailPage() {
                 <DocumentTextIcon className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl lg:text-5xl font-black tracking-tight mb-2">
+                <h1 className="text-xl lg:text-3xl font-black tracking-tight mb-2">
                   Challan Details
                 </h1>
                 <p className="text-lg text-blue-100 font-medium">
@@ -127,18 +126,18 @@ export default function ChallanDetailPage() {
             </div>
             
             <div className="mt-6 lg:mt-0">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/20">
                 <div className="text-center">
-                  <p className="text-blue-100 text-sm font-medium">Payment Status</p>
-                  <div className="flex items-center justify-center mt-2">
+                  <p className="text-white text-md font-medium">Payment Status</p>
+                  <div className="flex items-center justify-center mt-2 ">
                     {challan.paid ? (
                       <span className="inline-flex items-center space-x-2 text-green-400">
                         <CheckCircleIcon className="w-8 h-8" />
                         <span className="text-2xl font-bold">PAID</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center space-x-2 text-red-400">
-                        <XCircleIcon className="w-8 h-8" />
+                      <span className="inline-flex items-center space-x-2 text-white">
+                        <XCircleIcon className="w-8 h-8 text-red-500" />
                         <span className="text-2xl font-bold">UNPAID</span>
                       </span>
                     )}

@@ -115,7 +115,6 @@ const AdminAudit = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style={{ fontFamily: 'Inter, sans-serif' }}>
       
-      {/* Professional Header */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -124,7 +123,7 @@ const AdminAudit = () => {
                 <ShieldCheckIcon className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl lg:text-5xl font-black tracking-tight mb-2">
+                <h1 className="text-xl lg:text-3xl font-black mb-2">
                   Security Audit Logs
                 </h1>
                 <p className="text-lg text-slate-100 font-medium">
@@ -134,11 +133,11 @@ const AdminAudit = () => {
             </div>
             
             <div className="mt-6 lg:mt-0">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/20">
                 <div className="text-center">
-                  <p className="text-slate-100 text-sm font-medium">Total Events</p>
+                  <p className="text-slate-100 text-sm font-normal">Total Events</p>
                   <div className="flex items-center justify-center mt-2">
-                    <span className="text-3xl font-bold text-white">{logs.length}</span>
+                    <span className="text-2xl font-bold text-white">{logs.length}</span>
                   </div>
                   <p className="text-slate-200 text-xs mt-1">audit records</p>
                 </div>

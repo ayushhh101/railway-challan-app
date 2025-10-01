@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import ResetPasswordModal from "../components/ResetPasswordModal";
+import EditTTEProfileModal from "../components/EditTTEProfileModal";
 import toast from 'react-hot-toast';
 import {
   UsersIcon,
@@ -11,7 +12,11 @@ import {
   ExclamationTriangleIcon,
   ChartBarSquareIcon,
   UserCircleIcon,
-  MapPinIcon
+  MapPinIcon,
+  PencilSquareIcon,
+  KeyIcon,
+  TrashIcon,
+  EllipsisVerticalIcon
 } from "@heroicons/react/24/outline";
 
 const ZONES = ["Central", "Western", "Harbour", "Trans-Harbour"];
@@ -27,9 +32,11 @@ export default function ManageUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // For reset password modal
-  const [modalOpen, setModalOpen] = useState(false);
+  // For modals
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [activeUser, setActiveUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(null);
 
   useEffect(() => {
     fetchAnalytics();
@@ -80,18 +87,73 @@ export default function ManageUsersPage() {
   const totalPages = Math.ceil(filteredStats.length / ITEMS_PER_PAGE);
   const paginatedStats = filteredStats.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-  const handleOpenResetModal = (tte) => {
-    setActiveUser(tte);
-    setModalOpen(true);
+  // Handle Edit TTE Profile
+  const handleEditTTE = async (tte) => {
+    setDropdownOpen(null);
+    try {
+      // Fetch detailed TTE profile for editing - FIXED: Added VITE_API_URL
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tte/admin/${tte.id}`, {
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setActiveUser(result.data.profile);
+        setEditModalOpen(true);
+      } else {
+        toast.error(result.message || 'Failed to fetch TTE details');
+      }
+    } catch (err) {
+      console.error('Fetch TTE details error:', err);
+      toast.error('Network error occurred while fetching TTE details');
+    }
   };
 
-  const handleCloseModal = () => {
+  // Handle successful TTE profile update
+  const handleTTEUpdateSuccess = (updatedProfile) => {
+    // Update the TTE in the stats list
+    setTteStats(prevStats =>
+      prevStats.map(tte =>
+        tte.id === updatedProfile._id
+          ? {
+            ...tte,
+            name: updatedProfile.name,
+            zone: updatedProfile.zone,
+            email: updatedProfile.email,
+            phone: updatedProfile.phone
+          }
+          : tte
+      )
+    );
+    toast.success('TTE profile updated successfully!');
+    setEditModalOpen(false);
     setActiveUser(null);
-    setModalOpen(false);
+  };
+
+  const handleOpenResetModal = (tte) => {
+    setDropdownOpen(null);
+    setActiveUser(tte);
+    setResetModalOpen(true);
+  };
+
+  const handleCloseResetModal = () => {
+    setActiveUser(null);
+    setResetModalOpen(false);
+  };
+
+  const handleCloseEditModal = () => {
+    setActiveUser(null);
+    setEditModalOpen(false);
   };
 
   const handleResetSuccess = () => {
     toast.success('Password reset successfully!');
+    setResetModalOpen(false);
+    setActiveUser(null);
   };
 
   const clearFilters = () => {
@@ -107,13 +169,13 @@ export default function ManageUsersPage() {
     const totalChallans = filteredStats.reduce((sum, tte) => sum + tte.issued, 0);
     const totalPaid = filteredStats.reduce((sum, tte) => sum + tte.paid, 0);
     const avgRecovery = totalTTEs > 0 ? (filteredStats.reduce((sum, tte) => sum + tte.recovery, 0) / totalTTEs).toFixed(1) : 0;
-    
+
     return { totalTTEs, totalChallans, totalPaid, avgRecovery };
   }, [filteredStats]);
 
   if (loading) {
     return (
-      <div 
+      <div
         className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
@@ -127,11 +189,11 @@ export default function ManageUsersPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50"
       style={{ fontFamily: 'Inter, sans-serif' }}
     >
-
+      {/* Header */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 lg:py-12">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -148,11 +210,11 @@ export default function ManageUsersPage() {
                 </p>
               </div>
             </div>
-            
+
             <button
               onClick={fetchAnalytics}
               disabled={loading}
-              className="mt-6 lg:mt-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 focus:ring-2 50focus:ring-offset-blue-800 flex items-center space-x-2 shadow-lg hover:shadow-xl"
+              className="mt-6 lg:mt-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 focus:ring-2 focus:ring-offset-blue-800 flex items-center space-x-2 shadow-lg hover:shadow-xl"
             >
               <ArrowPathIcon className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh Data</span>
@@ -162,7 +224,7 @@ export default function ManageUsersPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 lg:px-8 space-y-8">
-        
+
         {error && (
           <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center space-x-3">
@@ -177,14 +239,15 @@ export default function ManageUsersPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"> 
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-6 border border-blue-200/50 shadow-lg border-l-4 border-l-blue-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-600 text-sm font-semibold  mb-2">TOTAL TC's</p>
+                <p className="text-blue-600 text-sm font-semibold mb-2">TOTAL TC's</p>
                 <p className="text-xl lg:text-2xl font-bold mb-3 leading-tight text-blue-900">{summaryStats.totalTTEs}</p>
               </div>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center ">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center">
                 <UserCircleIcon className="h-12 w-12 text-blue-600" />
               </div>
             </div>
@@ -227,7 +290,7 @@ export default function ManageUsersPage() {
           </div>
         </div>
 
-        {/* Enhanced Filters Section */}
+        {/* Filters Section */}
         <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
           <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-6 border-b border-slate-200">
             <div className="flex items-center space-x-4">
@@ -240,10 +303,10 @@ export default function ManageUsersPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-              
+
               <div className="lg:col-span-2 space-y-2">
                 <label className="block text-sm font-semibold text-slate-700">
                   Search TTE
@@ -353,7 +416,7 @@ export default function ManageUsersPage() {
               ) : (
                 paginatedStats.map((tte) => (
                   <div key={tte.id} className="bg-gradient-to-br from-white to-slate-50 rounded-2xl border-2 border-slate-200/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                    
+
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
@@ -373,10 +436,33 @@ export default function ManageUsersPage() {
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-2 rounded-xl border border-blue-200">
-                        <span className="text-blue-800 font-bold text-lg">{tte.recovery}%</span>
-                        <div className="text-blue-600 text-xs font-semibold">Recovery</div>
+
+                      <div className="relative">
+                        <button
+                          onClick={() => setDropdownOpen(dropdownOpen === tte.id ? null : tte.id)}
+                          className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+                        >
+                          <EllipsisVerticalIcon className="h-5 w-5 text-slate-500" />
+                        </button>
+
+                        {dropdownOpen === tte.id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg border border-slate-200 z-10 overflow-hidden">
+                            <button
+                              onClick={() => handleEditTTE(tte)}
+                              className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
+                              <PencilSquareIcon className="h-4 w-4 mr-3 text-blue-500" />
+                              Edit Profile
+                            </button>
+                            <button
+                              onClick={() => handleOpenResetModal(tte)}
+                              className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
+                              <KeyIcon className="h-4 w-4 mr-3 text-orange-500" />
+                              Reset Password
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -395,29 +481,11 @@ export default function ManageUsersPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-200">
-                      <div className="flex items-center space-x-2 text-slate-600">
-                        <ClockIcon className="h-4 w-4" />
-                        <span className="text-sm font-medium">Last Login:</span>
-                        <span className="text-sm text-slate-800 font-semibold">
-                          {tte.lastLogin ? (
-                            new Date(tte.lastLogin).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "2-digit"
-                            })
-                          ) : (
-                            "Never"
-                          )}
-                        </span>
+                    <div className="flex items-center justify-center pt-4 border-t border-slate-200">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-2 rounded-xl border border-blue-200">
+                        <span className="text-blue-800 font-bold text-lg">{tte.recovery}%</span>
+                        <div className="text-blue-600 text-xs font-semibold">Recovery</div>
                       </div>
-                      
-                      <button
-                        onClick={() => handleOpenResetModal(tte)}
-                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      >
-                        Reset Password
-                      </button>
                     </div>
                   </div>
                 ))
@@ -459,7 +527,7 @@ export default function ManageUsersPage() {
                   ) : (
                     paginatedStats.map((tte) => (
                       <tr key={tte.id} className="hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50 transition-all duration-200">
-                        
+
                         <td className="px-6 py-6 whitespace-nowrap">
                           <div className="flex items-center space-x-4">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -522,12 +590,34 @@ export default function ManageUsersPage() {
                         </td>
 
                         <td className="px-6 py-6 whitespace-nowrap text-center">
-                          <button
-                            onClick={() => handleOpenResetModal(tte)}
-                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                          >
-                            Reset Password
-                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={() => setDropdownOpen(dropdownOpen === tte.id ? null : tte.id)}
+                              className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 flex items-center space-x-2"
+                            >
+                              <span>Actions</span>
+                              <EllipsisVerticalIcon className="h-4 w-4" />
+                            </button>
+
+                            {dropdownOpen === tte.id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg border border-slate-200 z-10 overflow-hidden">
+                                <button
+                                  onClick={() => handleEditTTE(tte)}
+                                  className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                  <PencilSquareIcon className="h-4 w-4 mr-3 text-blue-500" />
+                                  Edit Profile
+                                </button>
+                                <button
+                                  onClick={() => handleOpenResetModal(tte)}
+                                  className="flex items-center w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                  <KeyIcon className="h-4 w-4 mr-3 text-orange-500" />
+                                  Reset Password
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -536,7 +626,7 @@ export default function ManageUsersPage() {
               </table>
             </div>
 
-            {/* Enhanced Pagination */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-8 border-t-2 border-slate-200 space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-2 text-slate-600">
@@ -544,7 +634,7 @@ export default function ManageUsersPage() {
                     Showing {Math.min((page - 1) * ITEMS_PER_PAGE + 1, filteredStats.length)} to {Math.min(page * ITEMS_PER_PAGE, filteredStats.length)} of {filteredStats.length} results
                   </span>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setPage(prev => Math.max(prev - 1, 1))}
@@ -566,15 +656,14 @@ export default function ManageUsersPage() {
                       } else {
                         pageNumber = page - 2 + i;
                       }
-                      
+
                       return (
                         <button
                           key={pageNumber}
-                          className={`w-12 h-12 rounded-xl font-bold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            page === pageNumber
+                          className={`w-12 h-12 rounded-xl font-bold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${page === pageNumber
                               ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg'
                               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                          }`}
+                            }`}
                           onClick={() => setPage(pageNumber)}
                         >
                           {pageNumber}
@@ -597,11 +686,19 @@ export default function ManageUsersPage() {
         </div>
       </div>
 
+      {/* Modals */}
       <ResetPasswordModal
         user={activeUser}
-        isOpen={modalOpen}
-        onClose={handleCloseModal}
+        isOpen={resetModalOpen}
+        onClose={handleCloseResetModal}
         onSuccess={handleResetSuccess}
+      />
+
+      <EditTTEProfileModal
+        isOpen={editModalOpen}
+        onClose={handleCloseEditModal}
+        tte={activeUser}
+        onUpdate={handleTTEUpdateSuccess}
       />
     </div>
   );
