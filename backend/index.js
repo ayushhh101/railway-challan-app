@@ -32,7 +32,8 @@ const authLimiter = rateLimit({
 });
 
 app.use(mongoSanitize({
-  replaceWith: '_'
+  replaceWith: '_',
+  allowDots: false
 }));
 
 app.use(limiter);

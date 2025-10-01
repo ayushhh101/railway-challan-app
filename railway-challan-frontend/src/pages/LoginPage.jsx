@@ -193,24 +193,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* remember me & forgot pass - Secondary Text: 14px */}
-              <div className="flex items-center justify-between text-sm pt-3 leading-normal">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-gray-700">Remember me</span>
-                </label>
-                <button
-                  type="button"
-                  className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
-                >
-                  Forgot password?
-                </button>
-              </div>
 
-              {/* Buttons/CTAs: 16px */}
               <button
                 type="submit"
                 disabled={loading}
@@ -245,7 +228,6 @@ export default function LoginPage() {
                 Help
               </button>
             </div>
-            {/* Small Text/Captions: 12px */}
             <p className="text-xs text-gray-500 leading-normal">
               © 2025 Indian Railways. All rights reserved.
             </p>
