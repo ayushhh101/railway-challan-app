@@ -159,7 +159,7 @@ railway-challan-app/
 
 ## Author
 
-**Ayush** - [GitHub](https://github.com/ayushhh101) | [LinkedIn](your-linkedin)
+**Ayush** - [GitHub](https://github.com/ayushhh101) | [LinkedIn](www.linkedin.com/in/ayush-sawant28)
 
 ---
 
