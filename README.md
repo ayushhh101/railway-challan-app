@@ -12,8 +12,6 @@ Live API Docs: https://ayushhh101.github.io/railway-challan-api-docs/
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
-- [API and Docs](#api-and-docs)
-- [Security](#security)
 - [Project Structure](#project-structure)
 
 ---
@@ -103,7 +101,7 @@ Refer to /docs (C4 diagrams) for deeper component & context views.
 **Planned / In‑progress:** Offline challan queue + later sync
 
 ---
-## Notable Features
+## Features
 
 ### Core
 1. Digital Challan Issuing (multi‑step wizard: passenger details → offense → fine/payment meta → signature → proof upload).
@@ -117,29 +115,57 @@ Refer to /docs (C4 diagrams) for deeper component & context views.
 5. PDF generation & download for each challan.
 6. Proof image upload (file middleware + stored in /uploads/proofs).
 7. Role-based auth (Admin / TTE / Passenger) with protected routes.
-8. Admin Analytics: monthly trends, heatmap, top TTEs, reason distribution, recovery stats.
-9. Audit Logging & Anomaly Tracking (suspicious or outlier activity surfaced to admins).
-10. Partial Profile Field Updates (per‑field save for TTE profiles).
-11. Station seeding script for fast setup.
-12. Validation layer (shared middleware) and structured error responses.
-13. Reusable UI components (modals, charts, inputs, signature pad).
-14. Swagger OpenAPI documentation (public URL).
+8. Payment Integration (Test Mode) – Razorpay dummy integration for challan fine payment simulation
+9. Admin Analytics: monthly trends, heatmap, top TTEs, reason distribution, recovery stats.
+10. Audit Logging & Anomaly Tracking (suspicious or outlier activity surfaced to admins).
+11. Partial Profile Field Updates (per‑field save for TTE profiles).
+12. Station seeding script for fast setup.
+13. Validation layer (shared middleware) and structured error responses.
+14. Reusable UI components (modals, charts, inputs, signature pad).
+15. Swagger OpenAPI documentation (public URL).
 
-### Why the Offline Capability Matters (Resume Angle)
+## Payment System
+- Test Mode: Integrated Razorpay payment gateway (dummy credentials) for challan payment flow
+- Payment Tracking: Real-time status updates and payment verification
+- Multiple Methods: Supports card, UPI, net banking simulation
+
+### Why the Offline Capability Matters
 - Demonstrates resilience: maintains workflow in low connectivity (common in transit environments).
 - Improves data integrity: avoids losing issued challans mid‑entry.
 - Showcases forethought in UX + operational constraints.
 
 ---
 
-## Monorepo Layout
+## Project Structure
+
+Monorepo Layout
 
 ```
 railway-challan-app/
   backend/
   railway-challan-frontend/
-  docker-compose.yml
   README.md
 ```
 
+--- 
+
+### Planned Features
+- [ ] **Production Payment Gateway** – Move from test to live Razorpay with webhooks
+- [ ] **Email/SMS Notifications** – Challan issuance and payment confirmations
+- [ ] **Mobile App** – React Native version for field TTEs
+- [ ] **Advanced Analytics** – ML-based fraud detection and insights
+- [ ] **Multi-language Support** – Hindi, English, regional languages
+- [ ] **Automated Escalation** – Unpaid challan reminders and workflows
+
+## Author
+
+**Ayush** - [GitHub](https://github.com/ayushhh101) | [LinkedIn](your-linkedin)
+
+---
+
+## Acknowledgments
+
+Built to demonstrate production-ready full-stack development with modern web technologies, security best practices, and real-world operational considerations.
+
+---
 ...
