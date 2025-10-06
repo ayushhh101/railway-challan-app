@@ -42,7 +42,50 @@ Live API Docs: https://ayushhh101.github.io/railway-challan-api-docs/
 ---
 ## Screenshots
 
-Login Page 
+### Core Application Views
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_login.png" alt="Login Page" width="800">
+  <br>
+  <em>Secure login interface with Employee ID authentication</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_login_(1).png" alt="Admin Dashboard" width="1000">
+  <br>
+  <em>Admin dashboard with real-time analytics and system overview</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52_(5).png" alt="TTE Dashboard" width="1000">
+  <br>
+  <em>TTE dashboard showing performance statistics and recent activity</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_login_(5).png" alt="Offline Challan Workflow" width="900">
+  <br>
+  <em>Offline-first challan drafting with sync notification</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52.png" alt="Challan Details" width="1000">
+  <br>
+  <em>Complete challan information with passenger, train, offense, and payment details</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52_(2).png" alt="Security Anomaly Center" width="1000">
+  <br>
+  <em>Admin security monitoring with anomaly detection and resolution</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/localhost_5173_passenger_dashboard.png" alt="Passenger Portal" width="1000">
+  <br>
+  <em>Passenger self-service portal with challan history and payment status</em>
+</p>
+
 ---
 
 ## Architecture (High Level)
