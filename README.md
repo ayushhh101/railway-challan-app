@@ -42,53 +42,25 @@ Live API Docs: https://ayushhh101.github.io/railway-challan-api-docs/
 ---
 ## Screenshots
 
-### Core Application Views
+### Quick Preview
 
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_login.png" alt="Login Page" width="600">
-  <br>
-  <em>Secure login interface with Employee ID authentication</em>
-</p>
+| Login | Admin Dashboard | TTE Dashboard |
+|-------|-----------------|---------------|
+| ![Login](docs/screenshots/localhost_5173_login.png) | ![Admin](docs/screenshots/localhost_5173_login_(1).png) | ![TTE](docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52_(5).png) |
 
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_login_(1).png" alt="Admin Dashboard" width="700">
-  <br>
-  <em>Admin dashboard with real-time analytics and system overview</em>
-</p>
+| Offline Mode | Challan Details | Passenger Portal |
+|--------------|-----------------|------------------|
+| ![Offline](docs/screenshots/localhost_5173_login_(5).png) | ![Details](docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52.png) | ![Passenger](docs/screenshots/localhost_5173_passenger_dashboard.png) |
 
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52_(5).png" alt="TTE Dashboard" width="700">
-  <br>
-  <em>TTE dashboard showing performance statistics and recent activity</em>
-</p>
+| Security Anomaly Center |
+|-------------------------|
+| ![Anomaly](docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52_(2).png) |
 
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_login_(5).png" alt="Offline Challan Workflow" width="700">
-  <br>
-  <em>Offline-first challan drafting with sync notification</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52.png" alt="Challan Details" width="700">
-  <br>
-  <em>Complete challan information with passenger, train, offense, and payment details</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_challans_68e21eaa73ce699f7d538d52_(2).png" alt="Security Anomaly Center" width="700">
-  <br>
-  <em>Admin security monitoring with anomaly detection and resolution</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/localhost_5173_passenger_dashboard.png" alt="Passenger Portal" width="700">
-  <br>
-  <em>Passenger self-service portal with challan history and payment status</em>
-</p>
+*Click any image to view full size*
 
 ---
 
-**📸 [View Full-Size Screenshots →](docs/SCREENSHOTS.md)**
+**📸 [View Complete Application Gallery →](docs/SCREENSHOTS.md)** *(16+ detailed views)*
 
 ---
 
