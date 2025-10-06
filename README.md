@@ -1,17 +1,48 @@
 # RailChallan – Digital Railway Challan Platform
 
-A full‑stack MERN application for issuing and managing railway challans (penalties) digitally. Roles supported: Admin, Ticket Collector (TTE / TC), Passenger. Admins manage users and audits; TCs issue challans; Passengers view and (future) pay fines.
+A production-ready, full-stack MERN application modernizing railway penalty issuance and management. Built with role-based access control, offline-first architecture, real-time analytics, and comprehensive audit trails to handle the complexity of field operations across Admin, Ticket Collector (TTE/TC), and Passenger workflows.
 
 Live API Docs: https://ayushhh101.github.io/railway-challan-api-docs/
 
 ---
 
-## Tech Stack
+## Table of Contents
+- [Highlights](#highlights)
+- [Screenshots](#screenshots)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [API and Docs](#api-and-docs)
+- [Security](#security)
+- [Project Structure](#project-structure)
 
-**Frontend:** React + Vite, TailwindCSS, react-hot-toast, lucide-react  
-**Backend:** Node.js, Express, Mongoose (MongoDB)  
-**Other:** JWT Auth, Swagger (OpenAPI), Audit Logging, Seed script, C4 Architecture Diagrams  
-**Planned / In‑progress:** Offline challan queue + later sync
+---
+
+## ✨ Highlights
+
+### Technical Excellence
+- **Offline-First Architecture** – Resilient challan drafting with deferred sync for unreliable network conditions common in transit operations
+- **Enterprise-Grade Security** – Role-based + object-level authorization, input validation, rate limiting, and security headers (Helmet)
+- **Real-Time Analytics Dashboard** – Monthly trends, heatmaps, top performers, reason distribution, and recovery statistics for data-driven decisions
+- **Automated PDF Generation** – Professional challan receipts with digital signatures and proof attachments
+- **Intelligent Anomaly Detection** – Automated flagging of suspicious patterns and outlier activities for admin review
+
+### Operational Features
+- **Multi-Step Challan Workflow** – Guided wizard: passenger details → offense selection → fine calculation → signature capture → proof upload
+- **Passenger Self-Service Portal** – Secure onboarding with token-based verification and challan history access
+- **Comprehensive Audit Logging** – Full activity trail with actor tracking for compliance and accountability
+- **Admin Control Center** – User management, audit reviews, anomaly resolution, and system-wide reporting
+- **Partial Updates Support** – Granular profile field editing for TTEs to maintain accurate records
+
+### Developer Experience
+- 📚 **Complete OpenAPI/Swagger Documentation** – Interactive API explorer with realistic examples and consistent error schemas
+- 🗂️ **Clean Architecture** – Well-organized monorepo with separation of concerns and reusable components
+- 🌱 **Seeding Scripts** – Quick setup with pre-populated stations and test data
+
+---
+## Screenshots
+
+Login Page 
 ---
 
 ## Architecture (High Level)
@@ -28,6 +59,13 @@ Live API Docs: https://ayushhh101.github.io/railway-challan-api-docs/
                                              Passengers, Audits, Anomalies)
 ```
 
+### C4 Diagrams
+Context: ![Context](docs/architecture/l1_imresizer.png)
+Containers (Platform): ![Containers](docs/architecture/l2_imresizer.png)
+Backend Components: ![Backend Components](docs/architecture/l3_backend_imresizer.png)
+Frontend Components: ![Frontend Components](docs/architecture/l3_frontend_imresizer.png)
+Auth & Onboarding Flow: ![Auth Flow](docs/architecture/l3_backend_signup_imresizer.png)
+
 Key backend layers:
 - routes/ → maps HTTP paths
 - controllers/ → business logic
@@ -38,7 +76,14 @@ Key backend layers:
 Refer to /docs (C4 diagrams) for deeper component & context views.
 
 ---
+## Tech Stack
 
+**Frontend:** React + Vite, TailwindCSS, react-hot-toast, lucide-react  
+**Backend:** Node.js, Express, Mongoose (MongoDB)  
+**Other:** JWT Auth, Swagger (OpenAPI), Audit Logging, Seed script, C4 Architecture Diagrams  
+**Planned / In‑progress:** Offline challan queue + later sync
+
+---
 ## Notable Features
 
 ### Core

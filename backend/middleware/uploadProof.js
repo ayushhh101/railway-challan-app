@@ -43,10 +43,12 @@ const uploadProof = multer({
   storage,
   fileFilter,
   limits: { 
-    fileSize: 5 * 1024 * 1024, // 5mb limit 
-    files: 1, // only allow 1 file per upload
-    fieldSize: 1024, 
-    fields: 5 
+    fileSize: 5 * 1024 * 1024, // 5MB limit per file
+    files: 4, // FIXED: Allow up to 4 files (was 1)
+    fieldSize: 10 * 1024 * 1024, // FIXED: 10MB for field data (was 1024) - handles base64 signatures
+    fields: 20, // FIXED: Allow more form fields (was 5) - for all challan form data
+    fieldNameSize: 100, // ADDED: field name size limit
+    headerPairs: 2000 // ADDED: number of header pairs
   },
   // Handle multer errors gracefully
   onError: (err, next) => {

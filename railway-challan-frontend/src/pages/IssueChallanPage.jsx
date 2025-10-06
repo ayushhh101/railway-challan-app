@@ -33,6 +33,8 @@ export default function IssueChallanPage() {
     pendingChallans,
     messageRef,
     sigCanvas,
+    syncOfflineChallans,
+    syncLoading
   } = useIssueChallan(user, token, sendNotification);
 
   return (
@@ -91,7 +93,7 @@ export default function IssueChallanPage() {
               <button
                 className="bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white text-base font-medium px-6 rounded-lg transition-colors duration-200 disabled:opacity-60 leading-normal p-1.5"
                 onClick={async () => { await syncOfflineChallans(); }}
-                disabled={!pendingChallans.length || loading}
+                disabled={!pendingChallans.length || syncLoading}
                 type="button"
                 aria-label="Sync offline challans"
               >

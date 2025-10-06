@@ -40,7 +40,7 @@ exports.downloadChallanPDF = async (req, res) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    console.log(`PDF downloaded: ${challanId} by ${req.user.role}:${req.user.id} at ${new Date().toISOString()}`);
+    console.log(`PDF downloaded: ${challan._id} by ${req.user.role}:${req.user.id} at ${new Date().toISOString()}`);
 
     res.status(200).end(pdfBuffer); // sends raw buffer
   } catch (err) {

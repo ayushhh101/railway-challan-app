@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { saveOfflineChallan, getAllOfflineChallans, clearOfflineChallans, deleteOfflineChallan } from '../utils/db';
 import { FINE_RULES } from '../utils/fineRules';
@@ -12,6 +12,7 @@ export default function useIssueChallan(user, token, sendNotification) {
   const [fareAmount, setFareAmount] = useState(""); // for ticketless travel
   const [proofs, setProofs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
@@ -40,54 +41,91 @@ export default function useIssueChallan(user, token, sendNotification) {
 
   useEffect(() => { refreshPendingChallans(); }, []);
 
-  useEffect(() => {
-    // Offline sync logic, window event listeners, etc.
-    const syncOfflineChallans = async () => {
-      if (!navigator.onLine || !token) return;
 
-      const pending = await getAllOfflineChallans();
-      if (pending.length === 0) return;
+  // Offline sync logic, window event listeners, etc.
+  const syncOfflineChallans = useCallback(async () => {
+    if (!navigator.onLine || !token) return;
 
-      const failedLogs = [];
+    const pending = await getAllOfflineChallans();
+    if (pending.length === 0) return;
 
-      for (const challan of pending) {
-        try {
-          await axios.post(`${import.meta.env.VITE_API_URL}/api/challan/issue`, challan, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          console.log(" Synced challan:", challan);
-          await deleteOfflineChallan(challan.id);
-        } catch (e) {
-          console.error('Sync failed for challan:', challan, err);
-          failedLogs.push({ challan, error: e.message });
+    setSyncLoading(true);
+    const failedLogs = [];
+    let successCount = 0;
+
+    for (const challan of pending) {
+      try {
+        // FIXED: Convert to FormData format (same as online submission)
+        const formData = new FormData();
+        formData.append('trainNumber', challan.trainNumber || '');
+        formData.append('coachNumber', challan.coachNumber || '');
+        formData.append('passengerName', challan.passengerName || '');
+        formData.append('passengerAadharLast4', challan.passengerAadharLast4 || '');
+        formData.append('mobileNumber', challan.mobileNumber || '');
+        formData.append('reason', challan.reason || '');
+        formData.append('fineAmount', challan.fineAmount || '');
+        formData.append('location', challan.location || '');
+        formData.append('paymentMode', challan.paymentMode || '');
+        formData.append('paid', challan.paid || false);
+        formData.append('signature', challan.signature || '');
+
+        // Handle proof files if any (though offline probably won't have files)
+        if (challan.proofFiles && challan.proofFiles.length > 0) {
+          challan.proofFiles.forEach(file => formData.append("proofFiles", file));
         }
-      }
-      await clearOfflineChallans();
 
-      if (failedLogs.length > 0) {
-        localStorage.setItem('syncErrors', JSON.stringify(failedLogs));
-      }
-      else {
-        localStorage.removeItem('syncErrors');
-      }
-      refreshPendingChallans();
-    };
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/challan/issue`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // Don't set Content-Type - let browser set it for FormData
+          }
+        });
 
+        console.log("✅ Synced challan:", challan);
+        await deleteOfflineChallan(challan.id || challan._id);
+        successCount++;
+      } catch (err) {
+        console.error('❌ Sync failed for challan:', challan, err);
+        console.error('❌ Error response:', err.response?.data); // Log server error details
+        failedLogs.push({ challan, error: err.response?.data?.message || err.message });
+      }
+    }
+
+    await refreshPendingChallans();
+
+    if (failedLogs.length > 0) {
+      localStorage.setItem('syncErrors', JSON.stringify(failedLogs));
+    } else {
+      localStorage.removeItem('syncErrors');
+    }
+
+    setSyncLoading(false);
+    return { total: pending.length, failed: failedLogs.length, success: successCount };
+  }, [token]);
+
+  useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
-      setTimeout(syncOfflineChallans, 500);
+      // FIXED: Add slight delay for network stabilization
+      setTimeout(() => {
+        syncOfflineChallans();
+      }, 500);
     };
     const handleOffline = () => setIsOffline(true);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    if (navigator.onLine && token) syncOfflineChallans();
+
+    // Initial sync attempt if already online
+    if (navigator.onLine && token) {
+      syncOfflineChallans();
+    }
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [token]);
+  }, [token, syncOfflineChallans]);
 
   useEffect(() => {
     if ((error || success) && messageRef.current) {
@@ -310,5 +348,7 @@ export default function useIssueChallan(user, token, sendNotification) {
     pendingChallans,
     messageRef,
     sigCanvas,
+    syncOfflineChallans,
+    syncLoading
   };
 }
