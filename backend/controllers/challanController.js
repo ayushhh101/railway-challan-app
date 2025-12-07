@@ -14,6 +14,9 @@ const { validateFields, handleValidationErrors, sanitizeInput } = require('../mi
 const { commonValidations } = require('../middleware/commonValidations');
 const { body, query, param } = require('express-validator');
 
+//redis
+const { getCache, setCache, delCacheKey } = require('../utils/cache');
+
 const PASSENGER_ONBOARD_SECRET = process.env.PASSENGER_ONBOARD_SECRET;
 
 function generateOnboardingToken(passengerId) {
@@ -281,7 +284,7 @@ exports.issueChallan = async (req, res) => {
     } = req.body;
 
     const normalizedCoachNumber = coachNumber?.toString().toUpperCase().trim() || '';
-    
+
     if (paid && paymentMode === 'offline' && !signature) {
       const error = ErrorResponses.validationError('Digital signature required for offline payments');
       return res.status(error.statusCode).json(error);
@@ -395,6 +398,8 @@ exports.issueChallan = async (req, res) => {
 
     console.log("User issuing challan:", req.user);
     await newChallan.save();
+    await delCacheKey('challans:admin:all');
+    await delCacheKey(`challans:tte:${req.user.id}`);
 
     // if passenger has no password yet (new account or never onboarded), send onboarding notification
     if (!passengerUser.passwordHash) {
@@ -463,11 +468,17 @@ exports.issueChallan = async (req, res) => {
 
 // for admin to view all challans
 exports.getAllChallans = async (req, res) => {
+  const cacheKey = 'challans:admin:all';
   try {
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.status(200).json(cached);
+    }
     const challans = await Challan.find()
       .populate('issuedBy', 'name employeeId role zone') // show TTE details
       .sort({ issuedAt: -1 }); // newest first
 
+    await setCache(cacheKey, challans, 60);
     res.status(200).json({ total: challans.length, challans });
   } catch (error) {
     console.error('Error fetching all challans:', error);
@@ -478,8 +489,16 @@ exports.getAllChallans = async (req, res) => {
 
 // for TTE to view their own challans
 exports.getMyChallans = async (req, res) => {
+  const cacheKey = `challans:tte:${req.user.id}`;
   try {
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.status(200).json(cached);
+    }
+
     const challans = await Challan.find({ issuedBy: req.user.id }).sort({ createdAt: -1 }).populate('issuedBy');
+
+    await setCache(cacheKey, challans, 60);
     res.status(200).json(challans);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching challans', error: err.message });
@@ -625,6 +644,9 @@ exports.updateChallan = async (req, res) => {
 
     await challan.save();
 
+    await delCacheKey('challans:admin:all');
+    await delCacheKey(`challans:tte:${challan.issuedBy.toString()}`);
+
     res.json({ message: 'Challan updated successfully', challan });
   } catch (err) {
     console.error('Update Challan Error:', err);
@@ -701,6 +723,9 @@ exports.markChallanAsPaid = async (req, res) => {
 
     challan.paid = true;
     await challan.save();
+    await delCacheKey('challans:admin:all');
+    await delCacheKey(`challans:tte:${challan.issuedBy.toString()}`);
+
 
     res.status(200).json({
       message: 'Challan marked as paid successfully',
