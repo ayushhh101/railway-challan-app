@@ -5,6 +5,9 @@ const { ErrorResponses } = require('../utils/errorResponses');
 const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
 const { commonValidations } = require('../middleware/commonValidations');
 
+//redis
+const { getCache, setCache, delCacheKey } = require('../utils/cache');
+
 // Validation middleware definitions
 
 const dashboardValidation = [
@@ -35,7 +38,18 @@ const resetPasswordValidation = [
 // Controller functions
 
 exports.getDashboardStats = async (req, res) => {
+  const cacheKey = 'analytics:dashboard:main';
+
   try {
+
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json({
+        ...cached,
+        source: 'cache',
+      });
+    }
+    
     const now = new Date();
     const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -127,7 +141,7 @@ exports.getDashboardStats = async (req, res) => {
     const unpaidChallansChange = unpaidChallansLast === 0 ? (unpaidChallansThis ? 100 : 0) : ((unpaidChallansThis - unpaidChallansLast) / Math.max(unpaidChallansLast, 1)) * 100;
 
 
-    res.json({
+    const result = {
       totalChallans,
       totalChallansChange: Number(totalChallansChange.toFixed(2)),
       totalFineCollected: totalFineCollected[0]?.total || 0,
@@ -139,6 +153,14 @@ exports.getDashboardStats = async (req, res) => {
       challansPerTrain,
       challansByReason,
       monthlyTrend,
+    };
+
+    // 3️⃣ Save to cache for 5 minutes
+    await setCache(cacheKey, result, 300);
+
+    return res.json({
+      ...result,
+      source: 'db',
     });
   } catch (error) {
     console.error("Admin dashboard error:", error);
