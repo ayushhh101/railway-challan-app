@@ -7,8 +7,6 @@ const { validateFields, handleValidationErrors, sanitizeInput } = require('../mi
 const { commonValidations } = require('../middleware/commonValidations');
 const { body } = require('express-validator');
 
-const JWT_SECRET = process.env.JWT_SECRET
-
 const generateAccessToken = (user) => {
   return jwt.sign(
     {
@@ -25,7 +23,6 @@ const generateRefreshToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
 };
 
-// Validation middlewares
 const registerValidation = [
   validateFields({
     query: [],
@@ -33,6 +30,7 @@ const registerValidation = [
   }),
   commonValidations.requiredString('name'),
   commonValidations.requiredString('employeeId'),
+
   body('name')
     .trim()
     .isLength({ min: 2, max: 50 })
@@ -123,7 +121,7 @@ const logoutValidation = [
   handleValidationErrors
 ];
 
-// Controller functions
+// controller functions
 exports.register = async (req, res) => {
   try {
     const { name, employeeId, email, password, phone, profilePic, role, zone, currentStation, designation, dateOfJoining } = req.body;
@@ -193,7 +191,6 @@ exports.login = async (req, res) => {
       return res.status(error.statusCode).json(error);
     }
 
-    // updates last login time
     user.lastLogin = new Date();
     await user.save();
 
@@ -202,9 +199,9 @@ exports.login = async (req, res) => {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true, // Use HTTPS
+      secure: true, // use https
       sameSite: 'Strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 din
     });
 
     await logAudit({
@@ -233,7 +230,7 @@ exports.login = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Login error:', error);
+    console.error('Login error:', err);
     const serverError = ErrorResponses.serverError();
     return res.status(serverError.statusCode).json(serverError);
   }

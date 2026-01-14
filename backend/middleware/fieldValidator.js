@@ -2,14 +2,11 @@ const { ErrorResponses } = require('../utils/errorResponses');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss');
 
-/**
- * Simple middleware to validate allowed fields and prevent extra fields
- * Usage: validateFields({ query: ['month', 'year'], body: ['userId', 'password'] })
- */
+//validate allowed fields and prevent extra fields
 const validateFields = (allowedFields = {}) => {
   return (req, res, next) => {
     try {
-      // Check query parameters
+      // check query parameters
       if (allowedFields.query !== undefined) {
         const actualQueryFields = Object.keys(req.query || {});
         const extraQueryFields = actualQueryFields.filter(
@@ -24,7 +21,7 @@ const validateFields = (allowedFields = {}) => {
         }
       }
 
-      // Check body fields
+      // check body fields
       if (allowedFields.body !== undefined) {
         const actualBodyFields = Object.keys(req.body || {});
         const extraBodyFields = actualBodyFields.filter(
@@ -39,7 +36,7 @@ const validateFields = (allowedFields = {}) => {
         }
       }
 
-      next(); // All good, proceed
+      next(); // all good, proceed
     } catch (error) {
       console.error('Field validation error:', error);
       const serverError = ErrorResponses.serverError();
@@ -48,9 +45,7 @@ const validateFields = (allowedFields = {}) => {
   };
 };
 
-/**
- * Middleware to handle express-validator errors in a consistent way
- */
+//handle express validator errors in a consistent way
 const handleValidationErrors = (req, res, next) => {
   const { validationResult } = require('express-validator');
   const errors = validationResult(req);
@@ -64,17 +59,14 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-/**
- * Sanitize all string inputs to prevent XSS and NoSQL injection
- */
 const sanitizeInput = (req, res, next) => {
   try {
-    // Remove any keys that start with '$' or contain '.'
+    // remove any keys that start with $ or contain .
     mongoSanitize.sanitize(req.body);
     mongoSanitize.sanitize(req.query);
     mongoSanitize.sanitize(req.params);
 
-    // XSS protection for string values
+    // xss protection for string values
     const sanitizeObject = (obj) => {
       for (const key in obj) {
         if (typeof obj[key] === 'string') {

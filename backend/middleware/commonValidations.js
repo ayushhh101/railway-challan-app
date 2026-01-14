@@ -1,7 +1,7 @@
 const { query, body, param } = require('express-validator');
 
 const commonValidations = {
-  // MongoDB ObjectId validation
+  // mongoDB objectId
   mongoId: (fieldName, location = 'body') => {
     let validator;
     if (location === 'query') {
@@ -16,24 +16,20 @@ const commonValidations = {
       .withMessage(`${fieldName} must be a valid MongoDB ObjectId`);
   },
 
-  // Month validation (01-12)
   month: () => query('month')
     .matches(/^(0[1-9]|1[0-2])$/)
     .withMessage('Month must be in format 01-12'),
 
-  // Year validation (4 digits)
   year: () => query('year')
     .matches(/^\d{4}$/)
     .withMessage('Year must be a 4-digit number'),
 
-  // Password validation
   password: (fieldName = 'password') => body(fieldName)
     .isLength({ min: 8 })
     .withMessage(`${fieldName} must be at least 8 characters long`)
     .isString()
     .withMessage(`${fieldName} must be a string`),
 
-  // Required string validation
   requiredString: (fieldName, location = 'body') => {
     const validator = location === 'query' ? query(fieldName) : body(fieldName);
     return validator
@@ -43,7 +39,6 @@ const commonValidations = {
       .withMessage(`${fieldName} must be a string`);
   },
 
-  // Email validation with sanitization
   email: (fieldName = 'email', location = 'body') => {
     const validator = location === 'query' ? query(fieldName) : body(fieldName);
     return validator
@@ -53,27 +48,22 @@ const commonValidations = {
       .trim();
   },
 
-  // User role validation
   userRole: (fieldName = 'role') => body(fieldName)
     .isIn(['admin', 'tte', 'passenger'])
     .withMessage(`${fieldName} must be one of: admin, tte, passenger`),
 
-  // Employee ID validation
   employeeId: (fieldName = 'employeeId') => body(fieldName)
     .matches(/^[A-Z]{2}\d{6}$/)
     .withMessage(`${fieldName} must be in format: XX123456 (2 letters + 6 digits)`),
 
-  // Zone validation
   zone: (fieldName = 'zone') => body(fieldName)
     .isIn(['Harbour', 'TransHarbour', 'Eastern', 'Western', 'Central'])
     .withMessage(`${fieldName} must be a valid railway zone`),
 
-  // Phone number validation
   phoneNumber: (fieldName = 'phoneNumber') => body(fieldName)
     .matches(/^[6-9]\d{9}$/)
     .withMessage(`${fieldName} must be a valid 10-digit Indian mobile number`),
 
-  // Name validation with sanitization
   name: (fieldName = 'name', location = 'body') => {
     const validator = location === 'query' ? query(fieldName) : body(fieldName);
     return validator
@@ -85,13 +75,11 @@ const commonValidations = {
       .escape();
   },
 
-  // Fine amount validation
   fineAmount: (fieldName = 'fineAmount') => body(fieldName)
     .isFloat({ min: 1, max: 50000 })
     .withMessage(`${fieldName} must be between ₹1 and ₹50,000`)
     .toFloat(),
 
-  // Date range validation
   dateRange: () => [
     query('startDate')
       .optional()
@@ -111,7 +99,6 @@ const commonValidations = {
       })
   ],
 
-  // Pagination validation
   pagination: () => [
     query('page')
       .optional()
@@ -125,8 +112,7 @@ const commonValidations = {
       .toInt()
   ],
 
-  // Status validation
-  status: (fieldName = 'status', allowedValues = ['active', 'inactive']) => body(fieldName)
+  status: (fieldName = 'status', allowedValues = ['active', 'inactive', 'retired']) => body(fieldName)
     .isIn(allowedValues)
     .withMessage(`${fieldName} must be one of: ${allowedValues.join(', ')}`),
 

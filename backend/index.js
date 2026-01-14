@@ -70,7 +70,7 @@ app.use('/api/redis', require('./routes/redisRoutes.js'));
 // starts the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
-   await initRedis();
+   //await initRedis();
   console.log(`Server started on port ${PORT}`);
   console.log(`API Documentation available at https://ayushhh101.github.io/railway-challan-api-docs/`);
 });
