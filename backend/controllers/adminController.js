@@ -8,15 +8,13 @@ const { commonValidations } = require('../middleware/commonValidations');
 //redis
 const { getCache, setCache, delCacheKey } = require('../utils/cache');
 
-// Validation middleware definitions
-
 const dashboardValidation = [
   validateFields({ query: [], body: [] }),
   handleValidationErrors
 ];
 
 const monthlyReportValidation = [
-  validateFields({ query: ['month', 'year'], body: [] }), // Only month and year in query
+  validateFields({ query: ['month', 'year'], body: [] }),
   commonValidations.month(),
   commonValidations.year(),
   handleValidationErrors
@@ -35,13 +33,11 @@ const resetPasswordValidation = [
   handleValidationErrors
 ];
 
-// Controller functions
-
+// controller functions
 exports.getDashboardStats = async (req, res) => {
   const cacheKey = 'analytics:dashboard:main';
 
   try {
-
     const cached = await getCache(cacheKey);
     if (cached) {
       return res.json({
@@ -79,7 +75,9 @@ exports.getDashboardStats = async (req, res) => {
 
       Challan.aggregate([
         { $group: { _id: "$issuedBy", count: { $sum: 1 } } },
+        //join
         { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "tte" } },
+        //make it flat
         { $unwind: "$tte" },
         { $project: { _id: 0, tteName: "$tte.name", employeeId: "$tte.employeeId", count: 1 } },
         { $sort: { count: -1 } },
@@ -105,6 +103,7 @@ exports.getDashboardStats = async (req, res) => {
       Challan.countDocuments({ issuedAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } })
     ]);
 
+    //percent change 
     const totalChallansChange = challansLastMonth === 0 ? 100 : ((challansThisMonth - challansLastMonth) / Math.max(challansLastMonth, 1)) * 100;
 
     const [fineThisMonthAgg, fineLastMonthAgg] = await Promise.all([
@@ -155,7 +154,6 @@ exports.getDashboardStats = async (req, res) => {
       monthlyTrend,
     };
 
-    // 3️⃣ Save to cache for 5 minutes
     await setCache(cacheKey, result, 300);
 
     return res.json({

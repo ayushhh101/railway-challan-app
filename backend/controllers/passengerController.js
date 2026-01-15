@@ -1,6 +1,3 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const Passenger = require("../models/passengerModel");
 const Challan = require("../models/challanModel");
 const { ErrorResponses } = require('../utils/errorResponses');
 const { validateFields, handleValidationErrors, sanitizeInput } = require('../middleware/fieldValidator');
@@ -16,7 +13,6 @@ const myChallansValidation = [
 
 exports.myChallans = async (req, res) => {
   try {
-    // Only fetch challans linked to this passenger
     const challans = await Challan.find({ passenger: req.user.id }).sort({ issuedAt: -1 });
     res.json({
       success: true,

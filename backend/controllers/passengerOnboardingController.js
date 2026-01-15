@@ -7,14 +7,13 @@ const { body, query } = require('express-validator');
 
 const ONBOARDING_SECRET = process.env.PASSENGER_ONBOARD_SECRET;
 
-// Validation middlewares
 const verifyOnboardingTokenValidation = [
   sanitizeInput,
   validateFields({
     query: ['token'],
     body: []
   }),
-  // Enhanced token validation
+  
   query('token')
     .notEmpty()
     .withMessage('Token is required')
@@ -30,13 +29,12 @@ const verifyOnboardingTokenValidation = [
 ];
 
 const setPasswordValidation = [
-  sanitizeInput, // ⚠️ CRITICAL: Add XSS protection
+  sanitizeInput,
   validateFields({
     query: [],
     body: ['token', 'password']
   }),
 
-  // Enhanced token validation
   body('token')
     .notEmpty()
     .withMessage('Token is required')
@@ -54,7 +52,6 @@ const setPasswordValidation = [
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character')
     .custom((value) => {
-      // Additional security checks
       const commonPasswords = ['password', '12345678', 'qwerty123', 'admin123'];
       if (commonPasswords.some(common => value.toLowerCase().includes(common))) {
         throw new Error('Password is too common');
@@ -97,7 +94,6 @@ exports.setPasswordAndCompleteOnboarding = async (req, res) => {
   const { token, password } = req.body;
 
   try {
-    // verify token to get passengerId
     const payload = jwt.verify(token, ONBOARDING_SECRET);
 
     const passenger = await Passenger.findById(payload.passengerId);
@@ -111,7 +107,6 @@ exports.setPasswordAndCompleteOnboarding = async (req, res) => {
       return res.status(error.statusCode).json(error);
     }
 
-    // Hash new password securely
     const hashedPassword = await bcrypt.hash(password, 10);
     passenger.passwordHash = hashedPassword;
 

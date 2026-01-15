@@ -26,7 +26,6 @@ const generateRefreshToken = (passenger) => {
 
 async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
   try {
-    // Integration with SMS/email provider here
     console.log(`Sending onboarding SMS to +91${mobileNumber}:`);
     console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
   } catch (error) {
@@ -55,7 +54,6 @@ const registerValidation = [
     .isNumeric()
     .withMessage('Aadhar must contain only numbers')
     .custom(async (value, { req }) => {
-      // Check for existing passenger with same name and aadhar
       const existingPassenger = await Passenger.findOne({
         aadharLast4: value,
         name: { $regex: new RegExp(`^${req.body.name.trim()}$`, 'i') }
@@ -105,7 +103,6 @@ const loginValidation = [
   handleValidationErrors
 ];
 
-// Validation middleware for refresh token
 const refreshTokenValidation = [
   validateFields({
     query: [],
@@ -114,7 +111,6 @@ const refreshTokenValidation = [
   handleValidationErrors
 ];
 
-// Validation middleware for logout
 const logoutValidation = [
   validateFields({
     query: [],
@@ -154,7 +150,6 @@ exports.register = async (req, res) => {
 
     await newPassenger.save();
 
-    
     await logAudit({
       action: 'PASSENGER_REGISTER',
       performedBy: newPassenger._id,
@@ -194,13 +189,11 @@ exports.login = async (req, res) => {
         !passenger.lastOnboardingTokenSent ||
         now - new Date(passenger.lastOnboardingTokenSent).getTime() > cooldownMinutes * 60 * 1000
       ) {
-        // generate a new onboarding token and update timestamp
         onboardingToken = generateOnboardingToken(passenger._id);
         passenger.lastOnboardingTokenSent = new Date(now);
         passenger.lastOnboardingToken = onboardingToken;
         shouldSend = true;
 
-        // optionally, save async but don't block
         passenger.save().catch(console.error);
       }
 
@@ -233,9 +226,9 @@ exports.login = async (req, res) => {
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true, // Use HTTPS
+      secure: true, 
       sameSite: 'Strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
     });
 
     try {

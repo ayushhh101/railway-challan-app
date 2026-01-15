@@ -74,7 +74,6 @@ const updateTTEProfileValidation = [
     .matches(/^[a-zA-Z\s-]+$/)
     .withMessage('Station name can only contain letters, spaces, and hyphens'),
 
-  // Designation validation
   body('designation')
     .optional()
     .trim()
@@ -83,7 +82,6 @@ const updateTTEProfileValidation = [
     .matches(/^[a-zA-Z\s-]+$/)
     .withMessage('Designation can only contain letters, spaces, and hyphens'),
 
-  // Date of joining validation
   body('dateOfJoining')
     .optional()
     .isISO8601()
@@ -98,9 +96,9 @@ const updateTTEProfileValidation = [
         throw new Error('Date of joining cannot be more than 1 year in the future');
       }
 
-      const minDate = new Date('1950-01-01');
+      const minDate = new Date('1945-01-01');
       if (value < minDate) {
-        throw new Error('Date of joining cannot be before 1950');
+        throw new Error('Date of joining cannot be before 1945');
       }
 
       return true;
@@ -179,11 +177,6 @@ exports.getTTEDetailsForAdmin = async (req, res) => {
   } catch (error) {
     console.error('Get TTE details error:', error);
 
-    if (error.name === 'CastError') {
-      const validationError = ErrorResponses.validationError('Invalid TTE ID format');
-      return res.status(validationError.statusCode).json(validationError);
-    }
-
     const serverError = ErrorResponses.serverError();
     return res.status(serverError.statusCode).json(serverError);
   }
@@ -194,7 +187,6 @@ exports.updateTTEProfileByAdmin = async (req, res) => {
     const tteId = req.params.id;
     const updateData = req.body;
 
-    // Check if at least one field is provided
     const allowedFields = ['name', 'email', 'phone', 'zone', 'currentStation', 'designation', 'dateOfJoining'];
     const fieldsToUpdate = Object.keys(updateData).filter(field => allowedFields.includes(field));
 
@@ -213,11 +205,10 @@ exports.updateTTEProfileByAdmin = async (req, res) => {
       return res.status(error.statusCode).json(error);
     }
 
-    // Store original values for audit (only for fields being updated)
     const originalData = {};
     const updatedFields = {};
 
-    // Update only the provided fields
+    // update only provided fields
     fieldsToUpdate.forEach(field => {
       originalData[field] = tte[field];
 
@@ -232,7 +223,7 @@ exports.updateTTEProfileByAdmin = async (req, res) => {
           break;
         case 'phone':
           tte.phone = updateData.phone.trim();
-          updatedFields.phone = tte.phone.substring(0, 6) + '****'; // Masked for audit
+          updatedFields.phone = tte.phone.substring(0, 6) + '****'; 
           break;
         case 'zone':
           tte.zone = updateData.zone.trim().toUpperCase();
@@ -256,7 +247,6 @@ exports.updateTTEProfileByAdmin = async (req, res) => {
     tte.updatedAt = new Date();
     await tte.save();
 
-    // Log audit trail with only updated fields
     try {
       const logAudit = require('../utils/auditLogger');
       await logAudit({
@@ -278,7 +268,6 @@ exports.updateTTEProfileByAdmin = async (req, res) => {
       console.error('Audit logging failed:', auditError);
     }
 
-    // Return updated profile (excluding sensitive data)
     const updatedProfile = {
       _id: tte._id,
       name: tte.name,
@@ -328,6 +317,5 @@ exports.updateTTEProfileByAdmin = async (req, res) => {
   }
 };
 
-// Export validation middleware
 exports.getTTEProfileValidation = getTTEProfileValidation;
 exports.updateTTEProfileValidation = updateTTEProfileValidation;

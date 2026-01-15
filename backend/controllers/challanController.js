@@ -29,7 +29,7 @@ async function sendOnboardingNotification(mobileNumber, name, onboardingUrl) {
   console.log(`Hello ${name}, you have a challan. Register here: ${onboardingUrl}`);
 }
 
-// Validation middleware for issue challan
+// validations
 const issueChallanValidation = [
   sanitizeInput,
   validateFields({
@@ -83,22 +83,18 @@ const issueChallanValidation = [
   handleValidationErrors
 ];
 
-// Validation for get all challans
 const getAllChallansValidation = [
   validateFields({ query: [], body: [] })
 ];
 
-// Validation for get my challans
 const getMyChallansValidation = [
   validateFields({ query: [], body: [] })
 ];
 
-// Validation for get challan locations
 const getChallanLocationsValidation = [
   validateFields({ query: [], body: [] })
 ];
 
-// Validation for search challans
 const searchChallansValidation = [
   sanitizeInput,
   validateFields({
@@ -130,14 +126,12 @@ const searchChallansValidation = [
   handleValidationErrors
 ];
 
-// Validation for get challan details
 const getChallanDetailsValidation = [
   validateFields({ query: [], body: [] }),
   commonValidations.mongoId('id', 'param'),
   handleValidationErrors
 ];
 
-// Validation for download bulk PDF
 const downloadBulkPDFValidation = [
   sanitizeInput,
   validateFields({ query: [], body: ['challanIds'] }),
@@ -157,7 +151,6 @@ const downloadBulkPDFValidation = [
   handleValidationErrors
 ];
 
-// Validation for update challan
 const updateChallanValidation = [
   sanitizeInput,
   validateFields({
@@ -192,7 +185,6 @@ const updateChallanValidation = [
   handleValidationErrors
 ];
 
-// Validation for update anomaly
 const updateAnomalyValidation = [
   validateFields({ query: [], body: [] }),
   param('anomalyId')
@@ -204,14 +196,12 @@ const updateAnomalyValidation = [
   handleValidationErrors
 ];
 
-// Validation for get challan
 const getChallanValidation = [
   validateFields({ query: [], body: [] }),
   commonValidations.mongoId('id', 'param'),
   handleValidationErrors
 ];
 
-// Validation for user history
 const userHistoryValidation = [
   sanitizeInput,
   validateFields({ query: ['name', 'aadhar'], body: [] }),
@@ -228,14 +218,12 @@ const userHistoryValidation = [
   handleValidationErrors
 ];
 
-// Validation for mark challan as paid
 const markChallanAsPaidValidation = [
   validateFields({ query: [], body: [] }),
   commonValidations.mongoId('id', 'param'),
   handleValidationErrors
 ];
 
-// Validation for passenger history
 const getPassengerHistoryValidation = [
   sanitizeInput,
   validateFields({
@@ -267,6 +255,7 @@ const getPassengerHistoryValidation = [
   handleValidationErrors
 ];
 
+// controllers
 exports.issueChallan = async (req, res) => {
   try {
     let {
@@ -279,8 +268,8 @@ exports.issueChallan = async (req, res) => {
       fineAmount,
       location = '',
       paymentMode = '',
-      paid = false, // default to false if not provided
-      signature = '', // base64 encoded image
+      paid = false, 
+      signature = '',
     } = req.body;
 
     const normalizedCoachNumber = coachNumber?.toString().toUpperCase().trim() || '';
@@ -308,8 +297,7 @@ exports.issueChallan = async (req, res) => {
       }
     }
 
-    // lookup station lat/lng
-    const escapedLocation = location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');//TODO: usecase of this
+    const escapedLocation = location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const station = await Station.findOne({
       name: { $regex: `^${escapedLocation}$`, $options: 'i' }
     });
@@ -319,7 +307,6 @@ exports.issueChallan = async (req, res) => {
       return res.status(error.statusCode).json(error);
     }
 
-    // check if there are different name but same aadhar
     const existingUser = await Challan.findOne({ passengerAadharLast4 });
     if (existingUser) {
       if (existingUser.passengerName.trim().toLowerCase() !== passengerName.trim().toLowerCase()) {
@@ -328,9 +315,9 @@ exports.issueChallan = async (req, res) => {
       }
     }
 
-    console.log('Searching for passenger user with mob:', mobileNumber, 'aad:', passengerAadharLast4);
-
     let passengerUser = null;
+    let shouldSendOnboarding = false;
+
     if (mobileNumber && passengerAadharLast4) {
       passengerUser = await Passenger.findOne({
         mobileNumber: mobileNumber.toString(),
@@ -340,16 +327,10 @@ exports.issueChallan = async (req, res) => {
       passengerUser = await Passenger.findOne({ mobileNumber: mobileNumber.toString() });
     }
 
+    //onboarding logic
     if (passengerUser) {
       if (!passengerUser.passwordHash) {
-        // resend onboarding instructions if passenger has not set a password yet
-        const onboardingToken = generateOnboardingToken(passengerUser._id);
-        const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
-        await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
-
-        return res.status(409).json({
-          message: "Passenger already exists. Onboarding instructions have been resent if required."
-        });
+        shouldSendOnboarding = true; 
       }
       // otherwise continue as usual to create the challan...
     } else {
@@ -368,15 +349,18 @@ exports.issueChallan = async (req, res) => {
         await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
 
       } catch (e) {
-        // Race condition safety: try to find user again
         console.warn(`Passenger user creation failed: ${e.message}`);
         passengerUser = await Passenger.findOne({
           mobileNumber: mobileNumber.toString(),
           aadharLast4: passengerAadharLast4
         });
+        if (passengerUser && !passengerUser.passwordHash) {
+        shouldSendOnboarding = true;
+        }
       }
     }
-    //creates challan
+
+    //create challan
     const newChallan = new Challan({
       issuedBy: req.user.id, //set by authMiddleware
       trainNumber,
@@ -401,11 +385,9 @@ exports.issueChallan = async (req, res) => {
     await delCacheKey('challans:admin:all');
     await delCacheKey(`challans:tte:${req.user.id}`);
 
-    // if passenger has no password yet (new account or never onboarded), send onboarding notification
-    if (!passengerUser.passwordHash) {
+    if (shouldSendOnboarding && passengerUser) {
       const onboardingToken = generateOnboardingToken(passengerUser._id);
       const onboardingUrl = `${process.env.FRONTEND_URL}/passenger/onboard?token=${onboardingToken}`;
-      // Send SMS or email to passenger with registration link
       await sendOnboardingNotification(passengerUser.mobileNumber, passengerUser.name, onboardingUrl);
     }
 
@@ -466,7 +448,7 @@ exports.issueChallan = async (req, res) => {
   }
 };
 
-// for admin to view all challans
+// (admin) to view all challans TODO: pagination 
 exports.getAllChallans = async (req, res) => {
   const cacheKey = 'challans:admin:all';
   try {
@@ -475,7 +457,7 @@ exports.getAllChallans = async (req, res) => {
       return res.status(200).json(cached);
     }
     const challans = await Challan.find()
-      .populate('issuedBy', 'name employeeId role zone') // show TTE details
+      .populate('issuedBy', 'name employeeId role zone')
       .sort({ issuedAt: -1 }); // newest first
 
     await setCache(cacheKey, challans, 60);
@@ -487,7 +469,7 @@ exports.getAllChallans = async (req, res) => {
   }
 };
 
-// for TTE to view their own challans
+// (tc) to view their own challans TODO: pagination
 exports.getMyChallans = async (req, res) => {
   const cacheKey = `challans:tte:${req.user.id}`;
   try {
@@ -505,7 +487,7 @@ exports.getMyChallans = async (req, res) => {
   }
 };
 
-// get challan locations
+// (heatmap)
 exports.getChallanLocations = async (req, res) => {
   try {
     const result = await Challan.aggregate([
@@ -564,7 +546,7 @@ exports.searchChallans = async (req, res) => {
 // get details of a specific challan by ID
 exports.getChallanDetails = async (req, res) => {
   try {
-    const challan = await Challan.findById(req.params.id).populate('issuedBy'); // assuming 'issuedBy' references TTE
+    const challan = await Challan.findById(req.params.id).populate('issuedBy'); 
 
     if (!challan) {
       const error = ErrorResponses.challanNotFound();
@@ -590,7 +572,7 @@ exports.getChallanDetails = async (req, res) => {
   }
 };
 
-// download bulk challan PDFs as a zip file
+// download bulk challan PDFs as zip file
 exports.downloadBulkChallanPDF = async (req, res) => {
   try {
     const { challanIds } = req.body;
@@ -634,7 +616,7 @@ exports.updateChallan = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this challan' });
     }
 
-    // Update only allowed fields
+    // update only allowed fields
     const allowedFields = ['trainNumber', 'passengerName', 'passengerAadhar', 'reason', 'fineAmount', 'location'];
     allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {
@@ -658,7 +640,7 @@ exports.updateAnomaly = async (req, res) => {
   try {
     const { status, anomalyId } = req.params;
 
-    const updatedAnomaly = await Anomaly.findByIdAndUpdate(req.params.anomalyId, { status }, { new: true });
+    const updatedAnomaly = await Anomaly.findByIdAndUpdate(anomalyId, { status }, { new: true });
 
     if (!updatedAnomaly) {
       const error = ErrorResponses.notFound('Anomaly');
@@ -756,11 +738,9 @@ exports.markChallanAsPaid = async (req, res) => {
 
 exports.getPassengerHistory = async (req, res) => {
   try {
-    const name = req.query.name?.trim();
-    const aadhar = req.query.aadharLast4?.trim();
-    const dateFrom = req.query.dateFrom;
-    const dateTo = req.query.dateTo;
-    const paymentStatus = req.query.paymentStatus;
+    const { name, aadhar, dateFrom, dateTo, paymentStatus } = req.query;
+    name = req.query.name?.trim();
+    aadhar = req.query.aadharLast4?.trim();
 
     const query = {};
     if (name) {
@@ -805,7 +785,6 @@ exports.getPassengerHistory = async (req, res) => {
   }
 }
 
-// Export validation middleware for use in routes
 exports.issueChallanValidation = issueChallanValidation;
 exports.getAllChallansValidation = getAllChallansValidation;
 exports.getMyChallansValidation = getMyChallansValidation;
