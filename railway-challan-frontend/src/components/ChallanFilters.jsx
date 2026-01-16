@@ -154,8 +154,8 @@ export default function ChallanFilters({ filters, setFilters, handleFilter, clea
                 className="w-full appearance-none border-2 border-slate-200 hover:border-slate-400 focus:border-blue-500 rounded-xl px-4 py-3 pr-12 bg-white focus:ring-0 transition-all duration-200 outline-none text-base"
               >
                 <option value="">All Status</option>
-                <option value="paid">✅ Paid</option>
-                <option value="unpaid">❌ Unpaid</option>
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                 <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

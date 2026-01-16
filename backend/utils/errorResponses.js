@@ -64,7 +64,6 @@ const ERROR_MESSAGES = {
   [ERROR_CODES.DATABASE_ERROR]: 'Database error occurred. Please try again',
 };
 
-// Helper function to create consistent error responses
 const createErrorResponse = (errorCode, customMessage = null, statusCode = 500) => {
   return {
     success: false,
@@ -77,7 +76,6 @@ const createErrorResponse = (errorCode, customMessage = null, statusCode = 500) 
   };
 };
 
-// Quick error response functions
 const ErrorResponses = {
   // 400 errors
   validationError: (customMessage = null) => 

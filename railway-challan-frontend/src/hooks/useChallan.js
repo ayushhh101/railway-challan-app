@@ -77,16 +77,16 @@ export default function useIssueChallan(user, token, sendNotification) {
         await axios.post(`${import.meta.env.VITE_API_URL}/api/challan/issue`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            // Don't set Content-Type - let browser set it for FormData
+            // dont set Content-Type - let browser set it for FormData
           }
         });
 
-        console.log("✅ Synced challan:", challan);
+        console.log(" Synced challan:", challan);
         await deleteOfflineChallan(challan.id || challan._id);
         successCount++;
       } catch (err) {
-        console.error('❌ Sync failed for challan:', challan, err);
-        console.error('❌ Error response:', err.response?.data); // Log server error details
+        console.error('Sync failed for challan:', challan, err);
+        console.error('Error response:', err.response?.data); // Log server error details
         failedLogs.push({ challan, error: err.response?.data?.message || err.message });
       }
     }

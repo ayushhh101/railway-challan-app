@@ -1,17 +1,16 @@
 const { redisClient } = require("../config/redisClient");
 
-// generic helpers you’ll reuse later
 async function setJson(key, value, ttlSeconds) {
   const json = JSON.stringify(value);
   if (ttlSeconds) {
-    await redisClient.set(key, json, { EX: ttlSeconds }); // SET + EXPIRE
+    await redisClient.set(key, json, { EX: ttlSeconds }); 
   } else {
     await redisClient.set(key, json);
   }
 }
 
 async function getJson(key) {
-  const raw = await redisClient.get(key); // GET
+  const raw = await redisClient.get(key); 
   if (!raw) return null;
   try {
     return JSON.parse(raw);
@@ -20,11 +19,10 @@ async function getJson(key) {
   }
 }
 
-// Day-1: demo helpers for INCR + EXPIRE
 async function incrWithTtl(key, windowSeconds) {
-  const count = await redisClient.incr(key); // INCR
+  const count = await redisClient.incr(key); 
   if (count === 1) {
-    await redisClient.expire(key, windowSeconds); // EXPIRE
+    await redisClient.expire(key, windowSeconds); 
   }
   const ttl = await redisClient.ttl(key);
   return { count, ttl };

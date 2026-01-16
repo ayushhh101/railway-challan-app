@@ -352,7 +352,7 @@ export default function VerifyChallan() {
                 </svg>
               </div>
               <p className="text-base text-green-800 font-semibold leading-normal">
-                ✅ Payment Successful!
+                Payment Successful!
               </p>
               <p className="text-sm text-green-700 leading-normal mt-2">
                 This challan has been marked as paid in our system.

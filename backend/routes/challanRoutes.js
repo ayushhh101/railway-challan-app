@@ -8,16 +8,16 @@ const uploadProof = require('../middleware/uploadProof');
 // View all challans (Admin only)
 router.get('/admin/all', verifyToken, isAdmin, getAllChallansValidation, getAllChallans);
 
-// View my challans (TTE only)
+// View my challans (TC only)
 router.get('/my', verifyToken, isTTE, getMyChallansValidation, getMyChallans);
 
-// Issue challan (TTE only)
+// Issue challan (TC only)
 router.post('/issue', verifyToken, isTTE, uploadProof.array('proofs', 4), issueChallanValidation, issueChallan);
 
 // Get challan locations (Admin only)
 router.get('/locations', verifyToken, isAdmin, getChallanLocationsValidation, getChallanLocations);
 
-// Search challans (Admin only)
+// (Admin only)
 router.get('/search', verifyToken, isAdmin, searchChallansValidation, searchChallans);
 
 // Get challan details by ID (Admin only)
@@ -28,13 +28,12 @@ router.post('/bulk-pdf', verifyToken, isAdmin, downloadBulkPDFValidation, downlo
 
 router.get('/passenger-history', verifyToken, getPassengerHistoryValidation, getPassengerHistory)
 
-router.put('/:id', verifyToken, isTTE, updateChallanValidation, updateChallan)
-
 router.get('/history', userHistoryValidation, userHistory)
-
-router.get('/:id', getChallanValidation,getChallan)
 
 router.put('/pay/:id', markChallanAsPaidValidation,markChallanAsPaid)
 
+router.put('/:id', verifyToken, isTTE, updateChallanValidation, updateChallan)
+
+router.get('/:id', getChallanValidation,getChallan)
 
 module.exports = router;

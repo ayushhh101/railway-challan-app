@@ -287,8 +287,8 @@ export default function PassengerHistoryPage() {
                       onChange={(e) => setQuery((q) => ({ ...q, paymentStatus: e.target.value }))}
                     >
                       <option value="">All Status</option>
-                      <option value="paid">✅ Paid</option>
-                      <option value="unpaid">❌ Unpaid</option>
+                      <option value="paid">Paid</option>
+                      <option value="unpaid">Unpaid</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                       <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

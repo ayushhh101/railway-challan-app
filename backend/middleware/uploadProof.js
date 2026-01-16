@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure folder exists
+// ensure folder exists
 const proofsDir = path.join('uploads', 'proofs');
 if (!fs.existsSync(proofsDir)) {
   fs.mkdirSync(proofsDir, { recursive: true });
@@ -43,14 +43,14 @@ const uploadProof = multer({
   storage,
   fileFilter,
   limits: { 
-    fileSize: 5 * 1024 * 1024, // 5MB limit per file
-    files: 4, // FIXED: Allow up to 4 files (was 1)
-    fieldSize: 10 * 1024 * 1024, // FIXED: 10MB for field data (was 1024) - handles base64 signatures
-    fields: 20, // FIXED: Allow more form fields (was 5) - for all challan form data
-    fieldNameSize: 100, // ADDED: field name size limit
-    headerPairs: 2000 // ADDED: number of header pairs
+    fileSize: 5 * 1024 * 1024,
+    files: 4, 
+    fieldSize: 10 * 1024 * 1024, 
+    fields: 20, 
+    fieldNameSize: 100, 
+    headerPairs: 2000 
   },
-  // Handle multer errors gracefully
+  
   onError: (err, next) => {
     console.error('File upload error:', err);
     next(err);

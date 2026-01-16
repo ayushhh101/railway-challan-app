@@ -6,10 +6,8 @@ const router = express.Router();
 
 router.get('/tteProfile', verifyToken, isTTE, getTTEProfileValidation, getTTEProfile)
 
-router.get('/admin/:id', verifyToken, isAdmin, getTTEDetailsForAdmin
-);
+router.get('/admin/:id', verifyToken, isAdmin, getTTEDetailsForAdmin);
 
-router.put('/admin/:id', verifyToken, isAdmin, updateTTEProfileValidation, updateTTEProfileByAdmin
-);
+router.put('/admin/:id', verifyToken, isAdmin, updateTTEProfileValidation, updateTTEProfileByAdmin);
 
 module.exports = router;

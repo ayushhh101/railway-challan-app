@@ -36,7 +36,7 @@ const validateFields = (allowedFields = {}) => {
         }
       }
 
-      next(); // all good, proceed
+      next();
     } catch (error) {
       console.error('Field validation error:', error);
       const serverError = ErrorResponses.serverError();

@@ -9,7 +9,7 @@ const { getAllAudits } = require('../controllers/auditController');
 
 router.get('/dashboard', verifyToken , isAdmin, dashboardValidation,getDashboardStats);
 
-//TODO: validation
+//TODO: validation and put this in controller lol
 router.get('/anomalies' , verifyToken, isAdmin, async (req, res) => {
   const anomalies = await Anomaly.find().sort({ timestamp: -1}).populate('user' , '_id name employeeId role zone').populate('challan', '_id issuedBy trainNumber passengerName passengerAadharLast4 reason fineAmount location paymentMode paid issuedAt').exec();
   res.json({anomalies});

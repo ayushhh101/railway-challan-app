@@ -1,4 +1,3 @@
-// seeders/stationSeeder.js
 // seeding command node seeders/stationSeeder.js
 const mongoose = require("mongoose");
 const Station = require("../models/stationModel");
@@ -66,7 +65,7 @@ const stations = [
 
 async function seedStations() {
   try {
-    await mongoose.connect(`${process.env.MONGO_URI}/test`); //your db
+    await mongoose.connect(`${process.env.MONGO_URI}/test`); //db
     for (const station of stations) {
       const exists = await Station.findOne({ name: station.name });
       if (!exists) {
@@ -76,10 +75,10 @@ async function seedStations() {
         console.log(`Station already exists: ${station.name}`);
       }
     }
-    console.log("✅ Station seeding complete.");
+    console.log("Station seeding complete.");
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error seeding stations:", error);
+    console.error("Error seeding stations:", error);
     process.exit(1);
   }
 }

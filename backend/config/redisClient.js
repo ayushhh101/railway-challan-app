@@ -8,15 +8,15 @@ const redisClient = createClient({
 
 // basic logging
 redisClient.on("error", (err) => {
-  console.error("❌ Redis Client Error:", err);
+  console.error("Redis Client Error:", err);
 });
 
 redisClient.on("connect", () => {
-  console.log("🔌 Redis connecting…");
+  console.log("Redis connecting…");
 });
 
 redisClient.on("ready", () => {
-  console.log("✅ Redis ready:", redisUrl);
+  console.log("Redis ready:", redisUrl);
 });
 
 // connect once at startup
